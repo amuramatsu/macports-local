@@ -1,0 +1,47 @@
+PortSystem	1.0
+
+name		mh-jp
+version		6.8.4-JP-3.05
+revision	1
+license		BSD
+platforms	darwin
+categories	mail
+maintainers	{@amuramatsu tomato.sakura.ne.jp:amura}
+description	Message Handler with Japanese support
+
+long_description \
+    Message Handler with Japanese support and Extentions by mh-plus project.
+
+homepage	http://www.chem.eng.himeji-tech.ac.jp/~hayashi/internet/mh-plus.html
+master_sites	ftp://ftp.laic.u-hyogo.ac.jp/pub/net/mh/
+distname	mh-${version}
+
+checksums	rmd160  a092a9447370a09f770121baa2ae7eced130ff0f \
+		sha256  9a6c00206b3620ea50ded3ab07e92e82cebc242da2d30490db015e6524c9974a
+
+depends_build	port:libtool \
+		port:gsed
+
+depends_lib     port:libiconv \
+		port:readline \
+		port:ncurses
+
+patchfiles	patch-mh-jp.diff
+patch.pre_args	-p1
+
+configure.args	--mandir="${prefix}/share/man" \
+		--enable-jmandir="${prefix}/share/man/ja" \
+		--enable-batchmode \
+		--disable-smtp \
+		--enable-rpop \
+		--enable-apop="${prefix}/etc/pop.auth"
+configure.cflags	"-O2 -Wno-implicit-int -Wno-implicit-function-declaration -Wno-parentheses -Wno-pointer-sign -Wno-empty-body"
+pre-configure {
+    xinstall -m 644 -W ${prefix}/share/libtool/build-aux config.guess ${configure.dir}
+}
+
+build {
+	system -W ${worksrcpath} "make PREFIX=\"${prefix}\""
+	system -W "${worksrcpath}/sbr" "make PREFIX=\"${prefix}\""
+	system -W ${worksrcpath} "make PREFIX=\"${prefix}\""
+}

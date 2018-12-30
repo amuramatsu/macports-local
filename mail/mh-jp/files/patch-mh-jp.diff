@@ -1,0 +1,5775 @@
+diff -ruN mh-6.8.4-JP-3.05.orig/conf/MH.in mh-6.8.4-JP-3.05/conf/MH.in
+--- mh-6.8.4-JP-3.05.orig/conf/MH.in	2001-06-13 23:28:26.000000000 +0900
++++ mh-6.8.4-JP-3.05/conf/MH.in	2018-12-31 09:05:50.000000000 +0900
+@@ -14,10 +14,10 @@
+ 
+ # some options
+ cc		@CC@
+-cpp		@CPP@
+-ccoptions	@CFLAGS@
++cpp		@CPP@ -I$(PREFIX)/include -DWITH_ICONV
++ccoptions	@CFLAGS@ -DWITH_ICONV -I$(PREFIX)/include
+ ldoptions	@LDFLAGS@
+-ldoptlibs	@LIBS@
++ldoptlibs	@LIBS@ $(PREFIX)/lib/libiconv.dylib
+ curses		@curses@
+ oldload		@oldload@
+ ranlib		@ranlib@
+@@ -41,7 +41,8 @@
+ options	@LIBLOCKFILE@ @LOCKF@ @MAILLOCK@ @NCURSES@ @NDIR@ @NFS@ @NOIOCTLH@
+ options	@NORUSERPASS@ @NTOHLSWAP@ @POSIX@ @READLINE@ @RENAME@ @SETEUID@ @SETMG@
+ options	@SETREUID@ @SHADOW@ @SIGEMT@ @SOCKETS@ @SOLARIS@ @SUN40@ @SYS5@
+-options	@SYS5DIR@ @SVR4@ @TZNAME@ @UNISTD@ @V7@ @VSPRINTF@ @WAITINT@ @ZONEINFO@
++options	@SYS5DIR@ @SVR4@ @TERMINFO@ @TZNAME@ @UNISTD@ @V7@ @VSPRINTF@
++options @WAITINT@ @ZONEINFO@
+ 
+ # POP support
+ pop	@pop@
+diff -ruN mh-6.8.4-JP-3.05.orig/conf/config/mts.c mh-6.8.4-JP-3.05/conf/config/mts.c
+--- mh-6.8.4-JP-3.05.orig/conf/config/mts.c	2001-04-02 22:36:26.000000000 +0900
++++ mh-6.8.4-JP-3.05/conf/config/mts.c	2018-12-31 09:05:50.000000000 +0900
+@@ -33,10 +33,7 @@
+ 
+ #define	NULLCP	((char *) 0)
+ 
+-#ifdef __CYGWIN32__
+ #include <errno.h>
+-#endif
+-extern int  errno;
+ 
+ static char   *tailor_value ();
+ 
+@@ -256,8 +253,7 @@
+ 
+ /* ARGSUSED */
+ 
+-mts_init (name)
+-char    *name;
++void mts_init (char *name)
+ {
+     register char  *bp,
+                    *cp;
+diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/MH-Makefile mh-6.8.4-JP-3.05/conf/makefiles/MH-Makefile
+--- mh-6.8.4-JP-3.05.orig/conf/makefiles/MH-Makefile	1999-02-09 20:30:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/conf/makefiles/MH-Makefile	2018-12-31 09:05:50.000000000 +0900
+@@ -5,7 +5,7 @@
+ # @(#)$Id: MH-Makefile,v 2.16 1993/08/27 22:15:49 jromine Exp $
+ ##############################################################################
+ 
+-MAKE	=	make DESTDIR=$(DESTDIR) $(MFLAGS) -k
++MAKE	=	make DESTDIR=$(DESTDIR) $(MFLAGS)
+ SHELL	=	/bin/sh
+ 
+ # Targets to Make:
+@@ -49,11 +49,11 @@
+ 
+ ALL	=	config sbr mts zotnet uip support doc
+ 
+-all:;		for d in $(ALL); do (cd $$d; $(MAKE) all); done
++all:;		for d in $(ALL); do (set -e; cd $$d; $(MAKE) all); done
+ 
+-depend:;	for d in $(ALL); do (cd $$d; $(MAKE) depend); done
++depend:;	for d in $(ALL); do (set -e; cd $$d; $(MAKE) depend); done
+ 
+-lint:;		for d in $(ALL); do (cd $$d; $(MAKE) lint); done
++lint:;		for d in $(ALL); do (set -e; cd $$d; $(MAKE) lint); done
+ 
+ compat-v7:	all
+ 		miscellany/tools/7limit */x* */*/x*
+diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/MH-Makefile.orig mh-6.8.4-JP-3.05/conf/makefiles/MH-Makefile.orig
+--- mh-6.8.4-JP-3.05.orig/conf/makefiles/MH-Makefile.orig	1970-01-01 09:00:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/conf/makefiles/MH-Makefile.orig	2018-12-31 09:05:50.000000000 +0900
+@@ -0,0 +1,136 @@
++##############################################################################
++#	Instructions to Make, for compilation of MH modules
++#
++#	@(MHWARNING)
++# @(#)$Id: MH-Makefile,v 2.16 1993/08/27 22:15:49 jromine Exp $
++##############################################################################
++
++MAKE	=	make DESTDIR=$(DESTDIR) $(MFLAGS) -k
++SHELL	=	/bin/sh
++
++# Targets to Make:
++#    
++#    all:	generate MH system, assumes configuration previously done
++#
++#    depend:	generate dependencies, for MH master maintainers only!
++#
++#    lint:	verify code, for MH master maintainers only!
++#
++#    compat-v7:	verify V7 restrictions, for MH master maintainers only!
++#
++#    install:	install system
++#
++#    inst-all:	install system
++#
++#    inst-lib:  install shared libraries
++#
++#    mkdirs:	make MH target directories
++#
++#    tar:	generate tar commands to move targets to other systems
++#		    e.g., make TFLAGS="cf mh.tar" tar
++#    
++#    uninstall:	undo installation
++#    
++#    distribution:
++#		revert source tree to MH distribution
++#    unconfig:
++#		removes configured files - for MH master maintainers only!
++#    
++#    checkout:	MH maintainers only!
++#
++#    clean:	remove all objects and targets plus clean up
++#    
++#    unclean:	remove scratch files and backups
++
++
++##############################################################################
++#	Generate MH system
++##############################################################################
++
++ALL	=	config sbr mts zotnet uip support doc
++
++all:;		for d in $(ALL); do (cd $$d; $(MAKE) all); done
++
++depend:;	for d in $(ALL); do (cd $$d; $(MAKE) depend); done
++
++lint:;		for d in $(ALL); do (cd $$d; $(MAKE) lint); done
++
++compat-v7:	all
++		miscellany/tools/7limit */x* */*/x*
++		miscellany/tools/8limit */*.o */*/*.o
++
++
++INSTALL	=	zotnet support uip doc
++BINDIR	=	$(DESTDIR)@(MHBINPATH)
++ETCDIR	=	$(DESTDIR)@(MHETCPATH)
++MANDIR	=	$(DESTDIR)@(MHMANDIR)
++SLIB	=	sbr
++
++install:	inst-all
++
++inst-all:	mkdirs inst-lib
++		for d in $(INSTALL); do (cd $$d; $(MAKE) inst-all); done
++
++inst-lib:;	for d in $(SLIB); do (cd $$d; $(MAKE) inst-lib); done
++
++mkdirs:		$(BINDIR) $(ETCDIR) $(MANDIR)
++
++$(BINDIR) $(ETCDIR) $(MANDIR):
++		sh ./install-sh -d $@
++
++tar:;		@for d in $(INSTALL); \
++		    do (cd $$d; $(MAKE) TFLAGS="$(TFLAGS)" tar); done
++
++uninstall:;	for d in $(INSTALL); do (cd $$d; $(MAKE) uninstall); done
++
++
++##############################################################################
++#	Miscellaneous tasks
++##############################################################################
++
++DISTRIBUTION=	dist conf config sbr mts zotnet support uip doc papers
++
++distribution:	READ-ME CHANGES
++		rm -f _* :*
++		@if test -f tma/mh/files; \
++		 then \
++		    echo rm -f `cat tma/mh/files`; rm -f `cat tma/mh/files`; \
++		    echo rm -rf tma; rm -rf tma; \
++		 fi
++		-rm -f support/pop/mmdfII/pop/lock.c
++		-rm -f support/bboards/mmdfII/bboards/lock.c
++		-rm -f zotnet/tws/tws.h
++		-rm -f uip/pshsbr.c
++		cd support/pop/mmdfII/pop ; @(LN) ../../../../zotnet/mts/lock.c .
++		cd support/bboards/mmdfII/bboards ; @(LN) ../../../../zotnet/mts/lock.c .
++		cd zotnet/tws ; @(LN) ../tws.h .
++		cd uip ; @(LN) popsbr.c pshsbr.c
++		for d in $(DISTRIBUTION); \
++		    do (cd $$d; $(MAKE) distribution); done
++
++READ-ME:	conf/mh-gen.8
++		nroff -man conf/mh-gen.8 > read-me.tmp
++		mv read-me.tmp $@
++
++CHANGES:	papers/changes/mh-changes.ms
++		nroff -ms papers/changes/mh-changes.ms > changes.tmp
++		mv changes.tmp $@
++
++unconfig:;	rm -f _* :* core *.core READ-ME
++		-rm -f config.cache config.log config.status
++		-rm -f support/pop/mmdfII/pop/lock.c
++		-rm -f support/bboards/mmdfII/bboards/lock.c
++		-rm -f zotnet/tws/tws.h
++		-rm -f uip/pshsbr.c
++		for d in $(DISTRIBUTION); do (cd $$d; $(MAKE) unconfig); done
++		cp conf/makefiles/MH-Unconfig tmp
++		mv tmp Makefile
++
++checkout:	unclean lint compat-v7
++		find . \( -name ":*" -o -name "_*" -o -name "#*" \) -a -print
++
++clean:;		rm -f _* :* core *.core
++		for d in $(DISTRIBUTION); do (cd $$d; $(MAKE) clean); done
++
++unclean:;	rm -f _* :* core *.core
++		for d in $(DISTRIBUTION); do (cd $$d; $(MAKE) unclean); done
+diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/doc mh-6.8.4-JP-3.05/conf/makefiles/doc
+--- mh-6.8.4-JP-3.05.orig/conf/makefiles/doc	1999-02-09 20:30:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/conf/makefiles/doc	2018-12-31 09:07:57.000000000 +0900
+@@ -36,6 +36,7 @@
+ Toptions2=	cipher.man decipher.man tma.man
+ @END: TMA
+ REMOVE	=	@(MHREMOVE)
++CP      =       @(CP)
+ MANPROT	=	0644
+ 
+ MAN1	=	ali.$(EXT1) anno.$(EXT1) burst.$(EXT1) comp.$(EXT1) \
+@@ -239,7 +240,7 @@
+ 
+ .me.doc:;	nroff -Tlpr -me $< > $@
+ 
+-.me.man:;	cat tmac.me $< | sed -f me2man.sed @(MHCATMAN) > $@
++.me.man:;	cat tmac.me $< | gsed -f me2man.sed @(MHCATMAN) > $@
+ 
+ .cat.imp:;	catimp -i $@ $<
+ 
+@@ -301,8 +302,7 @@
+ inst-tmac:	$(ETCDIR)/tmac.h
+ 
+ $(ETCDIR)/tmac.h:	tmac.h
+-		-$(REMOVE) $@ ztmac.h
+-		cp tmac.h $@
++		$(CP) tmac.h $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -311,8 +311,7 @@
+ inst-ali:	$(MANDIR)/$(DIR1)/ali.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/ali.$(EXT1):	ali.man
+-		-$(REMOVE) $@ zali.man
+-		cp ali.man $@
++		$(CP) ali.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -320,8 +319,7 @@
+ inst-anno:	$(MANDIR)/$(DIR1)/anno.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/anno.$(EXT1):	anno.man
+-		-$(REMOVE) $@ zanno.man
+-		cp anno.man $@
++		$(CP) anno.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -329,8 +327,7 @@
+ inst-ap:	$(MANDIR)/$(DIR8)/ap.$(EXT8)
+ 
+ $(MANDIR)/$(DIR8)/ap.$(EXT8):	ap.man
+-		-$(REMOVE) $@ zap.man
+-		cp ap.man $@
++		$(CP) ap.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -338,8 +335,7 @@
+ inst-bbc:	$(MANDIR)/$(DIR1)/bbc.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/bbc.$(EXT1):	bbc.man
+-		-$(REMOVE) $@ zbbc.man
+-		cp bbc.man $@
++		$(CP) bbc.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -347,8 +343,7 @@
+ inst-bbl:	$(MANDIR)/$(DIR1)/bbl.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/bbl.$(EXT1):	bbl.man
+-		-$(REMOVE) $@ zbbl.man
+-		cp bbl.man $@
++		$(CP) bbl.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -356,8 +351,7 @@
+ inst-bbleader:	$(MANDIR)/$(DIR1)/bbleader.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/bbleader.$(EXT1):	bbleader.man
+-		-$(REMOVE) $@ zbbleader.man
+-		cp bbleader.man $@
++		$(CP) bbleader.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -365,8 +359,7 @@
+ inst-bboards:	$(MANDIR)/$(DIR1)/bboards.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/bboards.$(EXT1):	bboards.man
+-		-$(REMOVE) $@ zbboards.man
+-		cp bboards.man $@
++		$(CP) bboards.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -374,8 +367,7 @@
+ inst-burst:	$(MANDIR)/$(DIR1)/burst.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/burst.$(EXT1):	burst.man
+-		-$(REMOVE) $@ zburst.man
+-		cp burst.man $@
++		$(CP) burst.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -383,8 +375,7 @@
+ inst-cipher:	$(MANDIR)/$(DIR1)/cipher.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/cipher.$(EXT1):	cipher.man
+-		-$(REMOVE) $@ zcipher.man
+-		cp cipher.man $@
++		$(CP) cipher.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -392,8 +383,7 @@
+ inst-comp:	$(MANDIR)/$(DIR1)/comp.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/comp.$(EXT1):	comp.man
+-		-$(REMOVE) $@ zcomp.man
+-		cp comp.man $@
++		$(CP) comp.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -401,8 +391,7 @@
+ inst-conflict:	$(MANDIR)/$(DIR8)/conflict.$(EXT8)
+ 
+ $(MANDIR)/$(DIR8)/conflict.$(EXT8):	conflict.man
+-		-$(REMOVE) $@ zconflict.man
+-		cp conflict.man $@
++		$(CP) conflict.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -410,8 +399,7 @@
+ inst-decipher:	$(MANDIR)/$(DIR1)/decipher.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/decipher.$(EXT1):	decipher.man
+-		-$(REMOVE) $@ zdecipher.man
+-		cp decipher.man $@
++		$(CP) decipher.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -419,8 +407,7 @@
+ inst-dist:	$(MANDIR)/$(DIR1)/dist.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/dist.$(EXT1):	dist.man
+-		-$(REMOVE) $@ zdist.man
+-		cp dist.man $@
++		$(CP) dist.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -428,8 +415,7 @@
+ inst-dp:	$(MANDIR)/$(DIR8)/dp.$(EXT8)
+ 
+ $(MANDIR)/$(DIR8)/dp.$(EXT8):	dp.man
+-		-$(REMOVE) $@ zdp.man
+-		cp dp.man $@
++		$(CP) dp.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -437,8 +423,7 @@
+ inst-folder:	$(MANDIR)/$(DIR1)/folder.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/folder.$(EXT1):	folder.man
+-		-$(REMOVE) $@ zfolder.man
+-		cp folder.man $@
++		$(CP) folder.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -446,8 +431,7 @@
+ inst-fmtdump:	$(MANDIR)/$(DIR8)/fmtdump.$(EXT8)
+ 
+ $(MANDIR)/$(DIR8)/fmtdump.$(EXT8):	fmtdump.man
+-		-$(REMOVE) $@ zfmtdump.man
+-		cp fmtdump.man $@
++		$(CP) fmtdump.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -455,8 +439,7 @@
+ inst-forw:	$(MANDIR)/$(DIR1)/forw.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/forw.$(EXT1):	forw.man
+-		-$(REMOVE) $@ zforw.man
+-		cp forw.man $@
++		$(CP) forw.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -464,8 +447,7 @@
+ inst-inc:	$(MANDIR)/$(DIR1)/inc.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/inc.$(EXT1):	inc.man
+-		-$(REMOVE) $@ zinc.man
+-		cp inc.man $@
++		$(CP) inc.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -473,8 +455,7 @@
+ inst-install-mh: $(MANDIR)/$(DIR8)/install-mh.$(EXT8)
+ 
+ $(MANDIR)/$(DIR8)/install-mh.$(EXT8): install-mh.man
+-		-$(REMOVE) $@ zinstall-mh.man
+-		cp install-mh.man $@
++		$(CP) install-mh.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -482,8 +463,7 @@
+ inst-mark:	$(MANDIR)/$(DIR1)/mark.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/mark.$(EXT1):	mark.man
+-		-$(REMOVE) $@ zmark.man
+-		cp mark.man $@
++		$(CP) mark.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -491,8 +471,7 @@
+ inst-mh-alias:	$(MANDIR)/$(DIR5)/mh-alias.$(EXT5)
+ 
+ $(MANDIR)/$(DIR5)/mh-alias.$(EXT5):	mh-alias.man
+-		-$(REMOVE) $@ zmh-alias.man
+-		cp mh-alias.man $@
++		$(CP) mh-alias.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -500,8 +479,7 @@
+ inst-mh-format:	$(MANDIR)/$(DIR5)/mh-format.$(EXT5)
+ 
+ $(MANDIR)/$(DIR5)/mh-format.$(EXT5):	mh-format.man
+-		-$(REMOVE) $@ zmh-format.man
+-		cp mh-format.man $@
++		$(CP) mh-format.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -509,8 +487,7 @@
+ inst-mh-chart:	$(MANDIR)/$(DIR1)/mh-chart.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/mh-chart.$(EXT1):	mh-chart.man
+-		-$(REMOVE) $@ zmh-chart.man
+-		cp mh-chart.man $@
++		$(CP) mh-chart.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -518,8 +495,7 @@
+ inst-mh-mail:	$(MANDIR)/$(DIR5)/mh-mail.$(EXT5)
+ 
+ $(MANDIR)/$(DIR5)/mh-mail.$(EXT5):	mh-mail.man
+-		-$(REMOVE) $@ zmh-mail.man
+-		cp mh-mail.man $@
++		$(CP) mh-mail.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -527,8 +503,7 @@
+ inst-mh-tailor:	$(MANDIR)/$(DIR5)/mh-tailor.$(EXT5)
+ 
+ $(MANDIR)/$(DIR5)/mh-tailor.$(EXT5):	mh-tailor.man
+-		-$(REMOVE) $@ zmh-tailor.man
+-		cp mh-tailor.man $@
++		$(CP) mh-tailor.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -536,8 +511,7 @@
+ inst-mh-profile:	$(MANDIR)/$(DIR5)/mh-profile.$(EXT5)
+ 
+ $(MANDIR)/$(DIR5)/mh-profile.$(EXT5):	mh-profile.man
+-		-$(REMOVE) $@ zmh-profile.man
+-		cp mh-profile.man $@
++		$(CP) mh-profile.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -545,8 +519,7 @@
+ inst-mh-sequence:	$(MANDIR)/$(DIR5)/mh-sequence.$(EXT5)
+ 
+ $(MANDIR)/$(DIR5)/mh-sequence.$(EXT5):	mh-sequence.man
+-		-$(REMOVE) $@ zmh-sequence.man
+-		cp mh-sequence.man $@
++		$(CP) mh-sequence.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -554,8 +527,7 @@
+ inst-mhook:	$(MANDIR)/$(DIR1)/mhook.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/mhook.$(EXT1):	mhook.man
+-		-$(REMOVE) $@ zmhook.man
+-		cp mhook.man $@
++		$(CP) mhook.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -563,8 +535,7 @@
+ inst-mh:	$(MANDIR)/$(DIR1)/mh.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/mh.$(EXT1):	mh.man
+-		-$(REMOVE) $@ zmh.man
+-		cp mh.man $@
++		$(CP) mh.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -572,8 +543,7 @@
+ inst-mhl:	$(MANDIR)/$(DIR1)/mhl.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/mhl.$(EXT1):	mhl.man
+-		-$(REMOVE) $@ zmhl.man
+-		cp mhl.man $@
++		$(CP) mhl.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -581,8 +551,7 @@
+ inst-mhmail:	$(MANDIR)/$(DIR1)/mhmail.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/mhmail.$(EXT1):	mhmail.man
+-		-$(REMOVE) $@ zmhmail.man
+-		cp mhmail.man $@
++		$(CP) mhmail.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -590,8 +559,7 @@
+ inst-mhn:	$(MANDIR)/$(DIR1)/mhn.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/mhn.$(EXT1):	mhn.man
+-		-$(REMOVE) $@ zmhn.man
+-		cp mhn.man $@
++		$(CP) mhn.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -599,8 +567,7 @@
+ inst-mhparam:	$(MANDIR)/$(DIR1)/mhparam.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/mhparam.$(EXT1):	mhparam.man
+-		-$(REMOVE) $@ zmhparam.man
+-		cp mhparam.man $@
++		$(CP) mhparam.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -608,8 +575,7 @@
+ inst-mhpath:	$(MANDIR)/$(DIR1)/mhpath.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/mhpath.$(EXT1):	mhpath.man
+-		-$(REMOVE) $@ zmhpath.man
+-		cp mhpath.man $@
++		$(CP) mhpath.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -617,8 +583,7 @@
+ inst-msgchk:	$(MANDIR)/$(DIR1)/msgchk.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/msgchk.$(EXT1):	msgchk.man
+-		-$(REMOVE) $@ zmsgchk.man
+-		cp msgchk.man $@
++		$(CP) msgchk.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -626,8 +591,7 @@
+ inst-msh:	$(MANDIR)/$(DIR1)/msh.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/msh.$(EXT1):	msh.man
+-		-$(REMOVE) $@ zmsh.man
+-		cp msh.man $@
++		$(CP) msh.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -635,8 +599,7 @@
+ inst-next:	$(MANDIR)/$(DIR1)/next.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/next.$(EXT1):	next.man
+-		-$(REMOVE) $@ znext.man
+-		cp next.man $@
++		$(CP) next.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -644,8 +607,7 @@
+ inst-packf:	$(MANDIR)/$(DIR1)/packf.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/packf.$(EXT1):	packf.man
+-		-$(REMOVE) $@ zpackf.man
+-		cp packf.man $@
++		$(CP) packf.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -653,8 +615,7 @@
+ inst-pgped:	$(MANDIR)/$(DIR1)/pgped.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/pgped.$(EXT1):	pgped.man
+-		-$(REMOVE) $@ zpgped.man
+-		cp pgped.man $@
++		$(CP) pgped.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -662,8 +623,7 @@
+ inst-popauth:	$(MANDIR)/$(DIR8)/popauth.$(EXT8)
+ 
+ $(MANDIR)/$(DIR8)/popauth.$(EXT8):	popauth.man
+-		-$(REMOVE) $@ zpopauth.man
+-		cp popauth.man $@
++		$(CP) popauth.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -671,8 +631,7 @@
+ inst-popd:	$(MANDIR)/$(DIR8)/popd.$(EXT8)
+ 
+ $(MANDIR)/$(DIR8)/popd.$(EXT8):	popd.man
+-		-$(REMOVE) $@ zpopd.man
+-		cp popd.man $@
++		$(CP) popd.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -680,8 +639,7 @@
+ inst-popi:	$(MANDIR)/$(DIR1)/popi.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/popi.$(EXT1):	popi.man
+-		-$(REMOVE) $@ zpopi.man
+-		cp popi.man $@
++		$(CP) popi.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -689,8 +647,7 @@
+ inst-pick:	$(MANDIR)/$(DIR1)/pick.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/pick.$(EXT1):	pick.man
+-		-$(REMOVE) $@ zpick.man
+-		cp pick.man $@
++		$(CP) pick.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -698,8 +655,7 @@
+ inst-post:	$(MANDIR)/$(DIR8)/post.$(EXT8)
+ 
+ $(MANDIR)/$(DIR8)/post.$(EXT8):	post.man
+-		-$(REMOVE) $@ zpost.man
+-		cp post.man $@
++		$(CP) post.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -707,8 +663,7 @@
+ inst-prev:	$(MANDIR)/$(DIR1)/prev.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/prev.$(EXT1):	prev.man
+-		-$(REMOVE) $@ zprev.man
+-		cp prev.man $@
++		$(CP) prev.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -716,8 +671,7 @@
+ inst-prompter:	$(MANDIR)/$(DIR1)/prompter.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/prompter.$(EXT1):	prompter.man
+-		-$(REMOVE) $@ zprompter.man
+-		cp prompter.man $@
++		$(CP) prompter.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -725,8 +679,7 @@
+ inst-rcvstore:	$(MANDIR)/$(DIR1)/rcvstore.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/rcvstore.$(EXT1):	rcvstore.man
+-		-$(REMOVE) $@ zrcvstore.man
+-		cp rcvstore.man $@
++		$(CP) rcvstore.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -734,8 +687,7 @@
+ inst-refile:	$(MANDIR)/$(DIR1)/refile.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/refile.$(EXT1):	refile.man
+-		-$(REMOVE) $@ zrefile.man
+-		cp refile.man $@
++		$(CP) refile.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -743,8 +695,7 @@
+ inst-repl:	$(MANDIR)/$(DIR1)/repl.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/repl.$(EXT1):	repl.man
+-		-$(REMOVE) $@ zrepl.man
+-		cp repl.man $@
++		$(CP) repl.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -752,8 +703,7 @@
+ inst-rmm:	$(MANDIR)/$(DIR1)/rmm.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/rmm.$(EXT1):	rmm.man
+-		-$(REMOVE) $@ zrmm.man
+-		cp rmm.man $@
++		$(CP) rmm.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -761,8 +711,7 @@
+ inst-rmf:	$(MANDIR)/$(DIR1)/rmf.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/rmf.$(EXT1):	rmf.man
+-		-$(REMOVE) $@ zrmf.man
+-		cp rmf.man $@
++		$(CP) rmf.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -770,8 +719,7 @@
+ inst-scan:	$(MANDIR)/$(DIR1)/scan.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/scan.$(EXT1):	scan.man
+-		-$(REMOVE) $@ zscan.man
+-		cp scan.man $@
++		$(CP) scan.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -779,8 +727,7 @@
+ inst-send:	$(MANDIR)/$(DIR1)/send.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/send.$(EXT1):	send.man
+-		-$(REMOVE) $@ zsend.man
+-		cp send.man $@
++		$(CP) send.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -788,8 +735,7 @@
+ inst-show:	$(MANDIR)/$(DIR1)/show.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/show.$(EXT1):	show.man
+-		-$(REMOVE) $@ zshow.man
+-		cp show.man $@
++		$(CP) show.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -797,8 +743,7 @@
+ inst-slocal:	$(MANDIR)/$(DIR1)/slocal.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/slocal.$(EXT1):	slocal.man
+-		-$(REMOVE) $@ zslocal.man
+-		cp slocal.man $@
++		$(CP) slocal.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -806,8 +751,7 @@
+ inst-sortm:	$(MANDIR)/$(DIR1)/sortm.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/sortm.$(EXT1):	sortm.man
+-		-$(REMOVE) $@ zsortm.man
+-		cp sortm.man $@
++		$(CP) sortm.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -815,8 +759,7 @@
+ inst-tma:	$(MANDIR)/$(DIR1)/tma.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/tma.$(EXT1):	tma.man
+-		-$(REMOVE) $@ ztma.man
+-		cp tma.man $@
++		$(CP) tma.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -824,8 +767,7 @@
+ inst-vmh:	$(MANDIR)/$(DIR1)/vmh.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/vmh.$(EXT1):	vmh.man
+-		-$(REMOVE) $@ zvmh.man
+-		cp vmh.man $@
++		$(CP) vmh.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -833,8 +775,7 @@
+ inst-whatnow:	$(MANDIR)/$(DIR1)/whatnow.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/whatnow.$(EXT1):	whatnow.man
+-		-$(REMOVE) $@ zwhatnow.man
+-		cp whatnow.man $@
++		$(CP) whatnow.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -842,8 +783,7 @@
+ inst-whom:	$(MANDIR)/$(DIR1)/whom.$(EXT1)
+ 
+ $(MANDIR)/$(DIR1)/whom.$(EXT1):	whom.man
+-		-$(REMOVE) $@ zwhom.man
+-		cp whom.man $@
++		$(CP) whom.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -852,8 +792,7 @@
+ inst-ja-ali:	$(JMANDIR)/$(DIR1)/ali.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/ali.$(EXT1):	ja-ali.man
+-		-$(REMOVE) $@ zja-ali.man
+-		cp ja-ali.man $@
++		$(CP) ja-ali.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -861,8 +800,7 @@
+ inst-ja-anno:	$(JMANDIR)/$(DIR1)/anno.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/anno.$(EXT1):	ja-anno.man
+-		-$(REMOVE) $@ zja-anno.man
+-		cp ja-anno.man $@
++		$(CP) ja-anno.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -870,8 +808,7 @@
+ inst-ja-ap:	$(JMANDIR)/$(DIR8)/ap.$(EXT8)
+ 
+ $(JMANDIR)/$(DIR8)/ap.$(EXT8):	ja-ap.man
+-		-$(REMOVE) $@ zja-ap.man
+-		cp ja-ap.man $@
++		$(CP) ja-ap.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -879,8 +816,7 @@
+ inst-ja-bbc:	$(JMANDIR)/$(DIR1)/bbc.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/bbc.$(EXT1):	ja-bbc.man
+-		-$(REMOVE) $@ zja-bbc.man
+-		cp ja-bbc.man $@
++		$(CP) ja-bbc.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -888,8 +824,7 @@
+ inst-ja-burst:	$(JMANDIR)/$(DIR1)/burst.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/burst.$(EXT1):	ja-burst.man
+-		-$(REMOVE) $@ zja-burst.man
+-		cp ja-burst.man $@
++		$(CP) ja-burst.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -897,8 +832,7 @@
+ inst-ja-comp:	$(JMANDIR)/$(DIR1)/comp.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/comp.$(EXT1):	ja-comp.man
+-		-$(REMOVE) $@ zja-comp.man
+-		cp ja-comp.man $@
++		$(CP) ja-comp.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -906,8 +840,7 @@
+ inst-ja-conflict:	$(JMANDIR)/$(DIR8)/conflict.$(EXT8)
+ 
+ $(JMANDIR)/$(DIR8)/conflict.$(EXT8):	ja-conflict.man
+-		-$(REMOVE) $@ zja-conflict.man
+-		cp ja-conflict.man $@
++		$(CP) ja-conflict.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -915,8 +848,7 @@
+ inst-ja-dist:	$(JMANDIR)/$(DIR1)/dist.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/dist.$(EXT1):	ja-dist.man
+-		-$(REMOVE) $@ zja-dist.man
+-		cp ja-dist.man $@
++		$(CP) ja-dist.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -924,8 +856,7 @@
+ inst-ja-dp:	$(JMANDIR)/$(DIR8)/dp.$(EXT8)
+ 
+ $(JMANDIR)/$(DIR8)/dp.$(EXT8):	ja-dp.man
+-		-$(REMOVE) $@ zja-dp.man
+-		cp ja-dp.man $@
++		$(CP) ja-dp.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -933,8 +864,7 @@
+ inst-ja-fmtdump:	$(JMANDIR)/$(DIR8)/fmtdump.$(EXT8)
+ 
+ $(JMANDIR)/$(DIR8)/fmtdump.$(EXT8):	ja-fmtdump.man
+-		-$(REMOVE) $@ zja-fmtdump.man
+-		cp ja-fmtdump.man $@
++		$(CP) ja-fmtdump.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -942,8 +872,7 @@
+ inst-ja-folder:	$(JMANDIR)/$(DIR1)/folder.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/folder.$(EXT1):	ja-folder.man
+-		-$(REMOVE) $@ zja-folder.man
+-		cp ja-folder.man $@
++		$(CP) ja-folder.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -951,8 +880,7 @@
+ inst-ja-forw:	$(JMANDIR)/$(DIR1)/forw.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/forw.$(EXT1):	ja-forw.man
+-		-$(REMOVE) $@ zja-forw.man
+-		cp ja-forw.man $@
++		$(CP) ja-forw.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -960,8 +888,7 @@
+ inst-ja-inc:	$(JMANDIR)/$(DIR1)/inc.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/inc.$(EXT1):	ja-inc.man
+-		-$(REMOVE) $@ zja-inc.man
+-		cp ja-inc.man $@
++		$(CP) ja-inc.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -969,8 +896,7 @@
+ inst-ja-install-mh:	$(JMANDIR)/$(DIR8)/install-mh.$(EXT8)
+ 
+ $(JMANDIR)/$(DIR8)/install-mh.$(EXT8):	ja-install-mh.man
+-		-$(REMOVE) $@ zja-install-mh.man
+-		cp ja-install-mh.man $@
++		$(CP) ja-install-mh.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -978,8 +904,7 @@
+ inst-ja-mark:	$(JMANDIR)/$(DIR1)/mark.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/mark.$(EXT1):	ja-mark.man
+-		-$(REMOVE) $@ zja-mark.man
+-		cp ja-mark.man $@
++		$(CP) ja-mark.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -987,8 +912,7 @@
+ inst-ja-mh-alias:	$(JMANDIR)/$(DIR5)/mh-alias.$(EXT5)
+ 
+ $(JMANDIR)/$(DIR5)/mh-alias.$(EXT5):	ja-mh-alias.man
+-		-$(REMOVE) $@ zja-mh-alias.man
+-		cp ja-mh-alias.man $@
++		$(CP) ja-mh-alias.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -996,8 +920,7 @@
+ inst-ja-mh-chart:	$(JMANDIR)/$(DIR1)/mh-chart.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/mh-chart.$(EXT1):	ja-mh-chart.man
+-		-$(REMOVE) $@ zja-mh-chart.man
+-		cp ja-mh-chart.man $@
++		$(CP) ja-mh-chart.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1005,8 +928,7 @@
+ inst-ja-mh-format:	$(JMANDIR)/$(DIR5)/mh-format.$(EXT5)
+ 
+ $(JMANDIR)/$(DIR5)/mh-format.$(EXT5):	ja-mh-format.man
+-		-$(REMOVE) $@ zja-mh-format.man
+-		cp ja-mh-format.man $@
++		$(CP) ja-mh-format.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1014,8 +936,7 @@
+ inst-ja-mh-mail:	$(JMANDIR)/$(DIR5)/mh-mail.$(EXT5)
+ 
+ $(JMANDIR)/$(DIR5)/mh-mail.$(EXT5):	ja-mh-mail.man
+-		-$(REMOVE) $@ zja-mh-mail.man
+-		cp ja-mh-mail.man $@
++		$(CP) ja-mh-mail.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1023,8 +944,7 @@
+ inst-ja-mh-profile:	$(JMANDIR)/$(DIR5)/mh-profile.$(EXT5)
+ 
+ $(JMANDIR)/$(DIR5)/mh-profile.$(EXT5):	ja-mh-profile.man
+-		-$(REMOVE) $@ zja-mh-profile.man
+-		cp ja-mh-profile.man $@
++		$(CP) ja-mh-profile.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1032,8 +952,7 @@
+ inst-ja-mh-sequence:	$(JMANDIR)/$(DIR5)/mh-sequence.$(EXT5)
+ 
+ $(JMANDIR)/$(DIR5)/mh-sequence.$(EXT5):	ja-mh-sequence.man
+-		-$(REMOVE) $@ zja-mh-sequence.man
+-		cp ja-mh-sequence.man $@
++		$(CP) ja-mh-sequence.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1041,8 +960,7 @@
+ inst-ja-mh-tailor:	$(JMANDIR)/$(DIR5)/mh-tailor.$(EXT5)
+ 
+ $(JMANDIR)/$(DIR5)/mh-tailor.$(EXT5):	ja-mh-tailor.man
+-		-$(REMOVE) $@ zja-mh-tailor.man
+-		cp ja-mh-tailor.man $@
++		$(CP) ja-mh-tailor.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1050,8 +968,7 @@
+ inst-ja-mh:	$(JMANDIR)/$(DIR1)/mh.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/mh.$(EXT1):	ja-mh.man
+-		-$(REMOVE) $@ zja-mh.man
+-		cp ja-mh.man $@
++		$(CP) ja-mh.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1059,8 +976,7 @@
+ inst-ja-mhl:	$(JMANDIR)/$(DIR1)/mhl.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/mhl.$(EXT1):	ja-mhl.man
+-		-$(REMOVE) $@ zja-mhl.man
+-		cp ja-mhl.man $@
++		$(CP) ja-mhl.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1068,8 +984,7 @@
+ inst-ja-mhmail:	$(JMANDIR)/$(DIR1)/mhmail.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/mhmail.$(EXT1):	ja-mhmail.man
+-		-$(REMOVE) $@ zja-mhmail.man
+-		cp ja-mhmail.man $@
++		$(CP) ja-mhmail.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1077,8 +992,7 @@
+ inst-ja-mhn:	$(JMANDIR)/$(DIR1)/mhn.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/mhn.$(EXT1):	ja-mhn.man
+-		-$(REMOVE) $@ zja-mhn.man
+-		cp ja-mhn.man $@
++		$(CP) ja-mhn.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1086,8 +1000,7 @@
+ inst-ja-mhook:	$(JMANDIR)/$(DIR1)/mhook.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/mhook.$(EXT1):	ja-mhook.man
+-		-$(REMOVE) $@ zja-mhook.man
+-		cp ja-mhook.man $@
++		$(CP) ja-mhook.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1095,8 +1008,7 @@
+ inst-ja-mhparam:	$(JMANDIR)/$(DIR1)/mhparam.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/mhparam.$(EXT1):	ja-mhparam.man
+-		-$(REMOVE) $@ zja-mhparam.man
+-		cp ja-mhparam.man $@
++		$(CP) ja-mhparam.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1104,8 +1016,7 @@
+ inst-ja-mhpath:	$(JMANDIR)/$(DIR1)/mhpath.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/mhpath.$(EXT1):	ja-mhpath.man
+-		-$(REMOVE) $@ zja-mhpath.man
+-		cp ja-mhpath.man $@
++		$(CP) ja-mhpath.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1113,8 +1024,7 @@
+ inst-ja-msgchk:	$(JMANDIR)/$(DIR1)/msgchk.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/msgchk.$(EXT1):	ja-msgchk.man
+-		-$(REMOVE) $@ zja-msgchk.man
+-		cp ja-msgchk.man $@
++		$(CP) ja-msgchk.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1122,8 +1032,7 @@
+ inst-ja-msh:	$(JMANDIR)/$(DIR1)/msh.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/msh.$(EXT1):	ja-msh.man
+-		-$(REMOVE) $@ zja-msh.man
+-		cp ja-msh.man $@
++		$(CP) ja-msh.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1131,8 +1040,7 @@
+ inst-ja-next:	$(JMANDIR)/$(DIR1)/next.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/next.$(EXT1):	ja-next.man
+-		-$(REMOVE) $@ zja-next.man
+-		cp ja-next.man $@
++		$(CP) ja-next.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1140,8 +1048,7 @@
+ inst-ja-packf:	$(JMANDIR)/$(DIR1)/packf.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/packf.$(EXT1):	ja-packf.man
+-		-$(REMOVE) $@ zja-packf.man
+-		cp ja-packf.man $@
++		$(CP) ja-packf.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1149,8 +1056,7 @@
+ inst-ja-pgped:	$(JMANDIR)/$(DIR1)/pgped.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/pgped.$(EXT1):	ja-pgped.man
+-		-$(REMOVE) $@ zja-pgped.man
+-		cp ja-pgped.man $@
++		$(CP) ja-pgped.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1158,8 +1064,7 @@
+ inst-ja-pick:	$(JMANDIR)/$(DIR1)/pick.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/pick.$(EXT1):	ja-pick.man
+-		-$(REMOVE) $@ zja-pick.man
+-		cp ja-pick.man $@
++		$(CP) ja-pick.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1167,8 +1072,7 @@
+ inst-ja-post:	$(JMANDIR)/$(DIR8)/post.$(EXT8)
+ 
+ $(JMANDIR)/$(DIR8)/post.$(EXT8):	ja-post.man
+-		-$(REMOVE) $@ zja-post.man
+-		cp ja-post.man $@
++		$(CP) ja-post.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1176,8 +1080,7 @@
+ inst-ja-prev:	$(JMANDIR)/$(DIR1)/prev.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/prev.$(EXT1):	ja-prev.man
+-		-$(REMOVE) $@ zja-prev.man
+-		cp ja-prev.man $@
++		$(CP) ja-prev.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1185,8 +1088,7 @@
+ inst-ja-prompter:	$(JMANDIR)/$(DIR1)/prompter.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/prompter.$(EXT1):	ja-prompter.man
+-		-$(REMOVE) $@ zja-prompter.man
+-		cp ja-prompter.man $@
++		$(CP) ja-prompter.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1194,8 +1096,7 @@
+ inst-ja-rcvstore:	$(JMANDIR)/$(DIR1)/rcvstore.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/rcvstore.$(EXT1):	ja-rcvstore.man
+-		-$(REMOVE) $@ zja-rcvstore.man
+-		cp ja-rcvstore.man $@
++		$(CP) ja-rcvstore.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1203,8 +1104,7 @@
+ inst-ja-refile:	$(JMANDIR)/$(DIR1)/refile.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/refile.$(EXT1):	ja-refile.man
+-		-$(REMOVE) $@ zja-refile.man
+-		cp ja-refile.man $@
++		$(CP) ja-refile.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1212,8 +1112,7 @@
+ inst-ja-repl:	$(JMANDIR)/$(DIR1)/repl.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/repl.$(EXT1):	ja-repl.man
+-		-$(REMOVE) $@ zja-repl.man
+-		cp ja-repl.man $@
++		$(CP) ja-repl.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1221,8 +1120,7 @@
+ inst-ja-rmf:	$(JMANDIR)/$(DIR1)/rmf.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/rmf.$(EXT1):	ja-rmf.man
+-		-$(REMOVE) $@ zja-rmf.man
+-		cp ja-rmf.man $@
++		$(CP) ja-rmf.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1230,8 +1128,7 @@
+ inst-ja-rmm:	$(JMANDIR)/$(DIR1)/rmm.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/rmm.$(EXT1):	ja-rmm.man
+-		-$(REMOVE) $@ zja-rmm.man
+-		cp ja-rmm.man $@
++		$(CP) ja-rmm.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1239,8 +1136,7 @@
+ inst-ja-scan:	$(JMANDIR)/$(DIR1)/scan.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/scan.$(EXT1):	ja-scan.man
+-		-$(REMOVE) $@ zja-scan.man
+-		cp ja-scan.man $@
++		$(CP) ja-scan.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1248,8 +1144,7 @@
+ inst-ja-send:	$(JMANDIR)/$(DIR1)/send.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/send.$(EXT1):	ja-send.man
+-		-$(REMOVE) $@ zja-send.man
+-		cp ja-send.man $@
++		$(CP) ja-send.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1257,8 +1152,7 @@
+ inst-ja-show:	$(JMANDIR)/$(DIR1)/show.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/show.$(EXT1):	ja-show.man
+-		-$(REMOVE) $@ zja-show.man
+-		cp ja-show.man $@
++		$(CP) ja-show.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1266,8 +1160,7 @@
+ inst-ja-slocal:	$(JMANDIR)/$(DIR1)/slocal.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/slocal.$(EXT1):	ja-slocal.man
+-		-$(REMOVE) $@ zja-slocal.man
+-		cp ja-slocal.man $@
++		$(CP) ja-slocal.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1275,8 +1168,7 @@
+ inst-ja-sortm:	$(JMANDIR)/$(DIR1)/sortm.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/sortm.$(EXT1):	ja-sortm.man
+-		-$(REMOVE) $@ zja-sortm.man
+-		cp ja-sortm.man $@
++		$(CP) ja-sortm.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1284,8 +1176,7 @@
+ inst-ja-vmh:	$(JMANDIR)/$(DIR1)/vmh.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/vmh.$(EXT1):	ja-vmh.man
+-		-$(REMOVE) $@ zja-vmh.man
+-		cp ja-vmh.man $@
++		$(CP) ja-vmh.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1293,8 +1184,7 @@
+ inst-ja-whatnow:	$(JMANDIR)/$(DIR1)/whatnow.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/whatnow.$(EXT1):	ja-whatnow.man
+-		-$(REMOVE) $@ zja-whatnow.man
+-		cp ja-whatnow.man $@
++		$(CP) ja-whatnow.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1302,8 +1192,7 @@
+ inst-ja-whom:	$(JMANDIR)/$(DIR1)/whom.$(EXT1)
+ 
+ $(JMANDIR)/$(DIR1)/whom.$(EXT1):	ja-whom.man
+-		-$(REMOVE) $@ zja-whom.man
+-		cp ja-whom.man $@
++		$(CP) ja-whom.man $@
+ 		-@chmod $(MANPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -1505,8 +1394,7 @@
+ #	inst-pickle:	$(MANDIR)/$(DIR[n])/pickle.$(EXT[n])
+ #	
+ #	$(MANDIR)/$(DIR[n])/pickle.$(EXT[n]):	pickle.man
+-#			-$(REMOVE) $@ zpickle.man
+-#			cp pickle.man $@
++#			$(CP) pickle.man $@
+ #			-@chmod $(MANPROT) $@
+ #			-@ls -l $@
+ #			-@echo ""
+diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/support/bboards mh-6.8.4-JP-3.05/conf/makefiles/support/bboards
+--- mh-6.8.4-JP-3.05.orig/conf/makefiles/support/bboards	2001-06-11 10:25:43.000000000 +0900
++++ mh-6.8.4-JP-3.05/conf/makefiles/support/bboards	2018-12-31 09:05:50.000000000 +0900
+@@ -15,6 +15,7 @@
+ BBETC	=	$(BBDIR)/etc
+ CHOWN	=	@(MHCHOWNPATH)
+ REMOVE	=	@(MHREMOVE)
++CP      =       @(CP)
+ BBUID	=	bboards
+ @BEGIN: BBSERVER
+ ALL	=	bbaka bbexp bbtar
+@@ -118,8 +119,7 @@
+ 
+ $(BBDIR)/BBoards: BBoards
+ 		-@if [ ! -f $@ ]; then \
+-		    $(REMOVE) $@ zBBoards; \
+-		    cp BBoards $@; \
++		    $(CP) BBoards $@; \
+ 		else \
+ 		    echo "Will not overwrite existing $@"; \
+ 		fi
+@@ -135,8 +135,7 @@
+ inst-bbaka:	$(BBETC)/bbaka
+ 
+ $(BBETC)/bbaka: xbbaka
+-		-$(REMOVE) $@ zbbaka
+-		cp xbbaka $@
++		$(CP) xbbaka $@
+ 		-$(CHOWN) $(BBUID) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -156,8 +155,7 @@
+ inst-bbexp:	$(BBETC)/bbexp
+ 
+ $(BBETC)/bbexp: xbbexp
+-		-$(REMOVE) $@ zbbexp
+-		cp xbbexp $@
++		$(CP) xbbexp $@
+ 		-$(CHOWN) $(BBUID) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -177,8 +175,7 @@
+ inst-bbtar:	$(BBETC)/bbtar
+ 
+ $(BBETC)/bbtar: xbbtar
+-		-$(REMOVE) $@ zbbtar
+-		cp xbbtar $@
++		$(CP) xbbtar $@
+ 		-$(CHOWN) $(BBUID) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -198,8 +195,7 @@
+ inst-daily:	$(BBETC)/bboards.daily
+ 
+ $(BBETC)/bboards.daily: bboards.daily
+-		-$(REMOVE) $@ zbboards.daily
+-		cp bboards.daily $@
++		$(CP) bboards.daily $@
+ 		-$(CHOWN) $(BBUID) $@
+ 		-@chmod +x $@
+ 		-@ls -l $@
+@@ -213,8 +209,7 @@
+ inst-weekly:	$(BBETC)/bboards.weekly
+ 
+ $(BBETC)/bboards.weekly: bboards.weekly
+-		-$(REMOVE) $@ zbboards.weekly
+-		cp bboards.weekly $@
++		$(CP) bboards.weekly $@
+ 		-$(CHOWN) $(BBUID) $@
+ 		-@chmod +x $@
+ 		-@ls -l $@
+@@ -228,8 +223,7 @@
+ inst-makebboards:	$(BBETC)/Makefile
+ 
+ $(BBETC)/Makefile: MakeBBoards
+-		-$(REMOVE) $@ zMakeBBoards
+-		cp MakeBBoards $@
++		$(CP) MakeBBoards $@
+ 		-$(CHOWN) $(BBUID) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -242,8 +236,7 @@
+ inst-cshell:	$(BBDIR)/.cshrc
+ 
+ $(BBDIR)/.cshrc: cshrc
+-		-$(REMOVE) $@ z.cshrc
+-		cp cshrc $@
++		$(CP) cshrc $@
+ 		-$(CHOWN) $(BBUID) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -256,8 +249,7 @@
+ inst-profile:	$(BBDIR)/.mh_profile
+ 
+ $(BBDIR)/.mh_profile: mh_profile
+-		-$(REMOVE) $@ z.mh_profile
+-		cp mh_profile $@
++		$(CP) mh_profile $@
+ 		-$(CHOWN) $(BBUID) $@
+ 		-@ls -l $@
+ 		-@touch $(BBETC)/context
+@@ -296,7 +288,7 @@
+ 		echo '/^# DO NOT DELETE THIS LINE/+2,$$d' > eddep
+ 		echo '$$r makedep' >> eddep
+ 		echo 'w' >> eddep
+-		cp Makefile _Makefile
++		$(CP) Makefile _Makefile
+ 		ed - Makefile < eddep
+ 		rm eddep makedep
+ 		echo '# DEPENDENCIES MUST END AT END OF FILE' >> Makefile
+diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/support/general mh-6.8.4-JP-3.05/conf/makefiles/support/general
+--- mh-6.8.4-JP-3.05.orig/conf/makefiles/support/general	1998-04-24 06:02:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/conf/makefiles/support/general	2018-12-31 09:05:50.000000000 +0900
+@@ -74,7 +74,6 @@
+ 
+ $(ETCDIR)/MailAliases:	MailAliases
+ 		-@if [ ! -f $@ ]; then \
+-		    $(REMOVE) $@ zMailAliases; \
+ 		    $(CP) MailAliases $@; \
+ 		else \
+ 		    echo "Will not overwrite existing $@"; \
+@@ -87,7 +86,6 @@
+ inst-components:	$(ETCDIR)/components
+ 
+ $(ETCDIR)/components:	components
+-		-$(REMOVE) $@ zcomponents
+ 		$(CP) components $@
+ 		-@chmod $(FILPROT) $@
+ 		-@ls -l $@
+@@ -97,7 +95,6 @@
+ inst-digestcomps:	$(ETCDIR)/digestcomps
+ 
+ $(ETCDIR)/digestcomps:	digestcomps
+-		-$(REMOVE) $@ zdigestcomps
+ 		$(CP) digestcomps $@
+ 		-@chmod $(FILPROT) $@
+ 		-@ls -l $@
+@@ -107,7 +104,6 @@
+ inst-distcomps:	$(ETCDIR)/distcomps
+ 
+ $(ETCDIR)/distcomps:	distcomps
+-		-$(REMOVE) $@ zdistcomps
+ 		$(CP) distcomps $@
+ 		-@chmod $(FILPROT) $@
+ 		-@ls -l $@
+@@ -117,7 +113,6 @@
+ inst-forwcomps:	$(ETCDIR)/forwcomps
+ 
+ $(ETCDIR)/forwcomps:	forwcomps
+-		-$(REMOVE) $@ zforwcomps
+ 		$(CP) forwcomps $@
+ 		-@chmod $(FILPROT) $@
+ 		-@ls -l $@
+@@ -127,7 +122,6 @@
+ inst-rcvdistcomps:	$(ETCDIR)/rcvdistcomps
+ 
+ $(ETCDIR)/rcvdistcomps:	rcvdistcomps
+-		-$(REMOVE) $@ zrcvdistcomps
+ 		$(CP) rcvdistcomps $@
+ 		-@chmod $(FILPROT) $@
+ 		-@ls -l $@
+@@ -137,7 +131,6 @@
+ inst-replcomps:	$(ETCDIR)/replcomps
+ 
+ $(ETCDIR)/replcomps:	replcomps
+-		-$(REMOVE) $@ zreplcomps
+ 		$(CP) replcomps $@
+ 		-@chmod $(FILPROT) $@
+ 		-@ls -l $@
+@@ -147,7 +140,6 @@
+ inst-digest:	$(ETCDIR)/mhl.digest
+ 
+ $(ETCDIR)/mhl.digest:	mhl.digest
+-		-$(REMOVE) $@ zmhl.digest
+ 		$(CP) mhl.digest $@
+ 		-@chmod $(FILPROT) $@
+ 		-@ls -l $@
+@@ -162,7 +154,6 @@
+ @END: MIME_HEADERS
+ 
+ $(ETCDIR)/mhl.format:	$(MHL_FORMAT)
+-		-$(REMOVE) $@ zmhl.format
+ 		$(CP) $(MHL_FORMAT) $@
+ 		-@chmod $(FILPROT) $@
+ 		-@ls -l $@
+@@ -172,7 +163,6 @@
+ inst-forward:	$(ETCDIR)/mhl.forward
+ 
+ $(ETCDIR)/mhl.forward:	mhl.forward
+-		-$(REMOVE) $@ zmhl.forward
+ 		$(CP) mhl.forward $@
+ 		-@chmod $(FILPROT) $@
+ 		-@ls -l $@
+@@ -182,7 +172,6 @@
+ inst-body:	$(ETCDIR)/mhl.body
+ 
+ $(ETCDIR)/mhl.body:	mhl.body
+-		-$(REMOVE) $@ zmhl.body
+ 		$(CP) mhl.body $@
+ 		-@chmod $(FILPROT) $@
+ 		-@ls -l $@
+@@ -197,8 +186,7 @@
+ @END: MIME_HEADERS
+ 
+ $(ETCDIR)/mhl.headers:	$(MHL_HEADERS)
+-		-$(REMOVE) $@ zmhl.headers
+-		cp $(MHL_HEADERS) $@
++		$(CP) $(MHL_HEADERS) $@
+ 		-@chmod $(FILPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -207,7 +195,6 @@
+ inst-default:	$(ETCDIR)/scan.default
+ 
+ $(ETCDIR)/scan.default:	scan.default
+-		-$(REMOVE) $@ zscan.default
+ 		$(CP) scan.default $@
+ 		-@chmod $(FILPROT) $@
+ 		-@ls -l $@
+@@ -216,7 +203,6 @@
+ inst-mailx:	$(ETCDIR)/scan.mailx
+ 
+ $(ETCDIR)/scan.mailx:	scan.mailx
+-		-$(REMOVE) $@ zscan.mailx
+ 		$(CP) scan.mailx $@
+ 		-@chmod $(FILPROT) $@
+ 		-@ls -l $@
+@@ -226,7 +212,6 @@
+ inst-size:	$(ETCDIR)/scan.size
+ 
+ $(ETCDIR)/scan.size:	scan.size
+-		-$(REMOVE) $@ zscan.size
+ 		$(CP) scan.size $@
+ 		-@chmod $(FILPROT) $@
+ 		-@ls -l $@
+@@ -236,7 +221,6 @@
+ inst-time:	$(ETCDIR)/scan.time
+ 
+ $(ETCDIR)/scan.time:	scan.time
+-		-$(REMOVE) $@ zscan.time
+ 		$(CP) scan.time $@
+ 		-@chmod $(FILPROT) $@
+ 		-@ls -l $@
+@@ -246,7 +230,6 @@
+ inst-timely:	$(ETCDIR)/scan.timely
+ 
+ $(ETCDIR)/scan.timely:	scan.timely
+-		-$(REMOVE) $@ zscan.timely
+ 		$(CP) scan.timely $@
+ 		-@chmod $(FILPROT) $@
+ 		-@ls -l $@
+@@ -256,8 +239,7 @@
+ inst-packmbox:	$(ETCDIR)/packmbox
+ 
+ $(ETCDIR)/packmbox:	packmbox.sh
+-		-$(REMOVE) $@ zpackmbox.sh
+-		cp packmbox.sh $@
++		$(CP) packmbox.sh $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -267,7 +249,6 @@
+ 
+ $(ETCDIR)/BBoardAliases:	BBoardAliases
+ 		-@if [ ! -f $@ ]; then \
+-		    $(REMOVE) $@ zBBoardAliases; \
+ 		    $(CP) BBoardAliases $@; \
+ 		else \
+ 		    echo "Will not overwrite existing $@"; \
+@@ -281,8 +262,7 @@
+ inst-viamail:	$(ETCDIR)/viamail
+ 
+ $(ETCDIR)/viamail:	viamail.sh
+-		-$(REMOVE) $@ zviamail.sh
+-		cp viamail.sh $@
++		$(CP) viamail.sh $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -291,7 +271,6 @@
+ inst-mhndefs:	$(ETCDIR)/mhn_defaults
+ 
+ $(ETCDIR)/mhn_defaults:	true
+-		-$(REMOVE) $@ zmhn_defaults
+ 		-@echo "Will merge mhn_defaults into existing $@"
+ 		-@./bootmhn.sh $(ETCDIR)
+ 		-@chmod $(FILPROT) $@
+@@ -302,22 +281,19 @@
+ inst-pgpmime:	$(ETCDIR)/pgped.tcl $(BINDIR)/pgped $(BINDIR)/pgpshow
+ 
+ $(ETCDIR)/pgped.tcl:	pgped.tcl
+-		-$(REMOVE) $@ zpgped.tcl
+-		cp pgped.tcl $@
++		$(CP) pgped.tcl $@
+ 		-@chmod $(FILPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+ 
+ $(BINDIR)/pgped:	pgped.sh
+-		-$(REMOVE) $@ zpgped.sh
+ 		sed -e 's%@LIB%$(ETCDIR)%' < pgped.sh > $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+ 
+ $(BINDIR)/pgpshow:	pgpshow.sh
+-		-$(REMOVE) $@ zpgpshow.sh
+-		cp pgpshow.sh $@
++		$(CP) pgpshow.sh $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/support/pop mh-6.8.4-JP-3.05/conf/makefiles/support/pop
+--- mh-6.8.4-JP-3.05.orig/conf/makefiles/support/pop	2001-06-11 10:25:56.000000000 +0900
++++ mh-6.8.4-JP-3.05/conf/makefiles/support/pop	2018-12-31 09:05:50.000000000 +0900
+@@ -122,7 +122,6 @@
+ inst-popd:	$(ETCDIR)/popd
+ 
+ $(ETCDIR)/popd:	xpopd
+-		-$(REMOVE) $@ zpopd
+ 		-rm -f $@
+ 		$(CP) xpopd $@
+ 		-chmod 700 $@
+@@ -159,7 +158,6 @@
+ inst-popaka:	$(LIBDIR)/popaka
+ 
+ $(LIBDIR)/popaka:	xpopaka
+-		-$(REMOVE) $@ zpopaka
+ 		$(CP) xpopaka $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -180,8 +178,6 @@
+ inst-popauth:	$(BINDIR)/popauth
+ 
+ $(BINDIR)/popauth:	xpopauth
+-		-$(REMOVE) $@ zpopauth
+-		-chmod u-s zpopauth
+ 		$(CP) xpopauth $@
+ 		-@chmod $(PGMPROT) $@
+ 		-$(CHOWN) $(POPUID) $@ && chmod u+s $@
+@@ -203,8 +199,6 @@
+ inst-popwrd:	$(LIBDIR)/popwrd
+ 
+ $(LIBDIR)/popwrd:	xpopwrd
+-		-$(REMOVE) $@ zpopwrd
+-		-chmod u-s zpopwrd
+ 		$(CP) xpopwrd $@
+ 		-chmod $(PGMPROT) $@
+ 		-$(CHOWN) $(POPUID) $@ && chmod u+s $@
+@@ -226,7 +220,6 @@
+ inst-smtpd:	$(ETCDIR)/smtpd
+ 
+ $(ETCDIR)/smtpd:	xsmtpd
+-		-$(REMOVE) $@ zsmtpd
+ 		$(CP) xsmtpd $@
+ 		-chmod 700 $@
+ 		-@ls -l $@
+diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/uip mh-6.8.4-JP-3.05/conf/makefiles/uip
+--- mh-6.8.4-JP-3.05.orig/conf/makefiles/uip	2001-05-30 23:57:47.000000000 +0900
++++ mh-6.8.4-JP-3.05/conf/makefiles/uip	2018-12-31 09:05:50.000000000 +0900
+@@ -140,7 +140,7 @@
+ LD	=	LD_LIBRARY_PATH=../sbr @(MHCOMPILER)
+ @END: FBSDSHLIB
+ @BEGIN: GELFSHLIB
+-LD	=	@(MHCOMPILER) -L../sbr
++LD	=	@(MHCOMPILER) -L../sbr -L../mts -L../zotnet
+ @END: GELFSHLIB
+ @END: SHAREDLIB
+ @BEGIN: OPTIM
+@@ -166,6 +166,10 @@
+ @BEGIN: SUN4SHLIB
+ 		-Bdynamic \
+ @END: SUN4SHLIB
++@BEGIN: GELFSHLIB
++		@(SLDFLAG) -lmh$(SLIBVER) -lmts -lzot
++IGNORED_LDLIBES	= \
++@END: GELFSHLIB
+ 		@(SLDFLAG) -lmh$(SLIBVER) ../mts/libmts.a  ../zotnet/libzot.a
+ LDLIBS	=	$(LDLIBES) ../config/version.o $(LDOPTLIB)
+ LDLIBS_POST =	$(LDLIBES) ../config/version.o $(LDOPTLIB_POST)
+@@ -305,7 +309,6 @@
+ inst-ali:	$(BINDIR)/ali
+ 
+ $(BINDIR)/ali:	xali
+-		-$(REMOVE) $@ zali
+ 		$(CP) xali $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -322,7 +325,6 @@
+ inst-anno:	$(BINDIR)/anno
+ 
+ $(BINDIR)/anno:	xanno
+-		-$(REMOVE) $@ zanno
+ 		$(CP) xanno $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -339,7 +341,6 @@
+ inst-ap:	$(ETCDIR)/ap
+ 
+ $(ETCDIR)/ap:	xap
+-		-$(REMOVE) $@ zap
+ 		$(CP) xap $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -356,8 +357,6 @@
+ inst-bbc:	$(BINDIR)/bbc
+ 
+ $(BINDIR)/bbc:	xbbc
+-		-$(REMOVE) $@ zbbc
+-		-chmod u-s zbbc
+ 		$(CP) xbbc $@
+ 		-@chmod $(PGMPROT) $@
+ @BEGIN: BPOP
+@@ -387,8 +386,6 @@
+ inst-bbl:	$(BINDIR)/bbl
+ 
+ $(BINDIR)/bbl:	xbbl
+-		-$(REMOVE) $@ zbbl
+-		-chmod u-s zbbl
+ 		$(CP) xbbl $@
+ 		-chmod $(PGMPROT) $@
+ 		-$(CHOWN) $(BBUID) $@ && chmod u+s $@
+@@ -406,7 +403,6 @@
+ inst-burst:	$(BINDIR)/burst
+ 
+ $(BINDIR)/burst:	xburst
+-		-$(REMOVE) $@ zburst
+ 		$(CP) xburst $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -423,7 +419,6 @@
+ inst-cipher:	$(BINDIR)/cipher
+ 
+ $(BINDIR)/cipher:	xcipher
+-		-$(REMOVE) $@ zcipher
+ 		$(CP) xcipher $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -440,7 +435,6 @@
+ inst-comp:	$(BINDIR)/comp
+ 
+ $(BINDIR)/comp:	xcomp
+-		-$(REMOVE) $@ zcomp
+ 		$(CP) xcomp $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $(BINDIR)/comp
+@@ -460,7 +454,6 @@
+ inst-conflict:	$(ETCDIR)/conflict
+ 
+ $(ETCDIR)/conflict:	xconflict
+-		-$(REMOVE) $@ zconflict
+ 		$(CP) xconflict $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -477,7 +470,6 @@
+ inst-decipher:	$(BINDIR)/decipher
+ 
+ $(BINDIR)/decipher:	xdecipher
+-		-$(REMOVE) $@ zdecipher
+ 		$(CP) xdecipher $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -494,7 +486,6 @@
+ inst-dist:	$(BINDIR)/dist
+ 
+ $(BINDIR)/dist:	xdist
+-		-$(REMOVE) $@ zdist
+ 		$(CP) xdist $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -514,7 +505,6 @@
+ inst-dp:	$(ETCDIR)/dp
+ 
+ $(ETCDIR)/dp:	xdp
+-		-$(REMOVE) $@ zdp
+ 		$(CP) xdp $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $(ETCDIR)/dp
+@@ -531,7 +521,6 @@
+ inst-fmtdump:	$(ETCDIR)/fmtdump
+ 
+ $(ETCDIR)/fmtdump:	xfmtdump
+-		-$(REMOVE) $@ zfmtdump
+ 		cp xfmtdump $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -549,7 +538,6 @@
+ inst-folder:	$(BINDIR)/folder
+ 
+ $(BINDIR)/folder:	xfolder
+-		-$(REMOVE) $@ zfolder
+ 		$(CP) xfolder $@
+ 		-@chmod $(PGMPROT) $@
+ 		rm -f $(BINDIR)/folders
+@@ -569,7 +557,6 @@
+ inst-forw:	$(BINDIR)/forw
+ 
+ $(BINDIR)/forw:	xforw
+-		-$(REMOVE) $@ zforw
+ 		$(CP) xforw $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -589,9 +576,6 @@
+ inst-inc:	$(BINDIR)/inc
+ 
+ $(BINDIR)/inc:	xinc
+-		-$(REMOVE) $@ zinc
+-		-chmod u-s zinc
+-		-chmod g-s zinc
+ 		$(CP) xinc $@
+ 		-@chmod $(PGMPROT) $@
+ @BEGIN: MAILGROUP
+@@ -620,7 +604,6 @@
+ inst-install-mh:	$(ETCDIR)/install-mh
+ 
+ $(ETCDIR)/install-mh:	xinstall-mh
+-		-$(REMOVE) $@ zinstall-mh
+ 		$(CP) xinstall-mh $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -637,7 +620,6 @@
+ inst-kdsc:	$(ETCDIR)/kdsc
+ 
+ $(ETCDIR)/kdsc:	xkdsc
+-		-$(REMOVE) $@ zkdsc
+ 		$(CP) xkdsc $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -654,7 +636,6 @@
+ inst-mark:	$(BINDIR)/mark
+ 
+ $(BINDIR)/mark:	xmark
+-		-$(REMOVE) $@ zmark
+ 		$(CP) xmark $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -671,7 +652,6 @@
+ inst-mhl:	$(ETCDIR)/mhl
+ 
+ $(ETCDIR)/mhl:	xmhl
+-		-$(REMOVE) $@ zmhl
+ 		$(CP) xmhl $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -691,7 +671,6 @@
+ inst-mhmail:	$(BINDIR)/mhmail
+ 
+ $(BINDIR)/mhmail:	xmhmail
+-		-$(REMOVE) $@ zmhmail
+ 		$(CP) xmhmail $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -708,7 +687,6 @@
+ inst-mhn:	$(BINDIR)/mhn
+ 
+ $(BINDIR)/mhn:	xmhn
+-		-$(REMOVE) $@ zmhn
+ 		cp xmhn $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -726,8 +704,7 @@
+ inst-mhparam:	$(BINDIR)/mhparam
+ 
+ $(BINDIR)/mhparam:	xmhparam
+-		-$(REMOVE) $@ zmhparam
+-		cp xmhparam $@
++		$(CP) xmhparam $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -743,7 +720,6 @@
+ inst-mhpath:	$(BINDIR)/mhpath
+ 
+ $(BINDIR)/mhpath:	xmhpath
+-		-$(REMOVE) $@ zmhpath
+ 		$(CP) xmhpath $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -760,8 +736,6 @@
+ inst-msgchk:	$(BINDIR)/msgchk
+ 
+ $(BINDIR)/msgchk:	xmsgchk
+-		-$(REMOVE) $@ zmsgchk
+-		-chmod u-s zmsgchk
+ 		$(CP) xmsgchk $@
+ 		-@chmod $(PGMPROT) $@
+ @BEGIN: RPOP
+@@ -783,7 +757,6 @@
+ inst-msh:	$(BINDIR)/msh
+ 
+ $(BINDIR)/msh:	xmsh
+-		-$(REMOVE) $@ zmsh
+ 		$(CP) xmsh $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -810,7 +783,6 @@
+ inst-packf:	$(BINDIR)/packf
+ 
+ $(BINDIR)/packf:	xpackf
+-		-$(REMOVE) $@ zpackf
+ 		$(CP) xpackf $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -828,7 +800,6 @@
+ inst-pgped:	$(BINDIR)/pgped
+ 
+ $(BINDIR)/pgped:	xpgped
+-		-$(REMOVE) $@ zpgped
+ 		$(CP) xpgped $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -845,7 +816,6 @@
+ inst-pgpshow:	$(BINDIR)/pgpshow
+ 
+ $(BINDIR)/pgpshow:	xpgpshow
+-		-$(REMOVE) $@ zpgpshow
+ 		$(CP) xpgpshow $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -863,7 +833,6 @@
+ inst-pick:	$(BINDIR)/pick
+ 
+ $(BINDIR)/pick:	xpick
+-		-$(REMOVE) $@ zpick
+ 		$(CP) xpick $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -880,8 +849,7 @@
+ inst-popi:	$(BINDIR)/popi
+ 
+ $(BINDIR)/popi:	xpopi
+-		-$(REMOVE) $@ zpopi
+-		cp xpopi $@
++		$(CP) xpopi $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+ 		-@echo ""
+@@ -898,8 +866,6 @@
+ inst-post:	$(ETCDIR)/post
+ 
+ $(ETCDIR)/post:	xpost
+-		-$(REMOVE) $@ zpost
+-		-chmod u-s zpost
+ 		$(CP) xpost $@
+ 		-@chmod $(PGMPROT) $@
+ @BEGIN: MHMTS
+@@ -923,7 +889,6 @@
+ inst-prompter:	$(BINDIR)/prompter
+ 
+ $(BINDIR)/prompter:	xprompter
+-		-$(REMOVE) $@ zprompter
+ 		$(CP) xprompter $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -940,7 +905,6 @@
+ inst-rcvdist:	$(ETCDIR)/rcvdist
+ 
+ $(ETCDIR)/rcvdist:	xrcvdist
+-		-$(REMOVE) $@ zrcvdist
+ 		$(CP) xrcvdist $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -957,7 +921,6 @@
+ inst-rcvpack:	$(ETCDIR)/rcvpack
+ 
+ $(ETCDIR)/rcvpack:	xrcvpack
+-		-$(REMOVE) $@ zrcvpack
+ 		$(CP) xrcvpack $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -974,7 +937,6 @@
+ inst-rcvstore:	$(ETCDIR)/rcvstore
+ 
+ $(ETCDIR)/rcvstore:	xrcvstore
+-		-$(REMOVE) $@ zrcvstore
+ 		$(CP) xrcvstore $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -991,8 +953,6 @@
+ inst-rcvtty:	$(ETCDIR)/rcvtty
+ 
+ $(ETCDIR)/rcvtty:	xrcvtty
+-		-$(REMOVE) $@ zrcvtty
+-		-chmod g-s zrcvtty
+ 		$(CP) xrcvtty $@
+ 		-@chmod $(PGMPROT) $@
+ @BEGIN: BSD43
+@@ -1025,7 +985,6 @@
+ inst-refile:	$(BINDIR)/refile
+ 
+ $(BINDIR)/refile:	xrefile
+-		-$(REMOVE) $@ zrefile
+ 		$(CP) xrefile $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -1042,7 +1001,6 @@
+ inst-repl:	$(BINDIR)/repl
+ 
+ $(BINDIR)/repl:	xrepl
+-		-$(REMOVE) $@ zrepl
+ 		$(CP) xrepl $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -1062,8 +1020,6 @@
+ inst-rmail:	/bin/rmail
+ 
+ /bin/rmail:	xrmail
+-		-$(REMOVE) $@ zrmail
+-		-chmod u-s zrmail
+ 		$(CP) xrmail $@
+ 		-@chmod $(PGMPROT) $@
+ 		-$(CHOWN) root $@
+@@ -1082,7 +1038,6 @@
+ inst-rmf:	$(BINDIR)/rmf
+ 
+ $(BINDIR)/rmf:	xrmf
+-		-$(REMOVE) $@ zrmf
+ 		$(CP) xrmf $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -1099,7 +1054,6 @@
+ inst-rmm:	$(BINDIR)/rmm
+ 
+ $(BINDIR)/rmm:	xrmm
+-		-$(REMOVE) $@ zrmm
+ 		$(CP) xrmm $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -1116,7 +1070,6 @@
+ inst-scan:	$(BINDIR)/scan
+ 
+ $(BINDIR)/scan:	xscan
+-		-$(REMOVE) $@ zscan
+ 		$(CP) xscan $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -1136,7 +1089,6 @@
+ inst-send:	$(BINDIR)/send
+ 
+ $(BINDIR)/send:	xsend
+-		-$(REMOVE) $@ zsend
+ 		$(CP) xsend $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -1158,7 +1110,6 @@
+ inst-show:	$(BINDIR)/show
+ 
+ $(BINDIR)/show:	xshow
+-		-$(REMOVE) $@ zshow
+ 		$(CP) xshow $@
+ 		-@chmod $(PGMPROT) $@
+ 		rm -f $(BINDIR)/next
+@@ -1184,8 +1135,6 @@
+ inst-sbboards:	$(SBBOARDS)
+ 
+ $(SBBOARDS):	xsbboards
+-		-$(REMOVE) $@ zsbboards
+-		-chmod u-s zsbboards
+ 		$(CP) xsbboards $@
+ 		-chmod $(PGMPROT) $@
+ @BEGIN: SENDMTS
+@@ -1205,7 +1154,6 @@
+ inst-slocal:	$(ETCDIR)/slocal
+ 
+ $(ETCDIR)/slocal:	xslocal
+-		-$(REMOVE) $@ zslocal
+ 		$(CP) xslocal $@
+ 		-chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -1222,7 +1170,6 @@
+ inst-sortm:	$(BINDIR)/sortm
+ 
+ $(BINDIR)/sortm:	xsortm
+-		-$(REMOVE) $@ zsortm
+ 		$(CP) xsortm $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -1239,8 +1186,6 @@
+ inst-spop:	$(ETCDIR)/spop
+ 
+ $(ETCDIR)/spop:	xspop
+-		-$(REMOVE) $@ zspop
+-		-chmod u-s zspop
+ 		$(CP) xspop $@
+ 		-chmod $(PGMPROT) $@
+ 		-$(CHOWN) $(POPUID) $@ && chmod u+s $@
+@@ -1262,7 +1207,6 @@
+ inst-spost:	$(ETCDIR)/spost
+ 
+ $(ETCDIR)/spost:	xspost
+-		-$(REMOVE) $@ zspost
+ 		$(CP) xspost $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -1281,8 +1225,7 @@
+ inst-sendmail:	$(ETCDIR)/sendmail
+ 
+ $(ETCDIR)/sendmail:	xsendmail
+-		-$(REMOVE) $@ zsendmail
+-		cp xsendmail $@
++		$(CP) xsendmail $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+ 		-@echo "Don't forget to: ln -s @(MHSENDMAILPATH) $@"
+@@ -1299,7 +1242,6 @@
+ inst-tma:	$(BINDIR)/tma
+ 
+ $(BINDIR)/tma:	xtma
+-		-$(REMOVE) $@ ztma
+ 		$(CP) xtma $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -1316,7 +1258,6 @@
+ inst-umhook:	$(BINDIR)/umhook
+ 
+ $(BINDIR)/umhook:	xumhook
+-		-$(REMOVE) $@ zumhook
+ 		$(CP) xumhook $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -1333,7 +1274,6 @@
+ inst-vmh:	$(BINDIR)/vmh
+ 
+ $(BINDIR)/vmh:	xvmh
+-		-$(REMOVE) $@ zvmh
+ 		$(CP) xvmh $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -1354,7 +1294,6 @@
+ inst-whatnow:	$(BINDIR)/whatnow
+ 
+ $(BINDIR)/whatnow:	xwhatnow
+-		-$(REMOVE) $@ zwhatnow
+ 		$(CP) xwhatnow $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -1374,7 +1313,6 @@
+ inst-whom:	$(BINDIR)/whom
+ 
+ $(BINDIR)/whom:	xwhom
+-		-$(REMOVE) $@ zwhom
+ 		$(CP) xwhom $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -1391,7 +1329,6 @@
+ inst-wmh:	$(BINDIR)/wmh
+ 
+ $(BINDIR)/wmh:	xwmh
+-		-$(REMOVE) $@ zwmh
+ 		$(CP) xwmh $@
+ 		-@chmod $(PGMPROT) $@
+ 		-@ls -l $@
+@@ -1438,7 +1375,6 @@
+ #	inst-pickle:	$(BINDIR)/pickle
+ #	
+ #	$(BINDIR)/pickle:	xpickle
+-#			-$(REMOVE) $@ zpickle
+ #			cp xpickle $@
+ #			-@chmod $(PGMPROT) $@
+ #			-@ls -l $@
+diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/zotnet/mf mh-6.8.4-JP-3.05/conf/makefiles/zotnet/mf
+--- mh-6.8.4-JP-3.05.orig/conf/makefiles/zotnet/mf	2001-06-11 10:26:24.000000000 +0900
++++ mh-6.8.4-JP-3.05/conf/makefiles/zotnet/mf	2018-12-31 09:05:50.000000000 +0900
+@@ -20,6 +20,8 @@
+ @END: MHMTS
+ REMOVE	=	@(MHREMOVE)
+ 
++CP      =       @(CP)
++
+ CC      =	@(MHCOMPILER)
+ CPP     =	@(MHCPP)
+ @BEGIN: OPTIM
+@@ -71,8 +73,7 @@
+ inst-uminc:	$(ETCDIR)/uminc
+ 
+ $(ETCDIR)/uminc:	xuminc
+-		-$(REMOVE) $(ETCDIR)/uminc zuminc
+-		cp xuminc $@
++		$(CP) xuminc $@
+ 		-@ls -l $@
+ 		-@echo ""
+ 
+@@ -89,8 +90,7 @@
+ inst-umsift:	$(ETCDIR)/umsift
+ 
+ $(ETCDIR)/umsift:	xumsift
+-		-$(REMOVE) $(ETCDIR)/umsift zumsift
+-		cp xumsift $@
++		$(CP) xumsift $@
+ 		-@ls -l $@
+ 		-@echo ""
+ 
+@@ -114,8 +114,7 @@
+ inst-muinc:	$(ETCDIR)/muinc
+ 
+ $(ETCDIR)/muinc:	xmuinc
+-		-$(REMOVE) $(ETCDIR)/muinc zmuinc
+-		cp xmuinc $@
++		$(CP) xmuinc $@
+ 		-@ls -l $@
+ 		-@echo ""
+ 
+@@ -132,8 +131,7 @@
+ inst-musift:	$(ETCDIR)/musift
+ 
+ $(ETCDIR)/musift:	xmusift
+-		-$(REMOVE) $(ETCDIR)/musift zmusift
+-		cp xmusift $@
++		$(CP) xmusift $@
+ 		-@ls -l $@
+ 		-@echo ""
+ 
+diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/zotnet/mts mh-6.8.4-JP-3.05/conf/makefiles/zotnet/mts
+--- mh-6.8.4-JP-3.05.orig/conf/makefiles/zotnet/mts	2001-06-11 10:26:35.000000000 +0900
++++ mh-6.8.4-JP-3.05/conf/makefiles/zotnet/mts	2018-12-31 09:05:50.000000000 +0900
+@@ -14,6 +14,8 @@
+ CHOWN	=	@(MHCHOWNPATH)
+ REMOVE	=	@(MHREMOVE)
+ 
++CP      =       @(CP)
++
+ CC      =	@(MHCOMPILER)
+ CPP     =	@(MHCPP)
+ @BEGIN: OPTIM
+@@ -94,8 +96,7 @@
+ 
+ $(ETCDIR)/mtstailor:	mtstailor
+ 		-@if [ ! -f $@ ]; then \
+-		    $(REMOVE) $@ zmtstailor; \
+-		    cp mtstailor $@; \
++		    $(CP) mtstailor $@; \
+ 		else \
+ 		    echo "Will not overwrite existing $@"; \
+ 		fi
+diff -ruN mh-6.8.4-JP-3.05.orig/conf/mhconfig.c mh-6.8.4-JP-3.05/conf/mhconfig.c
+--- mh-6.8.4-JP-3.05.orig/conf/mhconfig.c	2001-05-30 00:04:36.000000000 +0900
++++ mh-6.8.4-JP-3.05/conf/mhconfig.c	2018-12-31 09:05:50.000000000 +0900
+@@ -6,6 +6,8 @@
+ 
+ #include <ctype.h>
+ #include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
+ #ifdef	hpux
+ #define	SYS5
+ #endif
+@@ -16,7 +18,6 @@
+ 
+ static void insopt(), mkopts();
+ 
+-extern	char *strcpy(), *malloc(), *index(), *rindex();
+ #ifdef	notdef
+ extern	char *sprintf();	/* rely on stdio.h to declare this */
+ #endif
+@@ -266,9 +267,10 @@
+ 
+ 
+ static do_sed(), do_sedfile(), do_files(), do_doc(), do_make();
+-static shell(), arginit(), add_option(), trim();
++static shell(), arginit(), add_option();
++static void trim(char *);
+ 
+-static char   *stradd (), *strdup (), *tail ();
++static char   *stradd (), *tail ();
+ 
+ /*  */
+ 
+@@ -959,8 +961,7 @@
+ 
+ /*  */
+ 
+-static  trim (s)
+-char   *s;
++static  void trim(char *s)
+ {
+     char   *p;
+ 
+@@ -1002,7 +1003,7 @@
+     return p;
+ }
+ 
+-
++#if 0
+ static char *strdup (s)
+ char   *s;
+ {
+@@ -1014,6 +1015,7 @@
+     (void) strcpy (p, s);
+     return p;
+ }
++#endif
+ 
+ /*  */
+ 
+diff -ruN mh-6.8.4-JP-3.05.orig/configure mh-6.8.4-JP-3.05/configure
+--- mh-6.8.4-JP-3.05.orig/configure	2001-06-15 01:41:51.000000000 +0900
++++ mh-6.8.4-JP-3.05/configure	2018-12-31 09:05:50.000000000 +0900
+@@ -1393,18 +1393,10 @@
+     SOLARIS=`echo "$host_os" | $AWK -F. '{printf "SOLARIS=2%02d%02d",$2,$3}'`
+     SETEUID=`echo "$host_os" | $AWK -F. '$2>=3{printf "SETEUID"}'`
+     ;;
+-  freebsd* | netbsd*)
++  freebsd* | netbsd* | dragonfly*)
+     if test "$use_sharedlib" != no
+     then
+       sharedlib=fbsd
+-      if test -x /usr/bin/objformat
+-      then
+-	if test x`/usr/bin/objformat` = xelf
+-	then
+-	  sharedlib=gnuelf
+-	  make_mhconfig='CFLAGS="-O -DMHSLIB_NOMINVER"'
+-	fi
+-      fi
+       echo __ELF__ | $CC -E - | grep -q __ELF__ || sharedlib=gnuelf
+       slflags="-fpic"
+       slibdir=$libdir
+@@ -1474,7 +1466,7 @@
+   darwin*)
+     if test x"$CFLAGS_bak" = x
+     then
+-      CFLAGS="-traditional $CFLAGS"
++      CFLAGS="-no-cpp-precomp $CFLAGS"
+     fi
+     if test x"$LDFLAGS_bak" = x -a "$debug" != on
+     then    
+@@ -3797,6 +3789,12 @@
+   fi
+ fi
+ 
++TERMINFO=
++if test -f /usr/share/misc/terminfo.db -o -f /usr/share/misc/terminfo.cdb
++then
++  TERMINFO=TERMINFO
++fi
++
+ if test "$ac_cv_func_lockf" = yes -a x"$BSD44" = x
+ then
+   LOCKF=LOCKF
+@@ -4410,6 +4408,7 @@
+ s%@mailgroup@%$mailgroup%g
+ s%@DBMPWD@%$DBMPWD%g
+ s%@SETMG@%$SETMG%g
++s%@TERMINFO@%$TERMINFO%g
+ s%@JAPAN@%$JAPAN%g
+ 
+ CEOF
+diff -ruN mh-6.8.4-JP-3.05.orig/h/md5.h mh-6.8.4-JP-3.05/h/md5.h
+--- mh-6.8.4-JP-3.05.orig/h/md5.h	1999-02-09 20:30:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/h/md5.h	2018-12-31 09:05:50.000000000 +0900
+@@ -13,6 +13,8 @@
+ #define PROTOTYPES 0
+ #endif
+ 
++#include <inttypes.h>
++
+ /* POINTER defines a generic pointer type */
+ typedef unsigned char *POINTER;
+ 
+@@ -20,11 +22,7 @@
+ typedef unsigned short int UINT2;
+ 
+ /* UINT4 defines a four byte word */
+-#ifndef __alpha
+-typedef unsigned long int UINT4;
+-#else
+-typedef unsigned int UINT4;
+-#endif
++typedef uint32_t UINT4;
+ 
+ /* PROTO_LIST is defined depending on how PROTOTYPES is defined above.
+ If using PROTOTYPES, then PROTO_LIST returns the list, otherwise it
+diff -ruN mh-6.8.4-JP-3.05.orig/h/mh.h mh-6.8.4-JP-3.05/h/mh.h
+--- mh-6.8.4-JP-3.05.orig/h/mh.h	1998-12-02 02:05:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/h/mh.h	2018-12-31 09:05:50.000000000 +0900
+@@ -253,7 +253,7 @@
+ int     atooi ();
+ char  **brkstring ();
+ void	closefds ();
+-char   *concat ();
++char   *concat (char *first, ...);
+ char   *copy ();
+ char  **copyip ();
+ void	cpydata ();
+diff -ruN mh-6.8.4-JP-3.05.orig/h/strings.h mh-6.8.4-JP-3.05/h/strings.h
+--- mh-6.8.4-JP-3.05.orig/h/strings.h	2001-04-02 19:35:24.000000000 +0900
++++ mh-6.8.4-JP-3.05/h/strings.h	2018-12-31 09:05:50.000000000 +0900
+@@ -35,7 +35,7 @@
+ char   *index ();
+ char   *mktemp ();
+ char   *rindex ();
+-#ifndef	SPRINTFTYPE
++#if !defined(SPRINTFTYPE) && !defined(linux)
+ #ifndef	ncr		/* NCR compiler complains about re-declaration */
+ char   *sprintf ();		/* I guess this is the new standard */
+ #endif
+@@ -47,7 +47,7 @@
+ char   *strcat ();
+ int     strcmp ();
+ char   *strcpy ();
+-#ifndef hpux
++#if !defined(hpux) && !defined(linux)
+ int	strlen ();
+ #endif
+ char   *strncat ();
+@@ -55,7 +55,7 @@
+ char   *strncpy ();
+ #endif
+ 
+-#if !defined(SVR4) && !defined(__386BSD__) && !defined(BSD44)
++#if !defined(SVR4) && !defined(__386BSD__) && !defined(BSD44) && !defined(linux)
+ char   *getenv ();
+ char   *calloc (), *malloc (), *realloc ();
+ #endif	/* SVR4 */
+diff -ruN mh-6.8.4-JP-3.05.orig/miscellany/less-177/os.c mh-6.8.4-JP-3.05/miscellany/less-177/os.c
+--- mh-6.8.4-JP-3.05.orig/miscellany/less-177/os.c	1993-12-01 13:00:32.000000000 +0900
++++ mh-6.8.4-JP-3.05/miscellany/less-177/os.c	2018-12-31 09:05:50.000000000 +0900
+@@ -13,6 +13,7 @@
+ #include <stdio.h>
+ #include <signal.h>
+ #include <setjmp.h>
++#include <errno.h>
+ #include "less.h"
+ 
+ /*
+@@ -98,7 +99,6 @@
+ 
+ extern char *sys_errlist[];
+ extern int sys_nerr;
+-extern int errno;
+ 
+ 	public char *
+ errno_message(filename)
+diff -ruN mh-6.8.4-JP-3.05.orig/sbr/addrsbr.c mh-6.8.4-JP-3.05/sbr/addrsbr.c
+--- mh-6.8.4-JP-3.05.orig/sbr/addrsbr.c	2001-04-03 01:04:38.000000000 +0900
++++ mh-6.8.4-JP-3.05/sbr/addrsbr.c	2018-12-31 09:05:50.000000000 +0900
+@@ -336,7 +336,7 @@
+ #endif /* not BERK */
+     register struct mailname *mp;
+ 
+-    if (err && err[0]) {
++    if (err != NULL && err[0]) {
+ 	if (eresult)
+ 	    (void) strcpy (eresult, err);
+ 	else
+diff -ruN mh-6.8.4-JP-3.05.orig/sbr/advertise.c mh-6.8.4-JP-3.05/sbr/advertise.c
+--- mh-6.8.4-JP-3.05.orig/sbr/advertise.c	2001-04-03 04:27:52.000000000 +0900
++++ mh-6.8.4-JP-3.05/sbr/advertise.c	2018-12-31 09:05:50.000000000 +0900
+@@ -15,10 +15,7 @@
+    output...  More importantly though, it's a sexy syscall()...
+  */
+ 
+-#ifdef __CYGWIN32__
+ #include <errno.h>
+-#endif
+-extern int  errno;
+ #if !defined(BSD44) && !defined(__GNU_LIBRARY__)	/* in <stdio.h> */
+ extern int  sys_nerr;
+ extern char *sys_errlist[];
+diff -ruN mh-6.8.4-JP-3.05.orig/sbr/concat.c mh-6.8.4-JP-3.05/sbr/concat.c
+--- mh-6.8.4-JP-3.05.orig/sbr/concat.c	1993-12-01 13:01:21.000000000 +0900
++++ mh-6.8.4-JP-3.05/sbr/concat.c	2018-12-31 09:05:50.000000000 +0900
+@@ -2,34 +2,40 @@
+ 
+ #include "../h/mh.h"
+ #include <stdio.h>
+-#include <varargs.h>
++#include <stdarg.h>
+ 
+ 
+ /* VARARGS */
+ 
+-char   *concat (va_alist)
+-va_dcl
++char   *concat (char *first, ...)
+ {
+     register char  *cp,
+                    *dp,
+                    *sp;
+     register unsigned   len;
+-    register    va_list list;
++    va_list list;
+ 
+     len = 1;
+-    va_start (list); 
+-    while (cp = va_arg (list, char *))
+-	len += strlen (cp);
+-    va_end (list);
++    if (first) {
++	    len += strlen(first);
++	    va_start (list, first);
++	    while (cp = va_arg (list, char *))
++		    len += strlen (cp);
++	    va_end (list);
++    }
+ 
+     dp = sp = malloc (len);
+     if (dp == NULL)
+ 	adios (NULLCP, "unable to allocate string storage");
+ 
+-    va_start (list); 
+-    while (cp = va_arg (list, char *))
+-	sp = copy (cp, sp);
+-    va_end (list);
++    *sp = '\0';
++    if (first) {
++	    sp = copy (first, sp);
++	    va_start (list, first);
++	    while (cp = va_arg (list, char *))
++		    sp = copy (cp, sp);
++	    va_end (list);
++    }
+ 
+     return dp;
+ }
+diff -ruN mh-6.8.4-JP-3.05.orig/sbr/discard.c mh-6.8.4-JP-3.05/sbr/discard.c
+--- mh-6.8.4-JP-3.05.orig/sbr/discard.c	2001-06-13 23:16:24.000000000 +0900
++++ mh-6.8.4-JP-3.05/sbr/discard.c	2018-12-31 09:05:50.000000000 +0900
+@@ -61,7 +61,7 @@
+ #endif	/* SYS5 */
+ #endif	/* POSIX */
+ 
+-#ifdef _FSTDIO
++#if defined(_FSTDIO) || defined(__DragonFly__)
+     fpurge (io);
+ #else
+ #ifdef _STDIO_USES_IOSTREAM
+diff -ruN mh-6.8.4-JP-3.05.orig/sbr/formatsbr.c mh-6.8.4-JP-3.05/sbr/formatsbr.c
+--- mh-6.8.4-JP-3.05.orig/sbr/formatsbr.c	2001-04-03 01:12:40.000000000 +0900
++++ mh-6.8.4-JP-3.05/sbr/formatsbr.c	2018-12-31 09:05:50.000000000 +0900
+@@ -470,7 +470,7 @@
+ 	    || !(cp = index (mbox += idx + strlen (key), '/')))
+ 	return 0;
+ 
+-    (void) sprintf (buffer, "%*.*s", cp - mbox, cp - mbox, mbox);
++    (void) sprintf (buffer, "%*.*s", (int)(cp - mbox), (int)(cp - mbox), mbox);
+     return 1;
+ }
+ 
+@@ -652,7 +652,7 @@
+ 	case FT_LS_HDECODE:
+ 	    if (str) {
+ 		char *ep;
+-		if ((ep = malloc((unsigned)strlen(str)+1)) == NULL)
++		if ((ep = malloc((unsigned)strlen(str)*10+1)) == NULL)
+ 		    adios(NULLCP, "out of memory");
+ 		(void) exthdr_decode(str, ep);
+ 		(void) strncpy(buffer, ep, BUFSIZ);
+diff -ruN mh-6.8.4-JP-3.05.orig/sbr/llib-lmh mh-6.8.4-JP-3.05/sbr/llib-lmh
+--- mh-6.8.4-JP-3.05.orig/sbr/llib-lmh	1993-12-01 13:01:23.000000000 +0900
++++ mh-6.8.4-JP-3.05/sbr/llib-lmh	2018-12-31 09:05:50.000000000 +0900
+@@ -93,7 +93,7 @@
+ void	m_setseq(m) struct msgs *m; { m_setseq(m); }
+ void	m_setvis(m,s) struct msgs *m; { m_setvis(m,s); }
+ void	m_sync(m) struct msgs *m; { m_sync(m); }
+-char   *m_tmpfil(t) char *t; { return m_tmpfil (t); }
++char   *m_tmpfil(t, fd) char *t; int *fd; { return m_tmpfil (t, fd); }
+ void	m_unknown(f) FILE *f; { m_unknown(f); }
+ void	m_update() { m_update(); }
+ int     m_whatnow(e,n,u,f,a,d,m,t,i,c) struct msgs *m; char *e,*f,*a,*t,*c;
+diff -ruN mh-6.8.4-JP-3.05.orig/sbr/m_backup.c mh-6.8.4-JP-3.05/sbr/m_backup.c
+--- mh-6.8.4-JP-3.05.orig/sbr/m_backup.c	1993-12-01 13:01:23.000000000 +0900
++++ mh-6.8.4-JP-3.05/sbr/m_backup.c	2018-12-31 09:05:50.000000000 +0900
+@@ -13,7 +13,7 @@
+     if ((cp = r1bindex (file, '/')) == file)
+ 	(void) sprintf (buffer, "%s%s", SBACKUP, cp);
+     else
+-	(void) sprintf (buffer, "%.*s%s%s", cp - file, file, SBACKUP, cp);
++	(void) sprintf (buffer, "%.*s%s%s", (int)(cp - file), file, SBACKUP, cp);
+     (void) (unlink (buffer));
+ 
+     return buffer;
+diff -ruN mh-6.8.4-JP-3.05.orig/sbr/m_draft.c mh-6.8.4-JP-3.05/sbr/m_draft.c
+--- mh-6.8.4-JP-3.05.orig/sbr/m_draft.c	1993-12-01 13:01:23.000000000 +0900
++++ mh-6.8.4-JP-3.05/sbr/m_draft.c	2018-12-31 09:05:50.000000000 +0900
+@@ -10,9 +10,6 @@
+ #include <sys/stat.h>
+ 
+ 
+-extern int errno;
+-
+-
+ char   *m_draft (folder, msg, use, isdf)
+ register char  *folder,
+                *msg;
+diff -ruN mh-6.8.4-JP-3.05.orig/sbr/m_getdefs.c mh-6.8.4-JP-3.05/sbr/m_getdefs.c
+--- mh-6.8.4-JP-3.05.orig/sbr/m_getdefs.c	2001-04-05 01:05:15.000000000 +0900
++++ mh-6.8.4-JP-3.05/sbr/m_getdefs.c	2018-12-31 09:05:50.000000000 +0900
+@@ -13,9 +13,6 @@
+ #include <sys/stat.h>
+ #include <pwd.h>
+ 
+-
+-extern int errno;
+-
+ #ifndef __STDC__
+ #ifdef	SYS5
+ struct	passwd	*getpwuid ();
+diff -ruN mh-6.8.4-JP-3.05.orig/sbr/m_getfld.c mh-6.8.4-JP-3.05/sbr/m_getfld.c
+--- mh-6.8.4-JP-3.05.orig/sbr/m_getfld.c	2001-06-13 23:21:02.000000000 +0900
++++ mh-6.8.4-JP-3.05/sbr/m_getfld.c	2018-12-31 09:05:50.000000000 +0900
+@@ -186,6 +186,9 @@
+ #define	_cnt	_r		/* Retch */
+ #define	_filbuf	__srget		/* Puke */
+ #endif
++#ifdef __DragonFly__
++#define	_filbuf	__srget		/* Puke */
++#endif
+ 
+ /*  */
+ 
+@@ -302,6 +305,9 @@
+ 		bp = sp = (unsigned char *) iob->_IO_read_ptr - 1;
+ 		j = (cnt = ((long) iob->_IO_read_end - (long) iob->_IO_read_ptr) + 1) < i?
+ 		    cnt: i;
++#elif defined(__DragonFly__)
++		bp = sp = (unsigned char *) ((struct __FILE_public *)iob)->_p - 1;
++		j = (cnt = ((struct __FILE_public *)iob)->_r+1) < i ? cnt : i;
+ #else
+ 		bp = sp = (unsigned char *) iob->_ptr - 1;
+ 		j = (cnt = iob->_cnt+1) < i ? cnt : i;
+@@ -332,6 +338,9 @@
+ 		} else {
+ #ifdef _STDIO_USES_IOSTREAM
+ 		    iob->_IO_read_ptr = bp + 1;
++#elif defined(__DragonFly__)
++		    ((struct __FILE_public *)iob)->_p = bp + 1;
++		    ((struct __FILE_public *)iob)->_r = cnt - 1;
+ #else
+ 		    iob->_ptr = bp + 1;
+ 		    iob->_cnt = cnt - 1;
+@@ -377,6 +386,8 @@
+ #ifdef _STDIO_USES_IOSTREAM
+ 		cnt = (long) iob->_IO_read_end - (long) iob->_IO_read_ptr;
+ 		bp = (unsigned char *) --iob->_IO_read_ptr;
++#elif defined(__DragonFly__)
++		cnt = ((struct __FILE_public *)iob)->_r++; bp = (unsigned char *) --((struct __FILE_public *)iob)->_p;
+ #else
+ 		cnt = iob->_cnt++; bp = (unsigned char *) --iob->_ptr;
+ #endif
+@@ -390,6 +401,10 @@
+ 			j = ep - (unsigned char *) iob->_IO_read_ptr;
+ 			(void) bcopy( iob->_IO_read_ptr, cp, j);
+ 			iob->_IO_read_ptr = ep;
++#elif defined(__DragonFly__)
++			j = ep - (unsigned char *) ((struct __FILE_public *)iob)->_p;
++			(void) bcopy( ((struct __FILE_public *)iob)->_p, cp, j);
++			((struct __FILE_public *)iob)->_p = ep; ((struct __FILE_public *)iob)->_r -= j;
+ #else
+ 			j = ep - (unsigned char *) iob->_ptr;
+ 			(void) bcopy( iob->_ptr, cp, j);
+@@ -407,6 +422,9 @@
+ #ifdef _STDIO_USES_IOSTREAM
+ 		c += bp - (unsigned char *) iob->_IO_read_ptr;
+ 		(void) bcopy( iob->_IO_read_ptr, cp, c);
++#elif defined(__DragonFly__)
++		c += bp - (unsigned char *) ((struct __FILE_public *)iob)->_p;
++		(void) bcopy( ((struct __FILE_public *)iob)->_p, cp, c);
+ #else
+ 		c += bp - (unsigned char *) iob->_ptr;
+ 		(void) bcopy( iob->_ptr, cp, c);
+@@ -416,6 +434,8 @@
+ 		    /* the dest buffer is full */
+ #ifdef _STDIO_USES_IOSTREAM
+ 		    iob->_IO_read_ptr += c;
++#elif defined(__DragonFly__)
++		    ((struct __FILE_public *)iob)->_r -= c; ((struct __FILE_public *)iob)->_p += c;
+ #else
+ 		    iob->_cnt -= c; iob->_ptr += c;
+ #endif
+@@ -434,6 +454,8 @@
+ 		iob->_IO_read_ptr = iob->_IO_read_end;
+ 		c = __underflow((struct _IO_FILE *) iob);
+ 		iob->_IO_read_ptr++;   /* NOT automatic! */
++#elif defined(__DragonFly__)
++		*cp++ = j = *(((struct __FILE_public *)iob)->_p + c);
+ #else
+ 		*cp++ = j = *(iob->_ptr + c);
+ #ifdef FILBUF_ADJ
+@@ -467,6 +489,8 @@
+ 		    if (c != EOF)
+ #ifdef _STDIO_USES_IOSTREAM
+ 			--iob->_IO_read_ptr;
++#elif defined(__DragonFly__)
++			--((struct __FILE_public *)iob)->_p, ++((struct __FILE_public *)iob)->_r;
+ #else
+ 			--iob->_ptr, ++iob->_cnt;
+ #endif
+@@ -488,6 +512,8 @@
+ #ifdef _STDIO_USES_IOSTREAM
+ 	    bp = (unsigned char *) --iob->_IO_read_ptr;
+ 	    cnt = (long) iob->_IO_read_end - (long) iob->_IO_read_ptr;
++#elif defined(__DragonFly__)
++	    bp = (unsigned char *) --((struct __FILE_public *)iob)->_p; cnt = ++((struct __FILE_public *)iob)->_r;
+ #else
+ 	    bp = (unsigned char *) --iob->_ptr; cnt = ++iob->_cnt;
+ #endif
+@@ -549,6 +575,9 @@
+ 	    (void) bcopy( bp, buf, c );
+ #ifdef _STDIO_USES_IOSTREAM
+ 	    iob->_IO_read_ptr += c;
++#elif defined(__DragonFly__)
++	    ((struct __FILE_public *)iob)->_r -= c;
++	    ((struct __FILE_public *)iob)->_p += c;
+ #else
+ 	    iob->_cnt -= c;
+ 	    iob->_ptr += c;
+diff -ruN mh-6.8.4-JP-3.05.orig/sbr/m_scratch.c mh-6.8.4-JP-3.05/sbr/m_scratch.c
+--- mh-6.8.4-JP-3.05.orig/sbr/m_scratch.c	1993-12-01 13:01:24.000000000 +0900
++++ mh-6.8.4-JP-3.05/sbr/m_scratch.c	2018-12-31 09:05:50.000000000 +0900
+@@ -17,7 +17,7 @@
+     if ((cp = r1bindex (file, '/')) == file)
+ 	(void) strcpy (buffer, tmpfil);
+     else
+-	(void) sprintf (buffer, "%.*s%s", cp - file, file, tmpfil);
++	(void) sprintf (buffer, "%.*s%s", (int)(cp - file), file, tmpfil);
+     (void) unlink (buffer);
+ 
+     return buffer;
+diff -ruN mh-6.8.4-JP-3.05.orig/sbr/m_tmpfil.c mh-6.8.4-JP-3.05/sbr/m_tmpfil.c
+--- mh-6.8.4-JP-3.05.orig/sbr/m_tmpfil.c	1993-12-01 13:01:25.000000000 +0900
++++ mh-6.8.4-JP-3.05/sbr/m_tmpfil.c	2018-12-31 09:05:50.000000000 +0900
+@@ -2,15 +2,17 @@
+ 
+ #include "../h/mh.h"
+ #include <stdio.h>
++#include <stdlib.h>
+ 
+ 
+-char   *m_tmpfil (template)
++char   *m_tmpfil (template, fd)
+ register char  *template;
++int *fd;
+ {
+     static char tmpfil[BUFSIZ];
+ 
+     (void) sprintf (tmpfil, "/tmp/%sXXXXXX", template);
+-    (void) unlink (mktemp (tmpfil));
++    *fd = mkstemp(tmpfil);
+ 
+     return tmpfil;
+ }
+diff -ruN mh-6.8.4-JP-3.05.orig/sbr/m_update.c mh-6.8.4-JP-3.05/sbr/m_update.c
+--- mh-6.8.4-JP-3.05.orig/sbr/m_update.c	1998-04-24 06:02:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/sbr/m_update.c	2018-12-31 09:05:50.000000000 +0900
+@@ -5,6 +5,7 @@
+ 
+ #include "../h/mh.h"
+ #include <stdio.h>
++#include <stdlib.h>
+ #include <signal.h>
+ #ifndef	sigmask
+ #define	sigmask(s)	(1 << ((s) - 1))
+diff -ruN mh-6.8.4-JP-3.05.orig/sbr/makedir.c mh-6.8.4-JP-3.05/sbr/makedir.c
+--- mh-6.8.4-JP-3.05.orig/sbr/makedir.c	2001-04-02 19:42:20.000000000 +0900
++++ mh-6.8.4-JP-3.05/sbr/makedir.c	2018-12-31 09:05:50.000000000 +0900
+@@ -14,10 +14,11 @@
+ #include "../h/mh.h"
+ #include <stdio.h>
+ 
++#include <errno.h>
++
+ #if defined (BSD42) || defined(SVR4) || \
+   defined (hpux) || defined(sgi) || defined(__osf__) || defined(ncr) || \
+   defined (_AIX) || defined(AUX) || defined(linux) || defined(__CYGWIN32__)
+-#include <errno.h>
+ #include <sys/param.h>
+ #include <sys/file.h>
+ #endif /* BSD42 ... */
+@@ -29,8 +30,6 @@
+ #include <unistd.h>
+ #endif
+ 
+-extern int  errno;
+-	
+ makedir (dir)
+ register char *dir;
+ {
+diff -ruN mh-6.8.4-JP-3.05.orig/sbr/ml_exthdr.c mh-6.8.4-JP-3.05/sbr/ml_exthdr.c
+--- mh-6.8.4-JP-3.05.orig/sbr/ml_exthdr.c	1999-02-09 20:30:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/sbr/ml_exthdr.c	2018-12-31 09:05:50.000000000 +0900
+@@ -7,6 +7,10 @@
+ #include "../h/mh.h"
+ #include <stdio.h>
+ #include <ctype.h>
++#ifdef WITH_ICONV
++#include <iconv.h>
++#include <errno.h>
++#endif
+ 
+ #define MAXWIDTH 75
+ 
+@@ -697,6 +701,11 @@
+ {
+     char *ip, *cp, *tmp, buf[BUFSIZ], encode;
+     int  result;
++#ifdef WITH_ICONV
++    char encode_buf[BUFSIZ];
++    int	utf8_flag = 0;
++    const char *iconv_encoding = NULL;
++#endif /* WITH_ICONV */
+ 
+ #ifdef JAPAN
+     if (japan_environ)
+@@ -722,8 +731,24 @@
+ 	    if (*tmp++ != '-') return(-1);
+ 	}
+     }
++#ifdef WITH_ICONV
++    if (!uleq(buf, "us-ascii") && (!mm_charset || !uleq(buf, mm_charset))) {
++	if (uleq(buf, "utf-8")) {
++	    utf8_flag = 1;
++	    iconv_encoding = "utf-8";
++	}
++	else if (uleq(buf, "shift_jis") || uleq(buf, "cp932")) {
++	    iconv_encoding = "cp932";
++	}
++	else {
++	    strcpy(encode_buf, buf);
++	    iconv_encoding = encode_buf;
++	}
++    }
++#else /* not WITH_ICONV */
+     if (!uleq(buf, "us-ascii") && (!mm_charset || !uleq(buf, mm_charset)))
+ 	return(-1);
++#endif /* WITH_ICONV */
+     ip = cp + 1;
+     if (ip > ep) return(-1);
+     if ((*ip == 'B') || (*ip == 'b'))
+@@ -745,6 +770,64 @@
+     } else {
+ 	(void) qpr_to_bin(buf, op);
+     }
++#ifdef WITH_ICONV
++    if (iconv_encoding) {
++	char *inbuf, *outbuf;
++	size_t inbuf_left, outbuf_left;
++	iconv_t conv;
++	do {
++ 	    if (mm_charset) {
++		char m[BUFSIZ];
++		strlcpy(m, mm_charset, BUFSIZ);
++		strlcat(m, "//TRANSLIT", BUFSIZ);
++		conv = iconv_open(m, iconv_encoding);
++	    }
++	    else
++		conv = iconv_open("ascii//TRANSLIT", iconv_encoding);
++	    if (conv == (iconv_t)-1 && uleq(iconv_encoding, "cp932")) {
++		iconv_encoding = "shift_jis"; /* FALLBACK */
++		continue;
++	    }
++	} while (0);
++	if (conv == (iconv_t)-1) return(-1);
++	inbuf = op; inbuf_left = strlen(op);
++	outbuf = buf; outbuf_left = BUFSIZ - 1;
++#if 1
++	iconv(conv, &inbuf, &inbuf_left, &outbuf, &outbuf_left);
++#else
++	errno = 0;
++	while (iconv(conv, &inbuf, &inbuf_left, &outbuf, &outbuf_left) == (size_t)-1) {
++	    if (errno == E2BIG) break;
++	    if (outbuf_left == 0) break;
++	    errno = 0;
++	    *outbuf++ = '?';
++	    if (--outbuf_left == 0) break;
++	    if (inbuf_left > 0) {
++		if (utf8_flag) {
++		    do { /* SKIP one charactor */
++			inbuf++; inbuf_left--;
++		    } while (inbuf_left > 0 && (*inbuf & 0xc0) == 0x80);
++		}
++		else {
++		    /* SKIP one or two byte */
++		    /*
++		    if (inbuf_left > 1 && (*inbuf & 0x80) != 0) {
++			inbuf++; inbuf_left--;
++		    }
++		    */
++		    inbuf++; inbuf_left--;
++		}
++	    }
++	    if (inbuf_left == 0) break;
++	}
++#endif
++	iconv_close(conv);
++	buf[BUFSIZ-1 - outbuf_left] = '\0';
++	strcpy(op, buf);
++        if (uleq(mm_charset, "iso-2022-jp"))
++	    strcat(op, "\033(B");
++    }
++#endif /* WITH_ICONV */
+     return(strlen(op));
+ }
+ 
+diff -ruN mh-6.8.4-JP-3.05.orig/sbr/path.c mh-6.8.4-JP-3.05/sbr/path.c
+--- mh-6.8.4-JP-3.05.orig/sbr/path.c	1993-12-01 13:01:25.000000000 +0900
++++ mh-6.8.4-JP-3.05/sbr/path.c	2018-12-31 09:05:50.000000000 +0900
+@@ -17,7 +17,7 @@
+ static char *pwds;
+ 
+ static char   *expath ();
+-static	compath();
++static void compath (char *f);
+ 
+ 
+ char   *path (name, flag)
+@@ -83,7 +83,7 @@
+ 	name += NCWD;
+ 
+     if (strcmp (name, DOTDOT) == 0 || strcmp (name, PWD) == 0) {
+-	(void) sprintf (buffer, "%.*s", cp - pwds, pwds);
++	(void) sprintf (buffer, "%.*s", (int)(cp - pwds), pwds);
+ 	return getcpy (buffer);
+     }
+ 
+@@ -92,14 +92,13 @@
+     else
+ 	cp = ep;
+ 
+-    (void) sprintf (buffer, "%.*s/%s", cp - pwds, pwds, name);
++    (void) sprintf (buffer, "%.*s/%s", (int)(cp - pwds), pwds, name);
+     return getcpy (buffer);
+ }
+ 
+ /*  */
+ 
+-static  compath (f)
+-register char  *f;
++static void compath (char *f)
+ {
+     register char  *cp,
+                    *dp;
+diff -ruN mh-6.8.4-JP-3.05.orig/sbr/printsw.c mh-6.8.4-JP-3.05/sbr/printsw.c
+--- mh-6.8.4-JP-3.05.orig/sbr/printsw.c	1993-12-01 13:01:26.000000000 +0900
++++ mh-6.8.4-JP-3.05/sbr/printsw.c	2018-12-31 09:05:50.000000000 +0900
+@@ -1,5 +1,6 @@
+ /* printsw.c - print switches */
+ 
++#include <stdio.h>
+ #include "../h/mh.h"
+ 
+ 
+diff -ruN mh-6.8.4-JP-3.05.orig/sbr/pwd.c mh-6.8.4-JP-3.05/sbr/pwd.c
+--- mh-6.8.4-JP-3.05.orig/sbr/pwd.c	2001-04-02 19:46:53.000000000 +0900
++++ mh-6.8.4-JP-3.05/sbr/pwd.c	2018-12-31 09:05:50.000000000 +0900
+@@ -36,8 +36,13 @@
+ 	admonish (NULL, "unable to determine working directory");
+ #endif	/* SYS5DIR */
+ #else	/* BSD42 */
++#ifndef	BSD44
+     if (getwd (curwd) == 0) {
+ 	admonish (NULLCP, "unable to determine working directory: %s", curwd);
++#else
++    if (getcwd (curwd, MAXPATHLEN) == NULL) {
++	admonish (NULL, "unable to determine working directory");
++#endif
+ #endif	/* BSD42 */
+ 	if (mypath == NULL
+ 		|| *mypath == 0
+diff -ruN mh-6.8.4-JP-3.05.orig/sbr/ruserpass.c mh-6.8.4-JP-3.05/sbr/ruserpass.c
+--- mh-6.8.4-JP-3.05.orig/sbr/ruserpass.c	1998-12-02 02:05:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/sbr/ruserpass.c	2018-12-31 09:05:50.000000000 +0900
+@@ -25,9 +25,10 @@
+ #include <ctype.h>
+ #include <pwd.h>
+ #include <errno.h>
++#include <string.h>
++#include <stdlib.h>
+ 
+-char	*malloc(), *index(), *getenv(), *getpass(), *getlogin();
+-char	*strcpy();
++char	*index(), *getpass(), *getlogin();
+ static	FILE *cfile;
+ 
+ #ifndef MAXHOSTNAMELEN
+@@ -66,7 +67,6 @@
+ 	char myname[MAXHOSTNAMELEN], *mydomain;
+ 	int t, i, c, usedefault = 0;
+ 	struct stat stb;
+-	extern int errno;
+ 
+ 	hdir = getenv("HOME");
+ 	if (hdir == NULL)
+diff -ruN mh-6.8.4-JP-3.05.orig/support/pop/popser.c mh-6.8.4-JP-3.05/support/pop/popser.c
+--- mh-6.8.4-JP-3.05.orig/support/pop/popser.c	1999-02-09 20:30:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/support/pop/popser.c	2018-12-31 09:05:50.000000000 +0900
+@@ -259,7 +259,7 @@
+ extern	int	mbx_read ();
+ 
+ static int	setup(), setupaux(), read_map(), read_file(), pmbx_size();
+-static int	quitaux(), quitfile(), respond(), getline();
++static int	quitaux(), quitfile(), respond(), _getline();
+ static	m_gMsgs(), multiline(), multiend(), putline();
+ /*  */
+ 
+@@ -410,7 +410,7 @@
+     (void) respond (OK, "%s ready %s", server, timestamp);
+ 
+     for (mystate = auth1; mystate != halt && mystate != error;)
+-	switch (getline (buffer, sizeof buffer, input)) {
++	switch (_getline (buffer, sizeof buffer, input)) {
+ 	    case OK: 
+ 		if ((v = getvector (buffer, vec)) == NULL)
+ 		    continue;
+@@ -1850,7 +1850,7 @@
+ 
+ /*  */
+ 
+-static int  getline (s, n, iop)
++static int  _getline (s, n, iop)
+ register char  *s;
+ register int	n;
+ register FILE  *iop;
+diff -ruN mh-6.8.4-JP-3.05.orig/support/pop/popwrd.c mh-6.8.4-JP-3.05/support/pop/popwrd.c
+--- mh-6.8.4-JP-3.05.orig/support/pop/popwrd.c	1999-02-09 20:30:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/support/pop/popwrd.c	2018-12-31 09:05:50.000000000 +0900
+@@ -24,8 +24,6 @@
+ static char  temp[] = "ptmp";
+ static char  home[BUFSIZ];
+ 
+-extern int errno;
+-
+ char   *crypt (), *getpass (), *tail ();
+ time_t	time ();
+ 
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/ali.c mh-6.8.4-JP-3.05/uip/ali.c
+--- mh-6.8.4-JP-3.05.orig/uip/ali.c	1998-04-24 06:02:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/ali.c	2018-12-31 09:05:50.000000000 +0900
+@@ -47,6 +47,8 @@
+ 
+ static	int     pos = 1;
+ 
++static void print_aka (char *p, int list, int margin);
++
+ extern struct aka  *akahead;
+ 
+ /*  */
+@@ -180,10 +182,7 @@
+ 
+ /*  */
+ 
+-print_aka (p, list, margin)
+-register char  *p;
+-int     list,
+-        margin;
++static void print_aka (char *p, int list, int margin)
+ {
+     register char   c;
+ #ifdef JAPAN
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/aliasbr.c mh-6.8.4-JP-3.05/uip/aliasbr.c
+--- mh-6.8.4-JP-3.05.orig/uip/aliasbr.c	1998-12-02 02:05:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/aliasbr.c	2018-12-31 09:05:50.000000000 +0900
+@@ -26,7 +26,7 @@
+ static struct aka *akalloc ();
+ static struct home *hmalloc ();
+ 
+-static		add_aka();
++static void add_aka (struct aka *ak, char *pp);
+ static int	aleq(), addfile(), addgroup(), addmember(), addall();
+ 
+ #ifndef	__STDC__
+@@ -474,9 +474,7 @@
+ 
+ /*  */
+ 
+-static	add_aka (ak, pp)
+-register struct aka *ak;
+-register char   *pp;
++static void add_aka (struct aka *ak, char *pp)
+ {
+     register struct adr *ad,
+ 			*ld;
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/annosbr.c mh-6.8.4-JP-3.05/uip/annosbr.c
+--- mh-6.8.4-JP-3.05.orig/uip/annosbr.c	2001-04-02 21:03:43.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/annosbr.c	2018-12-31 09:05:50.000000000 +0900
+@@ -11,7 +11,6 @@
+ #include <sys/stat.h>
+ 
+ 
+-extern int  errno;
+ off_t lseek ();
+ static annosbr();
+ 
+@@ -88,7 +87,7 @@
+ 	    while (*cp && *cp++ != '\n')
+ 		continue;
+ 	    if (cp - sp)
+-		fprintf (tmp, "%s: %*.*s", comp, cp - sp, cp - sp, sp);
++		fprintf (tmp, "%s: %*.*s", comp, (int)(cp - sp), (int)(cp - sp), sp);
+ 	} while (*cp);
+ 	if (cp[-1] != '\n' && cp != text)
+ 	    (void) putc ('\n', tmp);
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/bbc.c mh-6.8.4-JP-3.05/uip/bbc.c
+--- mh-6.8.4-JP-3.05.orig/uip/bbc.c	1998-12-02 02:05:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/bbc.c	2018-12-31 09:05:50.000000000 +0900
+@@ -112,7 +112,14 @@
+ 
+ /*  */
+ 
+-extern int  errno;
++void rcinit (char *rc);
++
++static void rcput (FILE *bbrc, struct bbcount *p);
++static void pgmread (int pd, int child_id, struct bboard *bb);
++static void add_bb (char *s, int hush);
++static void default_bboards (void);
++static void bbread (struct bboard *bb, int vecp, char *vec[]);
++static void rcend (void);
+ 
+ static int  changed = 0;
+ static int  oops = 0;
+@@ -142,7 +149,7 @@
+ extern char response[];
+ 
+ static char  **getip ();
+-#endif /* BPOP || defined(NNTP)
++#endif /* BPOP || defined(NNTP) */
+ #ifdef BPOP
+ extern char   *getusr ();
+ #endif /* BPOP */
+@@ -566,10 +573,7 @@
+ 
+ /*  */
+ 
+-bbread (bb, vecp, vec)
+-register struct bboard  *bb;
+-int	vecp;
+-char   *vec[];
++static void bbread (struct bboard *bb, int vecp, char *vec[])
+ {
+     int     child_id,
+             pd[2];
+@@ -661,10 +665,7 @@
+ 
+ /*  */
+ 
+-pgmread (pd, child_id, bb)
+-int     pd,
+-        child_id;
+-register struct bboard  *bb;
++static void pgmread (int pd, int child_id, struct bboard *bb)
+ {
+     int     i,
+             j,
+@@ -746,8 +747,7 @@
+ 
+ /*  */
+ 
+-rcinit (rc)
+-register char  *rc;
++void rcinit (char *rc)
+ {
+     int     state;
+     register char  *cp;
+@@ -797,7 +797,7 @@
+ 
+ /*  */
+ 
+-rcend () {
++static void rcend (void) {
+     TYPESIG (*hstat) (), (*istat) (), (*qstat) (), (*tstat) ();
+     register FILE *bbrc;
+ 
+@@ -826,9 +826,7 @@
+ }
+ 
+ 
+-rcput (bbrc, p)
+-register FILE *bbrc;
+-register struct bbcount *p;
++static void rcput (FILE *bbrc, struct bbcount *p)
+ {
+     if (p == NULL)
+ 	return;
+@@ -931,7 +929,7 @@
+ 
+ /*  */
+ 
+-default_bboards () {
++static void default_bboards (void) {
+     register char  *cp,
+                   **ap;
+ #ifdef	UCL
+@@ -987,9 +985,7 @@
+ 
+ /*  */
+ 
+-add_bb (s, hush)
+-register char   *s;
+-int     hush;
++static void add_bb (char *s, int hush)
+ {
+     register struct bboard  *bb;
+     static struct bboard   *tail = NULL;
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/burst.c mh-6.8.4-JP-3.05/uip/burst.c
+--- mh-6.8.4-JP-3.05.orig/uip/burst.c	1998-04-24 06:02:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/burst.c	2018-12-31 09:05:50.000000000 +0900
+@@ -11,7 +11,7 @@
+ #include	<locale.h>
+ #endif
+ 
+-static	cpybrst(), burst();
++static	cpybrst();
+ /*  */
+ 
+ static struct swit switches[] = {
+@@ -50,6 +50,8 @@
+ 
+ /*  */
+ 
++static void burst (struct smsg *smsgs, int msgnum, int inplace, int quietsw, int verbosw);
++
+ /* ARGSUSED */
+ 
+ main (argc, argv)
+@@ -185,12 +187,7 @@
+ 
+ /*  */
+ 
+-static  burst (smsgs, msgnum, inplace, quietsw, verbosw)
+-register struct smsg *smsgs;
+-int     msgnum,
+-        inplace,
+-        quietsw,
+-        verbosw;
++static void burst (struct smsg *smsgs, int msgnum, int inplace, int quietsw, int verbosw)
+ {
+     int     i,
+             j,
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/conflict.c mh-6.8.4-JP-3.05/uip/conflict.c
+--- mh-6.8.4-JP-3.05.orig/uip/conflict.c	1998-04-24 06:02:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/conflict.c	2018-12-31 09:05:50.000000000 +0900
+@@ -23,6 +23,10 @@
+ #define	NDIRS	100
+ #define	NGRPS	100
+ 
++void setup (void);
++
++static void mdrop(char *drop);
++
+ /*  */
+ 
+ static struct swit switches[] = {
+@@ -299,8 +303,7 @@
+ }
+ 
+ 
+-mdrop(drop)
+-register char *drop;
++static void mdrop(char *drop)
+ {
+     register int    hit = 0;
+ #ifdef SYS5DIR
+@@ -346,7 +349,7 @@
+ 
+ /*  */
+ 
+-setup () {
++void setup (void) {
+     int     fd,
+             pd[2];
+ 
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/distsbr.c mh-6.8.4-JP-3.05/uip/distsbr.c
+--- mh-6.8.4-JP-3.05.orig/uip/distsbr.c	1993-12-01 13:01:35.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/distsbr.c	2018-12-31 09:05:50.000000000 +0900
+@@ -150,15 +150,10 @@
+ 
+     if ((ifp = fopen (msgnam, "r")) == NULL)
+ 	adios (msgnam, "unable to open message");
+-
+-    (void) strcpy (tmpfil, m_tmpfil ("dist"));
+-    if ((hdrfd = creat (tmpfil, 0600)) == NOTOK)
+-	adios (tmpfil, "unable to create temporary file");
+-    (void) close (hdrfd);
+-    if ((hdrfd = open (tmpfil, 2)) == NOTOK)
+-	adios (tmpfil, "unable to re-open temporary file");
++    
++    (void) strcpy (tmpfil, m_tmpfil("dist", &hdrfd));
+     if ((out = dup (hdrfd)) == NOTOK
+-	    || (ofp = fdopen (out, "w")) == NULL)
++	   || (ofp = fdopen (out, "w")) == NULL)
+ 	adios (NULLCP, "no file descriptors -- you lose big");
+     (void) unlink (tmpfil);
+ 
+@@ -186,12 +181,7 @@
+ 	    case BODYEOF: 
+ 		(void) fclose (ofp);
+ 
+-		(void) strcpy (tmpfil, m_tmpfil ("dist"));
+-		if ((txtfd = creat (tmpfil, 0600)) == NOTOK)
+-		    adios (tmpfil, "unable to create temporary file");
+-		(void) close (txtfd);
+-		if ((txtfd = open (tmpfil, 2)) == NOTOK)
+-		    adios (tmpfil, "unable to re-open temporary file");
++		(void) strcpy (tmpfil, m_tmpfil("dist", &txtfd));
+ 		if ((out = dup (txtfd)) == NOTOK
+ 			|| (ofp = fdopen (out, "w")) == NULL)
+ 		    adios (NULLCP, "no file descriptors -- you lose big");
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/dropsbr.c mh-6.8.4-JP-3.05/uip/dropsbr.c
+--- mh-6.8.4-JP-3.05.orig/uip/dropsbr.c	1998-04-24 06:02:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/dropsbr.c	2018-12-31 09:05:50.000000000 +0900
+@@ -20,6 +20,9 @@
+ #undef NULLVP
+ #include <netinet/in.h>
+ #else
++#ifdef ntohl
++#undef ntohl
++#endif
+ #define	ntohl(n) (n)
+ #endif
+ 
+@@ -33,8 +36,6 @@
+ 
+ static int	mbx_create(), mbx_chk(), map_open();
+ 
+-extern int  errno;
+-
+ off_t   lseek ();
+ 
+ /*  */
+@@ -483,7 +484,7 @@
+     if ((cp = r1bindex (file, '/')) == file)
+ 	(void) sprintf (buffer, ".%s.map", cp);
+     else
+-	(void) sprintf (buffer, "%.*s.%s.map", cp - file, file, cp);
++	(void) sprintf (buffer, "%.*s.%s.map", (int)(cp - file), file, cp);
+ 
+     return buffer;
+ }
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/folder.c mh-6.8.4-JP-3.05/uip/folder.c
+--- mh-6.8.4-JP-3.05.orig/uip/folder.c	2001-04-02 19:35:24.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/folder.c	2018-12-31 09:05:50.000000000 +0900
+@@ -11,7 +11,9 @@
+ #include	<locale.h>
+ #endif
+ 
+-static		dodir(), addir(), addfold(), dother();
++static void addfold (char *fold);
++static void addir (char *name);
++static		dodir(), dother();
+ static int	pfold(), sfold(), compare();
+ /*  */
+ 
+@@ -74,8 +76,6 @@
+ 
+ /*  */
+ 
+-extern int errno;
+-
+ static int  fshort = 0;
+ static int  fcreat = 0;
+ static int  fpack = 0;
+@@ -542,8 +542,7 @@
+ 
+ /*  */
+ 
+-static	addir (name)
+-register char   *name;
++static void addir (char *name)
+ {
+     register char  *base,
+                    *cp;
+@@ -572,7 +571,7 @@
+     }
+     while (dp = readdir (dd))
+ 	if (strcmp (dp -> d_name, ".") && strcmp (dp -> d_name, "..")) {
+-#if defined(SYS5DIR) && !defined(hpux) && !defined(__CYGWIN32__)
++#if defined(SYS5DIR) && !defined(hpux) && !defined(__CYGWIN32__) && !defined(__DragonFly__)
+ 	    if (cp + dp -> d_reclen + 2 >= name + BUFSIZ)
+ #else /* SYS5DIR && !hpux && !__CYGWIN32__ */
+ 	    if (cp + strlen (dp -> d_name) + 2 >= name + BUFSIZ)
+@@ -589,8 +588,7 @@
+ 
+ /*  */
+ 
+-static	addfold (fold)
+-register char   *fold;
++static void addfold (char *fold)
+ {
+     register int    i,
+                     j;
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/forw.c mh-6.8.4-JP-3.05/uip/forw.c
+--- mh-6.8.4-JP-3.05.orig/uip/forw.c	1999-02-09 20:30:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/forw.c	2018-12-31 09:05:50.000000000 +0900
+@@ -22,7 +22,8 @@
+ #define	IFORMAT	"digest-issue-%s"
+ #define	VFORMAT	"digest-volume-%s"
+ 
+-static	mhl_draft(), copy_draft(), build_form();
++static	mhl_draft(), build_form();
++static void copy_draft (int out, char *digest, char *file, int volume, int issue, int mime);
+ /*  */
+ 
+ static struct swit switches[] = {
+@@ -558,13 +559,7 @@
+ 
+ /*  */
+ 
+-static	copy_draft (out, digest, file, volume, issue, mime)
+-int     out,
+-        volume,
+-        issue,
+-	mime;
+-register char   *digest,
+-		*file;
++static void copy_draft (int out, char *digest, char *file, int volume, int issue, int mime)
+ {
+     int     fd,i,
+             msgcnt,
+@@ -670,8 +665,8 @@
+     dat[3] = fmtsize;
+     dat[4] = 0;
+ 
+-    (void) strcpy (tmpfil, m_tmpfil (invo_name));
+-    if ((tmp = fopen (tmpfil, "w+")) == NULL)
++    (void) strcpy (tmpfil, m_tmpfil (invo_name, &in));
++    if (in == -1 || (tmp = fdopen (in, "w+")) == NULL)
+ 	adios (tmpfil, "unable to create");
+     (void) unlink (tmpfil);
+     if ((in = dup (fileno (tmp))) == NOTOK)
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/ftpsbr.c mh-6.8.4-JP-3.05/uip/ftpsbr.c
+--- mh-6.8.4-JP-3.05.orig/uip/ftpsbr.c	2001-04-02 19:49:08.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/ftpsbr.c	2018-12-31 09:05:50.000000000 +0900
+@@ -66,10 +66,7 @@
+ 
+ /*  */
+ 
+-#ifdef __CYGWIN32__
+ #include <errno.h>
+-#endif
+-extern	int	errno;
+ #if !defined(BSD44) && !defined(__GNU_LIBRARY__)
+ extern	int	sys_nerr;
+ extern	char   *sys_errlist[];
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/inc.c mh-6.8.4-JP-3.05/uip/inc.c
+--- mh-6.8.4-JP-3.05.orig/uip/inc.c	2001-04-05 01:05:16.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/inc.c	2018-12-31 09:05:50.000000000 +0900
+@@ -142,8 +142,6 @@
+ 
+ /*  */
+ 
+-extern int  errno;
+-
+ #ifdef	POP
+ int  snoop = 0;
+ extern char response[];
+@@ -161,7 +159,7 @@
+ static int	map_count();
+ #endif	/* POP */
+ 
+-/*  * /
++/*  */
+ 
+ /* ARGSUSED */
+ 
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/mhlsbr.c mh-6.8.4-JP-3.05/uip/mhlsbr.c
+--- mh-6.8.4-JP-3.05.orig/uip/mhlsbr.c	2001-04-05 01:05:16.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/mhlsbr.c	2018-12-31 09:05:50.000000000 +0900
+@@ -57,6 +57,8 @@
+ 
+ #define	QUOTE	'\\'
+ 
++static void m_pclose (void);
++
+ /*  */
+ 
+ static struct swit mhlswitches[] = {
+@@ -292,8 +294,13 @@
+ static char   *mcomp_add (), *oneline (), *parse ();
+ static struct mcomp *add_queue ();
+ 
+-static	mhl_format(), evalvar(), process(), mhlfile(), free_queue(), putcomp();
+-static	putstr(), putch(), face_format(), m_popen();
++static	mhl_format(), evalvar(), free_queue();
++static void process (char *folder, char *fname, int ofilen, int ofilec);
++static void mhlfile (FILE *fp, char *mname, int ofilen, int ofilec);
++static  void putcomp (struct mcomp *c1, struct mcomp *c2, int flag);
++static	putstr(), m_popen();
++static void face_format (struct mcomp *c1);
++static void putch(char ch);
+ static int	ptoi(), ptos(), doface();
+ 
+ void	clear_screen ();
+@@ -625,7 +632,7 @@
+ 	for (c1 = fmthd; c1; c1 = c1 -> c_next) {
+ 	    fprintf (stderr, "c1: name=\"%s\" text=\"%s\" ovtxt=\"%s\"\n",
+ 		    c1 -> c_name, c1 -> c_text, c1 -> c_ovtxt);
+-	    fprintf (stderr, "\tnfs=0x%x fmt=0x%x\n",
++	    fprintf (stderr, "\tnfs=0x%p fmt=0x%p\n",
+ 		    c1 -> c_nfs, c1 -> c_fmt);
+ 	    fprintf (stderr, "\toffset=%d ovoff=%d width=%d cwidth=%d length=%d\n",
+ 		    c1 -> c_offset, c1 -> c_ovoff, c1 -> c_width,
+@@ -784,11 +791,7 @@
+ 
+ /*  */
+ 
+-static  process (folder, fname, ofilen, ofilec)
+-char   *folder,
+-       *fname;
+-int	ofilen,
+-	ofilec;
++static void process (char *folder, char *fname, int ofilen, int ofilec)
+ {
+     char  *cp;
+     FILE  *fp;
+@@ -832,11 +835,7 @@
+ 
+ /*  */
+ 
+-static mhlfile (fp, mname, ofilen, ofilec)
+-register FILE   *fp;
+-register char   *mname;
+-int	ofilen,
+-	ofilec;
++static void mhlfile (FILE *fp, char *mname, int ofilen, int ofilec)
+ {
+     int     state;
+     register struct mcomp  *c1,
+@@ -1089,9 +1088,7 @@
+ };
+ 
+ 
+-static mcomp_format (c1, c2)
+-register struct mcomp *c1,
+-		      *c2;
++static void mcomp_format (struct mcomp *c1, struct mcomp *c2)
+ {
+     int     dat[5];
+     register char  *ap,
+@@ -1256,10 +1253,7 @@
+ 
+ /*  */
+ 
+-static  putcomp (c1, c2, flag)
+-register struct mcomp *c1,
+-		      *c2;
+-int     flag;
++static void putcomp (struct mcomp *c1, struct mcomp *c2, int flag)
+ {
+     int     count,
+             cchdr;
+@@ -1297,7 +1291,7 @@
+ #ifdef MIME_HEADERS
+     if (c1 -> c_flags & DECODE) {
+ 	char *ep;
+-	if ((ep = malloc((unsigned)strlen(c2 -> c_text)+1)) == NULL)
++	if ((ep = malloc((unsigned)strlen(c2 -> c_text)*10+1)) == NULL)
+ 	    adios(NULLCP, "out of memory");
+ 	(void) exthdr_decode(c2 -> c_text, ep);
+ 	free(c2 -> c_text);
+@@ -1478,9 +1472,8 @@
+ 
+ /*  */
+ 
+-static
+-putch(ch)
+-     char ch;
++static void
++putch(char ch)
+ {
+     char buf[BUFSIZ];
+ 
+@@ -1686,8 +1679,7 @@
+ 
+ /*  */
+ 
+-static	face_format (c1)
+-register struct mcomp *c1;
++static void face_format (struct mcomp *c1)
+ {
+     register char  *cp;
+     register struct mailname   *mp;
+@@ -2018,7 +2010,7 @@
+ }
+ 
+ 
+-m_pclose () {
++static void m_pclose (void) {
+     if (m_pid == NOTOK)
+ 	return;
+ 
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/mhmail.c mh-6.8.4-JP-3.05/uip/mhmail.c
+--- mh-6.8.4-JP-3.05.orig/uip/mhmail.c	2001-08-30 11:34:19.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/mhmail.c	2018-12-31 09:05:50.000000000 +0900
+@@ -72,6 +72,7 @@
+ #ifdef UCI
+     FILE  *fp;
+ #endif
++    int     tmpfd;
+ 
+ #ifdef LOCALE
+ 	setlocale(LC_ALL, "");
+@@ -142,8 +143,8 @@
+ 
+     if (tolist == NULL)
+ 	adios (NULLCP, "usage: %s addrs ... [switches]", invo_name);
+-    (void) strcpy (tmpfil, m_tmpfil (invo_name));
+-    if ((out = fopen (tmpfil, "w")) == NULL)
++    (void) strcpy (tmpfil, m_tmpfil (invo_name, &tmpfd));
++    if (tmpfd == -1 || (out = fdopen (tmpfd, "w")) == NULL)
+ 	adios (tmpfil, "unable to write");
+     (void) chmod (tmpfil, 0600);
+ 
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/mhn.c mh-6.8.4-JP-3.05/uip/mhn.c
+--- mh-6.8.4-JP-3.05.orig/uip/mhn.c	2001-08-30 11:57:33.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/mhn.c	2018-12-31 09:05:50.000000000 +0900
+@@ -219,7 +219,6 @@
+ static	char   *tmp;
+ 
+ 
+-extern	int	errno;
+ #if !defined(BSD44) && !defined(__GNU_LIBRARY__)
+ extern	int	sys_nerr;
+ extern	char   *sys_errlist[];
+@@ -342,7 +341,7 @@
+ 
+ static CT	get_content ();
+ static int	list_content (), show_content (), store_content ();
+-static int	cache_content ();
++static void cache_content (CT ct);
+ static int	user_content (), compose_content (), output_content ();
+ static void	free_content (), flush_errors (), set_id ();
+ 
+@@ -725,10 +724,11 @@
+ 	ctp = cts;
+ 	if (stdinP = (strcmp (file, "-") == 0)) {
+ 	    char    buffer[BUFSIZ];
++	    int     tmpfd;
+ 
+-	    file = add (m_tmpfil (invo_name), NULLCP);
++	    file = add (m_tmpfil (invo_name, &tmpfd), NULLCP);
+ 
+-	    if ((fp = fopen (file, "w+")) == NULL)
++	    if (tmpfd == -1 || (fp = fdopen (tmpfd, "w+")) == NULL)
+ 		adios (file, "unable to fopen for writing and reading");
+ 	    (void) chmod (file, 0600);
+ 	    while (fgets (buffer, sizeof buffer, stdin))
+@@ -1239,7 +1239,7 @@
+ 			s2i++;
+ 		    ct -> c_type = s2i -> mhnsi_value;
+ 		    ct -> c_ctinitfnx = s2i -> mhnsi_init;
+-#ifdef MIME_HEADERS
++#ifdef MIME_HEADERS_BROKEN
+ 		    if (ci -> ci_comment) {
+ 			char *buffer;
+ 			buffer = add (ci -> ci_comment, NULLCP);
+@@ -1312,7 +1312,7 @@
+ 			state = m_getfld (state, name, buf, sizeof buf, in);
+ 			ct -> c_descr = add (buf, ct -> c_descr);
+ 		    }
+-#ifdef MIME_HEADERS
++#ifdef MIME_HEADERS_BROKEN
+ 		    {
+ 			char *buffer;
+ 			buffer = add (ct -> c_descr, NULLCP);
+@@ -3190,8 +3190,7 @@
+     NULL,	    CHARSET_UNKNOWN		/* this one must be last! */
+ };
+ 
+-static int  free_text (ct)
+-register CT	ct;
++static void free_text (CT ct)
+ {
+     register struct text *t = (struct text *) ct -> c_ctparams;
+ 
+@@ -3678,8 +3677,7 @@
+ }
+ 
+ 
+-static int  free_multi (ct)
+-register CT	ct;
++static void free_multi (CT ct)
+ {
+     register struct multipart *m = (struct multipart *) ct -> c_ctparams;
+     register struct part   *part,
+@@ -4095,8 +4093,7 @@
+ }
+ 
+ 
+-static int  free_partial (ct)
+-register CT	ct;
++static void free_partial (CT ct)
+ {
+     register struct partial *p = (struct partial *) ct -> c_ctparams;
+ 
+@@ -4301,8 +4298,7 @@
+ }
+ 
+ 
+-static int  free_external (ct)
+-register CT	ct;
++static void free_external (CT ct)
+ {
+     register struct exbody *e = (struct exbody *) ct -> c_ctparams;
+ 
+@@ -4379,7 +4375,7 @@
+ 			    break;
+ 			}
+ 			dp = trimcpy(cp);
+-#ifdef MIME_HEADERS
++#ifdef MIME_HEADERS_BROKEN
+ 			exthdr_decode(dp, cp);
+ 			ct -> m_subj = cp;
+ 			free(dp);
+@@ -4699,8 +4695,7 @@
+ }
+ 
+ 
+-static int  close_encoding (ct)
+-register CT	ct;
++static void close_encoding (CT ct)
+ {
+     register struct cefile *ce = (struct cefile *) ct -> c_ceparams;
+ 
+@@ -4750,9 +4745,7 @@
+ }
+ 
+ 
+-static int  free_encoding (ct, toplevel)
+-register CT	ct;
+-int	toplevel;
++static void free_encoding (CT ct, int toplevel)
+ {
+     register struct cefile *ce = (struct cefile *) ct -> c_ceparams;
+ 
+@@ -6055,7 +6048,7 @@
+ 	if (partno > 0xff)
+ 	    clock++, partno = 0;
+ 
+-    (void) sprintf (mapname, "%08x%04x%02x", clock & 0xffffffff,
++    (void) sprintf (mapname, "%08x%04x%02x", (int)(clock & 0xffffffff),
+ 		    pid & 0xffff, partno++ & 0xff);
+     if (debugsw)
+ 	fprintf (stderr, "creating mapping %s -> %s\n", mapname, id);
+@@ -6152,8 +6145,7 @@
+ 
+ /*  */
+ 
+-static int  cache_content (ct)
+-register CT    ct;
++static void cache_content (CT ct)
+ {
+     int	    cachetype;
+     char   *file,
+@@ -6507,11 +6499,12 @@
+ 	long	pos;
+ 	char    content[BUFSIZ];
+ 	FILE   *out;
++	int     tmpfd;
+ 
+-	ct -> c_file = add (m_tmpfil (invo_name), NULLCP);
++	ct -> c_file = add (m_tmpfil (invo_name, &tmpfd), NULLCP);
+ 	ct -> c_unlink = 1;
+ 
+-	if ((out = fopen (ct -> c_file, "w")) == NULL)
++	if (tmpfd == -1 || (out = fdopen (tmpfd, "w")) == NULL)
+ 	    adios (ct -> c_file, "unable to open for writing");
+ 
+ 	if (buf[0] == '#' && buf[1] == '<') {
+@@ -7018,11 +7011,12 @@
+ 			      **ap;
+ 		char   *vec[4];
+ 		FILE   *out;
++		int     tmpfd;
+ 
+ 		if (!(cp = ci -> ci_magic))
+ 		    adios (NULLCP, "internal error(5)");
+ 
+-		ct -> c_file = add (m_tmpfil (invo_name), NULLCP);
++		ct -> c_file = add (m_tmpfil (invo_name, &tmpfd), NULLCP);
+ 		ct -> c_unlink = 1;
+ 
+ 		xstdout = 0;
+@@ -7082,7 +7076,7 @@
+ 		vec[2] = buffer;
+ 		vec[3] = NULL;
+ 
+-		if ((out = fopen (ct -> c_file, "w")) == NULL)
++		if (tmpfd == -1 || (out = fdopen (tmpfd, "w")) == NULL)
+ 		    adios (ct -> c_file, "unable to open for writing");
+ 
+ 		for (i = 0; (child_id = vfork ()) == NOTOK && i > 5; i++)
+@@ -7927,7 +7921,7 @@
+ 	    while (*cp)
+ 		cp++;
+ 	    fprintf (stderr, "invalid MD5 digest (got %d octets)\n",
+-		     cp - bp);
++		     (int)(cp - bp));
+ 	}
+ 
+ 	return NOTOK;
+@@ -7966,6 +7960,7 @@
+     struct stat st;
+     FILE   *fp;
+     char   *cp;
++    int     tmpfd;
+ #ifdef UCI
+     FILE   *sig;
+     char    buf[100];
+@@ -7973,8 +7968,8 @@
+ 
+     (void) umask (~m_gmprot ());
+ 
+-    (void) strcpy (tmpfil, m_tmpfil (invo_name));
+-    if ((fp = fopen (tmpfil, "w+")) == NULL)
++    (void) strcpy (tmpfil, m_tmpfil (invo_name, &tmpfd));
++    if (tmpfd == -1 || (fp = fdopen (tmpfd, "w+")) == NULL)
+ 	adios (tmpfil, "unable to open for writing");
+     (void) chmod (tmpfil, 0600);
+ 
+@@ -8049,9 +8044,10 @@
+ 	    int	    lineno;
+ 	    char    tmpdrf[BUFSIZ];
+ 	    FILE   *out;
++	    int     tmpfd;
+ 
+-	    (void) strcpy (tmpdrf, m_tmpfil (invo_name));
+-	    if ((out = fopen (tmpdrf, "w")) == NULL)
++	    (void) strcpy (tmpdrf, m_tmpfil (invo_name, &tmpfd));
++	    if (tmpfd == -1 || (out = fdopen (tmpfd, "w")) == NULL)
+ 		adios (tmpdrf, "unable to open for writing");
+ 	    (void) chmod (tmpdrf, 0600);
+ 
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/msh.c mh-6.8.4-JP-3.05/uip/msh.c
+--- mh-6.8.4-JP-3.05.orig/uip/msh.c	2001-06-15 01:41:30.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/msh.c	2018-12-31 09:05:50.000000000 +0900
+@@ -181,6 +181,23 @@
+ 
+ static TYPESIG	intrser (), pipeser (), quitser ();
+ 
++void readids (int id);
++void display_info (int scansw);
++void filecmd (char **args);
++void foldcmd (char **args);
++void explcmd (char **args);
++void forwcmd (char **args);
++void markcmd (char **args);
++void mhncmd (char **args);
++void packcmd (char **args);
++void distcmd (char **args);
++void pickcmd (char **args);
++void replcmd (char **args);
++void showcmd (char **args);
++void scancmd (char **args);
++void rmmcmd (char **args);
++void sortcmd (char **args);
++void forkcmd (char **args, char *pgm);
+ 
+ #ifndef	__STDC__
+ #ifdef	SYS5
+@@ -189,10 +206,14 @@
+ #endif
+ 
+ static int	read_map(), read_file(), check_folder(), getargs(), parse();
+-static int	getcmds(), init_io(), initaux_io(), finaux_io(), peerwait();
++static int	getcmds(), init_io(), initaux_io(), peerwait();
++static void finaux_io (struct Cmd *cmdp);
+ static int	pINI(), pQRY(), pQRY1(), pQRY2(), pCMD(), pFIN();
+ static int	ttyR(), ttyNaux(), winN(), winR(), winX();
+-static		msh(), m_gMsgs(), scanrange(), scanstring(), quit();
++static		scanrange(), scanstring();
++static void msh (int scansw);
++static void m_gMsgs (int n);
++static void quit(void);
+ static		fin_io(), m_init();
+ #if defined(BPOP) || defined(NNTP)
+ static int	read_pop();
+@@ -461,8 +482,7 @@
+ 
+ /*  */
+ 
+-static  msh (scansw)
+-int     scansw;
++static void msh (int scansw)
+ {
+     int     i;
+     register char  *cp,
+@@ -724,8 +744,9 @@
+ 
+ #if defined(BPOP) || defined(NNTP)
+     if (pmsh) {
+-	(void) strcpy (tmpfil, m_tmpfil (invo_name));
+-	if ((fp = fopen (tmpfil, "w+")) == NULL)
++	int tmpfd;
++	(void) strcpy (tmpfil, m_tmpfil (invo_name, &tmpfd));
++	if (tmpfd == -1 || (fp = fdopen (tmpfd, "w+")) == NULL)
+ 	    padios (tmpfil, "unable to create");
+ 	(void) unlink (tmpfil);
+     }
+@@ -924,8 +945,7 @@
+ 
+ /*  */
+ 
+-static m_gMsgs (n)
+-int	n;
++static void m_gMsgs (int n)
+ {
+     int	    nmsgs;
+ 
+@@ -999,8 +1019,9 @@
+ 	if (Msgs[msgnum].m_top == 0)
+ 	    padios (NULLCP, "msh_ready (%d, %d) botch", msgnum, full);
+ 	if (!full) {
+-	    (void) strcpy (tmpfil, m_tmpfil (invo_name));
+-	    if ((yp = fopen (tmpfil, "w+")) == NULL)
++	    int tmpfd;
++	    (void) strcpy (tmpfil, m_tmpfil (invo_name, &tmpfd));
++	    if (tmpfd == -1 || (yp = fdopen (tmpfd, "w+")) == NULL)
+ 		padios (tmpfil, "unable to create");
+ 	    (void) unlink (tmpfil);
+ 
+@@ -1184,8 +1205,7 @@
+ 
+ /*  */
+ 
+-readids (id)
+-int     id;
++void readids (int id)
+ {
+     register int    cur,
+                     flags,
+@@ -1284,8 +1304,7 @@
+ 
+ /*  */
+ 
+-display_info (scansw)
+-int     scansw;
++void display_info (int scansw)
+ {
+     int     flags,
+             sd;
+@@ -1332,7 +1351,7 @@
+ 
+ /*  */
+ 
+-static	write_ids () {
++static void write_ids (void) {
+     int     i = 0,
+ 	    flags,
+             msgnum;
+@@ -1358,7 +1377,7 @@
+ 
+ /*  */
+ 
+-static  quit () {
++static void quit (void) {
+     int     i,
+             md,
+             msgnum;
+@@ -1572,9 +1591,9 @@
+     char **matches = NULLVP;
+ 
+     if (start == 0)
+-	matches = completion_matches(text, command_comp);
++	matches = rl_completion_matches(text, command_comp);
+     else if (text[0] == '+' || text[0] == '@')
+-	matches = completion_matches(text, folder_comp);
++	matches = rl_completion_matches(text, folder_comp);
+ 
+     return matches;
+ }
+@@ -1945,8 +1964,7 @@
+ }
+ 
+ 
+-static int  finaux_io (cmdp)
+-register struct Cmd *cmdp;
++static void finaux_io (struct Cmd *cmdp)
+ {
+     switch (cmdp -> direction) {
+ 	case STDIO: 
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/mshcmds.c mh-6.8.4-JP-3.05/uip/mshcmds.c
+--- mh-6.8.4-JP-3.05.orig/uip/mshcmds.c	2001-04-03 01:40:58.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/mshcmds.c	2018-12-31 09:05:50.000000000 +0900
+@@ -28,10 +28,9 @@
+ #endif	/* MIME */
+ 
+ /*  */
++void readids (int id);
++void display_info (int scansw);
+ 
+-extern int errno;
+-
+-				/* BURST */
+ static char delim3[] = "-------";/* from burst.c */
+ 
+ 
+@@ -47,7 +46,9 @@
+ #endif
+ 
+ 
+-static burst(), forw(), rmm(), show(), ask(), copy_message(), copy_digest();
++static burst(), show(), ask(), copy_message(), copy_digest();
++static void rmm(void);
++static void forw (char *proc, char *filter, int vecp, char **vec, int mime);
+ static int	process();
+ 				/* SORTM */
+ static int	msgsort (), subsort();
+@@ -66,9 +67,7 @@
+ 
+ /*  */
+ 
+-forkcmd (args, pgm)
+-char  **args,
+-       *pgm;
++void forkcmd (char **args, char *pgm)
+ {
+     int     child_id;
+     char   *vec[MAXARGS];
+@@ -143,8 +142,7 @@
+ 
+ /*  */
+ 
+-distcmd (args)
+-char  **args;
++void distcmd (char **args)
+ {
+     int     vecp = 1;
+     char   *cp,
+@@ -249,8 +247,7 @@
+ 
+ /*  */
+ 
+-explcmd (args)
+-char  **args;
++void explcmd (char **args)
+ {
+     int     inplace = 0,
+             quietsw = 0,
+@@ -498,8 +495,7 @@
+ 
+ /*  */
+ 
+-filecmd (args)
+-char  **args;
++void filecmd (char **args)
+ {
+     int	    linksw = 0,
+ 	    msgp = 0,
+@@ -675,8 +671,7 @@
+ 
+ /*  */
+ 
+-foldcmd (args)
+-char  **args;
++void foldcmd (char **args)
+ {
+     int     fastsw = 0,
+             headersw = 0,
+@@ -906,8 +901,7 @@
+ 
+ /*  */
+ 
+-forwcmd (args)
+-char  **args;
++void forwcmd (char **args)
+ {
+     int	    msgp = 0,
+             vecp = 1,
+@@ -1028,12 +1022,7 @@
+ 
+ /*  */
+ 
+-static	forw (proc, filter, vecp, vec, mime)
+-int     vecp,
+-    	mime;
+-char   *proc,
+-       *filter,
+-      **vec;
++static void forw (char *proc, char *filter, int vecp, char **vec, int mime)
+ {
+     int     i,
+             child_id,
+@@ -1046,8 +1035,9 @@
+     int	    nedit = 0;
+     char   *ed = NULL;
+ #endif	/* MIME */
++    int     tmpfd;
+ 
+-    (void) strcpy (tmpfil, m_tmpfil (invo_name));
++    (void) strcpy (tmpfil, m_tmpfil (invo_name, &tmpfd));
+     interrupted = 0;
+     if (filter)
+ 	switch (child_id = fork ()) {
+@@ -1056,7 +1046,8 @@
+ 		return;
+ 
+ 	    case OK: 		/* "trust me" */
+-		if (freopen (tmpfil, "w", stdout) == NULL) {
++		fflush(stdout);
++		if (tmpfd == -1 || dup2(tmpfd, 1) != 0) {
+ 		    fprintf (stderr, "unable to create ");
+ 		    perror (tmpfil);
+ 		    _exit (1);
+@@ -1180,7 +1171,7 @@
+ 		    (*cp)++;
+ 	}
+ 
+-	if ((out = fopen (tmpfil, "w")) == NULL) {
++	if (tmpfd == -1 || (out = fdopen (tmpfd, "w")) == NULL) {
+ 	    advise (tmpfil, "unable to create temporary file");
+ 	    return;
+ 	}
+@@ -1220,7 +1211,7 @@
+     }
+ #endif	/* MIME */
+     else {
+-	if ((out = fopen (tmpfil, "w")) == NULL) {
++	if (tmpfd == -1 || (out = fdopen (tmpfd, "w")) == NULL) {
+ 	    advise (tmpfil, "unable to create temporary file");
+ 	    return;
+ 	}
+@@ -1364,8 +1355,7 @@
+ 
+ /*  */
+ 
+-markcmd (args)
+-char  **args;
++void markcmd (char **args)
+ {
+     int     addsw = 0,
+             deletesw = 0,
+@@ -1527,7 +1517,7 @@
+ 			empty(m_seq (mp, mp -> msgattrs[i])));
+ 	else
+ 	    for (seqp = 0; seqs[seqp]; seqp++)
+-		printf ("%s%s: %s\n", seqs[seqp],
++		printf ("%s: %s\n", seqs[seqp],
+ 			empty(m_seq (mp, seqs[seqp])));
+ #undef	empty
+ 
+@@ -1617,8 +1607,7 @@
+ 
+ /*  */
+ 
+-mhncmd (args)
+-char  **args;
++void mhncmd (char **args)
+ {
+     int     msgp = 0,
+ 	    vecp = 1,
+@@ -1733,8 +1722,7 @@
+ 
+ /*  */
+ 
+-packcmd (args)
+-char  **args;
++void packcmd (char **args)
+ {
+     int     msgp = 0,
+             md,
+@@ -1923,8 +1911,7 @@
+ 
+ /*  */
+ 
+-pickcmd (args)
+-char  **args;
++void pickcmd (char **args)
+ {
+     int     zerosw = 1,
+             msgp = 0,
+@@ -2126,8 +2113,7 @@
+ 
+ /*  */
+ 
+-replcmd (args)
+-char  **args;
++void replcmd (char **args)
+ {
+     int     vecp = 1;
+     char   *cp,
+@@ -2227,8 +2213,7 @@
+ 
+ /*  */
+ 
+-rmmcmd (args)
+-char  **args;
++void rmmcmd (char **args)
+ {
+     int	    msgp = 0,
+             msgnum;
+@@ -2275,7 +2260,7 @@
+ struct msgs	*trash ();
+ #endif /* MH_PLUS */
+ 
+-static  rmm () {
++static void rmm (void) {
+     register int    msgnum,
+                     vecp;
+     register char  *cp;
+@@ -2503,8 +2488,7 @@
+ 
+ /*  */
+ 
+-scancmd (args)
+-char  **args;
++void scancmd (char **args)
+ {
+ #define	equiv(a,b)	(a ? b && !strcmp (a, b) : !b)
+ 
+@@ -2765,8 +2749,7 @@
+ 
+ /*  */
+ 
+-showcmd (args)
+-char  **args;
++void showcmd (char **args)
+ {
+     int	    headersw = 1,
+             nshow = 0,
+@@ -3236,8 +3219,7 @@
+ 
+ /*  */
+ 
+-sortcmd (args)
+-char  **args;
++void sortcmd (char **args)
+ {
+     int     msgp = 0,
+             msgnum;
+@@ -3529,12 +3511,12 @@
+     (void) strcpy (tmpfil, m_scratch ("", invo_name));
+     if ((out = fopen (tmpfil, "w")) == NULL) {
+ 	int     olderr;
+-	extern int  errno;
+ 	char    newfil[80];
++	int     tmpfd;
+ 
+ 	olderr = errno;
+-	(void) strcpy (newfil, m_tmpfil (invo_name));
+-	if ((out = fopen (newfil, "w")) == NULL) {
++	(void) strcpy (newfil, m_tmpfil (invo_name, &tmpfd));
++	if (tmpfd == -1 || (out = fdopen (tmpfd, "w")) == NULL) {
+ 	    errno = olderr;
+ 	    advise (tmpfil, "unable to create temporary file");
+ 	    return NOTOK;
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/packf.c mh-6.8.4-JP-3.05/uip/packf.c
+--- mh-6.8.4-JP-3.05.orig/uip/packf.c	1998-04-24 06:02:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/packf.c	2018-12-31 09:05:50.000000000 +0900
+@@ -27,9 +27,6 @@
+ 
+ /*  */
+ 
+-extern int errno;
+-
+-
+ static int  md = NOTOK;
+ 
+ char   *file = NULL;
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/pgped.c mh-6.8.4-JP-3.05/uip/pgped.c
+--- mh-6.8.4-JP-3.05.orig/uip/pgped.c	1998-12-02 02:05:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/pgped.c	2018-12-31 09:05:50.000000000 +0900
+@@ -259,8 +259,9 @@
+ 
+     (void) strcpy(tmpfil1, m_scratch("", m_maildir(invo_name)));
+     if ((out1 = fopen(tmpfil1, "w")) == NULL) {
+-	(void) strcpy(tmpfil1, m_tmpfil(invo_name));
+-	if ((out1 = fopen(tmpfil1, "w")) == NULL) {
++	int tmpfd1;
++	(void) strcpy(tmpfil1, m_tmpfil(invo_name, &tmpfd1));
++	if (tmpfd1 == -1 || (out1 = fdopen(tmpfd1, "w")) == NULL) {
+ 	    advise(tmpfil1, "unable to create");
+ 	    goodbye();
+ 	}
+@@ -269,8 +270,9 @@
+ 
+     (void) strcpy(tmpfil2, m_scratch("", m_maildir(invo_name)));
+     if ((out2 = fopen(tmpfil2, "w")) == NULL) {
+-	(void) strcpy(tmpfil2, m_tmpfil(invo_name));
+-	if ((out2 = fopen(tmpfil2, "w")) == NULL) {
++	int tmpfd2;
++	(void) strcpy(tmpfil2, m_tmpfil(invo_name, &tmpfd2));
++	if (tmpfd2 == -1 || (out2 = fdopen(tmpfd2, "w")) == NULL) {
+ 	    advise(tmpfil2, "unable to create");
+ 	    goodbye();
+ 	}
+@@ -446,8 +448,9 @@
+ 
+     (void) strcpy(tmpfil3, m_scratch("", m_maildir(invo_name)));
+     if ((out2 = fopen(tmpfil3, "w")) == NULL) {
+-	(void) strcpy(tmpfil3, m_tmpfil(invo_name));
+-	if ((out2 = fopen(tmpfil3, "w")) == NULL) {
++	int tmpfd3;
++	(void) strcpy(tmpfil3, m_tmpfil(invo_name, &tmpfd3));
++	if (tmpfd3 == -1 || (out2 = fdopen(tmpfd3, "w")) == NULL) {
+ 	    advise(tmpfil3, "unable to create");
+ 	    goodbye();
+ 	}
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/pgpshow.c mh-6.8.4-JP-3.05/uip/pgpshow.c
+--- mh-6.8.4-JP-3.05.orig/uip/pgpshow.c	1998-12-02 02:05:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/pgpshow.c	2018-12-31 09:05:50.000000000 +0900
+@@ -207,8 +207,9 @@
+ 
+     (void) strcpy(tmpfil1, m_scratch("", m_maildir(invo_name)));
+     if ((out = fopen(tmpfil1, "w")) == NULL) {
+-	(void) strcpy(tmpfil1, m_tmpfil(invo_name));
+-	if ((out = fopen(tmpfil1, "w")) == NULL) {
++	int tmpfd1;
++	(void) strcpy(tmpfil1, m_tmpfil(invo_name, &tmpfd1));
++	if (tmpfd1 == -1 || (out = fdopen(tmpfd1, "w")) == NULL) {
+ 	    advise(tmpfil1, "unable to create");
+ 	    goodbye();
+ 	}
+@@ -284,8 +285,9 @@
+ 
+     (void) strcpy(tmpfil1, m_scratch("", m_maildir(invo_name)));
+     if ((out = fopen(tmpfil1, "w")) == NULL) {
+-	(void) strcpy(tmpfil1, m_tmpfil(invo_name));
+-	if ((out = fopen(tmpfil1, "w")) == NULL) {
++	int tmpfd1;
++	(void) strcpy(tmpfil1, m_tmpfil(invo_name, &tmpfd1));
++	if (tmpfd1 == -1 || (out = fdopen(tmpfd1, "w")) == NULL) {
+ 	    advise(tmpfil1, "unable to create");
+ 	    goodbye();
+ 	}
+@@ -377,8 +379,9 @@
+ 
+     (void) strcpy(tmpfil1, m_scratch("", m_maildir(invo_name)));
+     if ((out = fopen(tmpfil1, "w")) == NULL) {
+-	(void) strcpy(tmpfil1, m_tmpfil(invo_name));
+-	if ((out = fopen(tmpfil1, "w")) == NULL) {
++	int tmpfd1;
++	(void) strcpy(tmpfil1, m_tmpfil(invo_name, &tmpfd1));
++	if (tmpfd1 == -1 || (out = fdopen(tmpfd1, "w")) == NULL) {
+ 	    advise(tmpfil1, "unable to create");
+ 	    goodbye();
+ 	}
+@@ -459,8 +462,9 @@
+ 
+ 	(void) strcpy(tmpfil2, m_scratch("", m_maildir(invo_name)));
+ 	if ((out = fopen(tmpfil2, "w")) == NULL) {
+-	    (void) strcpy(tmpfil2, m_tmpfil(invo_name));
+-	    if ((out = fopen(tmpfil2, "w")) == NULL) {
++	    int tmpfd2;
++	    (void) strcpy(tmpfil2, m_tmpfil(invo_name, &tmpfd2));
++	    if (tmpfd2 == -1 || (out = fdopen(tmpfd2, "w")) == NULL) {
+ 		advise(tmpfil2, "unable to create");
+ 		goodbye();
+ 	    }
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/picksbr.c mh-6.8.4-JP-3.05/uip/picksbr.c
+--- mh-6.8.4-JP-3.05.orig/uip/picksbr.c	2001-04-03 01:29:11.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/picksbr.c	2018-12-31 09:05:50.000000000 +0900
+@@ -542,7 +542,7 @@
+ 		dasctime (&n -> n_tws, TW_NULL));
+ 	return;
+     }
+-    fprintf (stderr, "UNKNOWN(0x%x)\n", (*n -> n_action));
++    fprintf (stderr, "UNKNOWN(0x%p)\n", (*n -> n_action));
+ }
+ 
+ /*  */
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/popsbr.c mh-6.8.4-JP-3.05/uip/popsbr.c
+--- mh-6.8.4-JP-3.05.orig/uip/popsbr.c	2001-04-02 19:50:01.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/popsbr.c	2018-12-31 09:05:50.000000000 +0900
+@@ -27,10 +27,7 @@
+ #define	TRM	"."
+ #define	TRMLEN	(sizeof TRM - 1)
+ 
+-#ifdef __CYGWIN32__
+ #include <errno.h>
+-#endif
+-extern int  errno;
+ #if !defined(BSD44) && !defined(__GNU_LIBRARY__)
+ extern int  sys_nerr;
+ extern char *sys_errlist[];
+@@ -63,7 +60,7 @@
+ static	int	command(), multiline();
+ #endif
+ 
+-static int	getline();
++static int	_getline();
+ static putline();
+ 
+ #ifdef NNTP
+@@ -176,7 +173,7 @@
+ 
+     (void) signal (SIGPIPE, SIG_IGN);
+ 
+-    switch (getline (response, sizeof response, input)) {
++    switch (_getline (response, sizeof response, input)) {
+ 	case OK: 
+ 	    if (poprint)
+ 		fprintf (stderr, "<--- %s\n", response);
+@@ -619,7 +616,7 @@
+     if (putline (buffer, output) == NOTOK)
+ 	return NOTOK;
+ 
+-    switch (getline (response, sizeof response, input)) {
++    switch (_getline (response, sizeof response, input)) {
+ 	case OK: 
+ 	    if (poprint)
+ 		fprintf (stderr, "<--- %s\n", response);
+@@ -645,7 +642,7 @@
+ #endif
+     char    buffer[BUFSIZ + TRMLEN];
+ 
+-    if (getline (buffer, sizeof buffer, input) != OK)
++    if (_getline (buffer, sizeof buffer, input) != OK)
+ 	return NOTOK;
+ #ifdef	DEBUG
+     if (poprint)
+@@ -665,7 +662,7 @@
+ 
+ /*  */
+ 
+-static int  getline (s, n, iop)
++static int  _getline (s, n, iop)
+ char   *s;
+ int     n;
+ FILE * iop;
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/post.c mh-6.8.4-JP-3.05/uip/post.c
+--- mh-6.8.4-JP-3.05.orig/uip/post.c	2001-04-03 01:29:52.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/post.c	2018-12-31 09:05:50.000000000 +0900
+@@ -365,10 +365,24 @@
+ off_t	lseek ();
+ time_t	time ();
+ 
+-static	putfmt(), start_headers(), finish_headers(), putgrp(), pl();
++#ifndef	MHMTS
++static void do_addresses (int bccque, int talk);
++#else	/* MHMTS */
++static void do_addresses (char *file, int fd, int ud, int bccque, int talk);
++#endif	/* MHMTS */
++
++static	start_headers(), finish_headers(), pl();
++static void putfmt (char *name, char *str, FILE *out);
++static void putgrp (char *name, char *group, FILE *out, unsigned int flags);
+ static	anno(), make_bcc_file(), verify_all_addresses();
+-static	chkadr(), do_addresses(), do_text(), do_an_address(), sigon();
+-static 	sigoff(), p_refile(), fcc(), die(), insert_fcc(), p_record ();
++static	chkadr(), do_text();
++static void do_an_address (struct mailname *lp, int talk, int tma);
++static void sigon (void);
++static 	fcc(), die();
++static void insert_fcc (struct headers *hdr, char *pp);
++static void sigoff (void );
++static void p_refile (char *file);
++static void p_record (void);
+ static int	get_header(), putadr(), insert(), annoaux();
+ #ifdef TMA
+ static	postplain();
+@@ -713,8 +727,9 @@
+ 	else {
+ 	    (void) strcpy (tmpfil, m_scratch ("", m_maildir (invo_name)));
+ 	    if ((out = fopen (tmpfil, "w")) == NULL) {
+-		(void) strcpy (tmpfil, m_tmpfil (invo_name));
+-		if ((out = fopen (tmpfil, "w")) == NULL)
++		int tmpfd;
++		(void) strcpy (tmpfil, m_tmpfil (invo_name, &tmpfd));
++		if (tmpfd == -1 || (out = fdopen (tmpfd, "w")) == NULL)
+ 		    adios (tmpfil, "unable to create");
+ 	    }
+ #ifdef	MHMTS
+@@ -844,10 +859,7 @@
+ 
+ /*    DRAFT GENERATION */
+ 
+-static putfmt (name, str, out)
+-register char   *name,
+-		*str;
+-register FILE *out;
++static void putfmt (char *name, char *str, FILE *out)
+ {
+     int     count,
+             grp,
+@@ -1264,11 +1276,7 @@
+ 
+ /*  */
+ 
+-static putgrp (name, group, out, flags)
+-register char   *name,
+-		*group;
+-register FILE *out;
+-unsigned int    flags;
++static void putgrp (char *name, char *group, FILE *out, unsigned int flags)
+ {
+     int     len;
+     char   *cp;
+@@ -1418,9 +1426,7 @@
+ 
+ /*  */
+ 
+-static  insert_fcc (hdr, pp)
+-register struct	headers *hdr;
+-register char   *pp;
++static void insert_fcc (struct headers *hdr, char *pp)
+ {
+     register char   *cp;
+ 
+@@ -1446,9 +1452,10 @@
+             child_id;
+     char   *vec[6];
+     register FILE   *out;
++    int     tmpfd;
+ 
+-    (void) strcpy (bccfil, m_tmpfil ("bccs"));
+-    if ((out = fopen (bccfil, "w")) == NULL)
++    (void) strcpy (bccfil, m_tmpfil ("bccs", &tmpfd));
++    if (tmpfd == -1 || (out = fdopen (tmpfd, "w")) == NULL)
+ 	adios (bccfil, "unable to create");
+     (void) chmod (bccfil, 0600);
+ 
+@@ -1952,15 +1959,10 @@
+ /*  */
+ 
+ #ifndef	MHMTS
+-static do_addresses (bccque, talk)
++static void do_addresses (int bccque, int talk)
+ #else	/* MHMTS */
+-static do_addresses (file, fd, ud, bccque, talk)
+-register char   *file;
+-int	fd,
+-	ud;
++static void do_addresses (char *file, int fd, int ud, int bccque, int talk)
+ #endif	/* MHMTS */
+-int	bccque,
+-	talk;
+ {
+     int     retval;
+ #ifndef	BERK
+@@ -2122,10 +2124,7 @@
+ /* ARGSUSED */
+ #endif	/* TMA */
+ 
+-static do_an_address (lp, talk, tma)
+-register struct mailname *lp;
+-int     talk,
+-	tma;
++static void do_an_address (struct mailname *lp, int talk, int tma)
+ {
+     int     len,
+             retval;
+@@ -2260,10 +2259,7 @@
+ #ifdef	MHMTS
+ /* ARGSUSED */
+ 
+-static do_an_address (lp, talk, tma)
+-register struct mailname *lp;
+-int     talk,
+-	tma;
++static void do_an_address (struct mailname *lp, int talk, int tma)
+ {
+     register char  *mbox;
+     char    addr[BUFSIZ];
+@@ -2353,10 +2349,7 @@
+ /* ARGSUSED */
+ #endif	/* TMA */
+ 
+-static do_an_address (lp, talk, tma)
+-register struct mailname *lp;
+-int     talk,
+-	tma;
++static void do_an_address (struct mailname *lp, int talk, int tma)
+ {
+     int     retval;
+     register char  *mbox,
+@@ -2463,7 +2456,7 @@
+ #endif	/* not MHMTS */
+ 
+ 
+-static  sigon () {
++static void sigon (void) {
+     if (debug)
+ 	return;
+ 
+@@ -2481,7 +2474,7 @@
+ }
+ 
+ 
+-static sigoff () {
++static void sigoff (void ) {
+     if (debug)
+ 	return;
+ 
+@@ -2493,8 +2486,7 @@
+ 
+ /*    FCC INTERACTION */
+ 
+-static  p_refile (file)
+-register char   *file;
++static void p_refile (char *file)
+ {
+     register int     i;
+ 
+@@ -2560,7 +2552,7 @@
+ 
+ /*    RECORD RECIPIENTS */
+ 
+-static	p_record ()
++static void p_record (void)
+ {
+     int	    i,
+ 	    child_id,
+@@ -2570,6 +2562,7 @@
+ 			     **app;
+     struct mailname *addrs[3];
+     register FILE   *out;
++    int     tmpfd;
+ 
+     if (!record || (msgflags & (MFRM | MRFM | MRPY)))
+ 	return;
+@@ -2582,8 +2575,8 @@
+ 	fflush (stdout);
+     }
+ 
+-    (void) strcpy (recfile, m_tmpfil ("record"));
+-    if ((out = fopen (recfile, "w")) == NULL) {
++    (void) strcpy (recfile, m_tmpfil ("record", &tmpfd));
++    if (tmpfd == -1 || (out = fdopen (tmpfd, "w")) == NULL) {
+ 	fprintf (verbose ? stdout : stderr, "unable to create temporary file");
+ 	if (!verbose)
+ 	    fprintf (stderr, ", so can't record recipients");
+@@ -2868,12 +2861,10 @@
+     int     i,
+             fd;
+     char    buffer[BUFSIZ];
++    int     tmpfd;
+ 
+-    (void) strcpy (tmpfil, m_tmpfil ("hook"));
+-    if ((fd = creat (tmpfil, 0600)) == NOTOK)
+-	return NOTOK;
+-    (void) close (fd);
+-    if ((fd = open (tmpfil, 2)) == NOTOK)
++    (void) strcpy (tmpfil, m_tmpfil ("hook", &fd));
++    if (fd == -1)
+ 	return NOTOK;
+ 
+     (void) lseek (qd, (off_t)0, 0);
+@@ -2981,12 +2972,9 @@
+     if ((qd = dup (td)) == NOTOK)
+ 	adios ("fd", "unable to dup");
+ 
+-    (void) strcpy (tmpfil, m_tmpfil ("uumf"));
+-    if ((fd = creat (tmpfil, 0600)) == NOTOK)
++    (void) strcpy (tmpfil, m_tmpfil ("uumf", &fd));
++    if (fd == -1)
+ 	adios (tmpfil, "unable to create");
+-    (void) close (fd);
+-    if ((fd = open (tmpfil, 2)) == NOTOK)
+-	adios (tmpfil, "unable to re-open");
+ 
+     switch (i = mmdf2uucp (qd, fd, 1)) {
+ 	case OK: 
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/prompter.c mh-6.8.4-JP-3.05/uip/prompter.c
+--- mh-6.8.4-JP-3.05.orig/uip/prompter.c	1998-04-24 06:02:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/prompter.c	2018-12-31 09:05:50.000000000 +0900
+@@ -68,9 +68,6 @@
+ 
+ /*  */
+ 
+-extern int  errno;
+-
+-
+ #ifndef	SYS5
+ #define	ERASE	sg.sg_erase
+ #define	KILL	sg.sg_kill
+@@ -123,6 +120,7 @@
+            *arguments[MAXARGS],
+           **argp;
+     FILE *in, *out;
++    int     tmpfd;
+ 
+ #ifdef LOCALE
+ 	setlocale(LC_ALL, "");
+@@ -203,8 +201,8 @@
+     if ((in = fopen (drft, "r")) == NULL)
+ 	adios (drft, "unable to open");
+ 
+-    (void) strcpy (tmpfil, m_tmpfil (invo_name));
+-    if ((out = fopen (tmpfil, "w")) == NULL)
++    (void) strcpy (tmpfil, m_tmpfil (invo_name, &tmpfd));
++    if (tmpfd == -1 || (out = fdopen (tmpfd, "w")) == NULL)
+ 	adios (tmpfil, "unable to create");
+     (void) chmod (tmpfil, 0600);
+ 
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/pshsbr.c mh-6.8.4-JP-3.05/uip/pshsbr.c
+--- mh-6.8.4-JP-3.05.orig/uip/pshsbr.c	2001-04-02 19:50:24.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/pshsbr.c	2018-12-31 09:05:50.000000000 +0900
+@@ -27,17 +27,11 @@
+ #define	TRM	"."
+ #define	TRMLEN	(sizeof TRM - 1)
+ 
+-#ifdef __CYGWIN32__
+ #include <errno.h>
+-#endif
+-extern int  errno;
+ #if !defined(BSD44) && !defined(__GNU_LIBRARY__)
+ extern int  sys_nerr;
+ extern char *sys_errlist[];
+ #endif
+-#ifdef __NetBSD__ /* XXX */
+-#include <errno.h>
+-#endif
+ 
+ static int  poprint = 0;
+ static int  pophack = 0;
+@@ -63,7 +57,7 @@
+ static	int	command(), multiline();
+ #endif
+ 
+-static int	getline();
++static int	_getline();
+ static putline();
+ 
+ #ifdef NNTP
+@@ -176,7 +170,7 @@
+ 
+     (void) signal (SIGPIPE, SIG_IGN);
+ 
+-    switch (getline (response, sizeof response, input)) {
++    switch (_getline (response, sizeof response, input)) {
+ 	case OK: 
+ 	    if (poprint)
+ 		fprintf (stderr, "<--- %s\n", response);
+@@ -619,7 +613,7 @@
+     if (putline (buffer, output) == NOTOK)
+ 	return NOTOK;
+ 
+-    switch (getline (response, sizeof response, input)) {
++    switch (_getline (response, sizeof response, input)) {
+ 	case OK: 
+ 	    if (poprint)
+ 		fprintf (stderr, "<--- %s\n", response);
+@@ -645,7 +639,7 @@
+ #endif
+     char    buffer[BUFSIZ + TRMLEN];
+ 
+-    if (getline (buffer, sizeof buffer, input) != OK)
++    if (_getline (buffer, sizeof buffer, input) != OK)
+ 	return NOTOK;
+ #ifdef	DEBUG
+     if (poprint)
+@@ -665,7 +659,7 @@
+ 
+ /*  */
+ 
+-static int  getline (s, n, iop)
++static int  _getline (s, n, iop)
+ char   *s;
+ int     n;
+ FILE * iop;
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/rcvdist.c mh-6.8.4-JP-3.05/uip/rcvdist.c
+--- mh-6.8.4-JP-3.05.orig/uip/rcvdist.c	2001-08-30 11:07:11.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/rcvdist.c	2018-12-31 09:05:50.000000000 +0900
+@@ -51,6 +51,7 @@
+            *arguments[MAXARGS],
+            *vec[MAXARGS];
+     register    FILE * fp;
++    int     tmpfd;
+ 
+ #ifdef LOCALE
+ 	setlocale(LC_ALL, "");
+@@ -102,15 +103,16 @@
+ 	    invo_name);
+ 
+     (void) umask (~m_gmprot ());
+-    (void) strcpy (tmpfil, m_tmpfil (invo_name));
+-    if ((fp = fopen (tmpfil, "w+")) == NULL)
++    (void) strcpy (tmpfil, m_tmpfil (invo_name, &tmpfd));
++    if (tmpfd == -1 || (fp = fdopen (tmpfd, "w+")) == NULL)
+ 	adios (tmpfil, "unable to create");
+     (void) cpydata (fileno (stdin), fileno (fp), "message", tmpfil);
+     (void) fseek (fp, 0L, 0);
+-    (void) strcpy (drft, m_tmpfil (invo_name));
++    (void) strcpy (drft, m_tmpfil (invo_name, &tmpfd));
+     rcvdistout (fp, form, addrs);
+     (void) fclose (fp);
+ 
++    close(tmpfd); unlink(invo_name); /* THIS LINE CAUSE RACE CONDITION */
+     if (distout (drft, tmpfil, backup) == NOTOK)
+ 	done (1);
+ 
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/rcvstore.c mh-6.8.4-JP-3.05/uip/rcvstore.c
+--- mh-6.8.4-JP-3.05.orig/uip/rcvstore.c	1998-04-24 06:02:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/rcvstore.c	2018-12-31 09:05:50.000000000 +0900
+@@ -43,10 +43,7 @@
+ 
+ /*  */
+ 
+-extern int  errno;
+-
+-static char *tmpfilenam = NULLCP;
+-/*  */
++static char *tmpfilenam = NULLCP; /*  */
+ 
+ /* ARGSUSED */
+ 
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/rcvtty.c mh-6.8.4-JP-3.05/uip/rcvtty.c
+--- mh-6.8.4-JP-3.05.orig/uip/rcvtty.c	2001-04-05 01:05:17.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/rcvtty.c	2018-12-31 09:05:50.000000000 +0900
+@@ -79,7 +79,7 @@
+ char   *getusr ();
+ 
+ static int	message_fd(), header_fd();
+-static		alert();
++static  void alert (char *tty, int md);
+ 
+ static int bell = 1;
+ static int newline = 1;
+@@ -261,7 +261,11 @@
+ 		_exit (-1);
+ 	    closefds (3);
+ #ifdef	BSD42
++# if __DARWIN_UNIX03
++	    (void) setpgid (0, getpid ());
++# else
+ 	    (void) setpgrp (0, getpid ());
++# endif
+ #endif	/* BSD42 */
+ #ifdef SVR4
+ 	    (void) setsid();
+@@ -305,12 +309,8 @@
+     int     fd;
+     char    tmpfil[BUFSIZ];
+ 
+-    (void) strcpy (tmpfil, m_tmpfil (invo_name));
+-    if ((fd = creat (tmpfil, 0600)) == NOTOK)
+-	return NOTOK;
+-    (void) close (fd);
+-
+-    if ((fd = open (tmpfil, 2)) == NOTOK)
++    (void) strcpy (tmpfil, m_tmpfil (invo_name, &fd));
++    if (fd == -1)
+ 	return NOTOK;
+     (void) unlink (tmpfil);
+ 
+@@ -329,9 +329,7 @@
+ /*  */
+ 
+ #ifndef	TTYD
+-static  alert (tty, md)
+-char   *tty;
+-int     md;
++static  void alert (char *tty, int md)
+ {
+     int     i,
+             td;
+@@ -395,9 +393,7 @@
+ 
+ /*  */
+ 
+-static  alert (user, md)
+-register char   *user;
+-int     md;
++static void  alert (char *user, int md)
+ {
+     int     i,
+             td;
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/refile.c mh-6.8.4-JP-3.05/uip/refile.c
+--- mh-6.8.4-JP-3.05.orig/uip/refile.c	1998-04-24 06:02:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/refile.c	2018-12-31 09:05:50.000000000 +0900
+@@ -47,9 +47,6 @@
+ 
+ /*  */
+ 
+-extern int  errno;
+-
+-
+ static char maildir[BUFSIZ];
+ 
+ 
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/replsbr.c mh-6.8.4-JP-3.05/uip/replsbr.c
+--- mh-6.8.4-JP-3.05.orig/uip/replsbr.c	2001-04-05 01:05:17.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/replsbr.c	2018-12-31 09:05:50.000000000 +0900
+@@ -68,7 +68,8 @@
+     NULL
+ };
+ 
+-static	insert(), replfilter();
++static	insert();
++static void replfilter (FILE *in, FILE *out);
+ /*  */
+ 
+ /* ARGSUSED */
+@@ -195,11 +196,12 @@
+ 			}
+ 		    } while (cptr = cptr->c_next);
+ 
+-		while (state == FLDPLUS)
++		while (state == FLDPLUS) {
+ 		    state = m_getfld (state, name, tmpbuf, SBUFSIZ, inb);
+ #ifdef JAPAN
+ 	            (void) ml_conv(tmpbuf);
+ #endif /* JAPAN */
++		}
+ 		break;
+ 
+ 	    case LENERR: 
+@@ -416,7 +418,7 @@
+ #ifdef MIME_HEADERS
+ 	char *cp, *ep;
+ 	cp = adrformat (np);
+-	if ((ep = malloc((unsigned)strlen(cp)+1)) == NULL)
++	if ((ep = malloc((unsigned)strlen(cp)*10+1)) == NULL)
+ 	    adios (NULLCP, "out of memory");
+ 	(void) exthdr_decode(cp, ep);
+ 	(void) sprintf (buffer, "Reply to %s? ", ep);
+@@ -437,9 +439,7 @@
+ 
+ /*  */
+ 
+-static	replfilter (in, out)
+-register FILE *in,
+-	      *out;
++static void replfilter (FILE *in, FILE *out)
+ {
+     int	    pid;
+     char   *mhl;
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/sbboards.c mh-6.8.4-JP-3.05/uip/sbboards.c
+--- mh-6.8.4-JP-3.05.orig/uip/sbboards.c	1998-12-02 02:05:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/sbboards.c	2018-12-31 09:05:50.000000000 +0900
+@@ -617,12 +617,9 @@
+             fd;
+     char    buffer[BUFSIZ];
+ 
+-    (void) strcpy (tmpfil, m_tmpfil (invo_name));
+-    if ((fd = creat (tmpfil, 0600)) == NOTOK)
+-	adios (EX_CANTCREAT, tmpfil, "unable to create");
+-    (void) close (fd);
+-    if ((fd = open (tmpfil, 2)) == NOTOK)
+-	adios (EX_NOINPUT, tmpfil, "unable to re-open");
++    (void) strcpy (tmpfil, m_tmpfil (invo_name, &fd));
++    if (fd == -1)
++	adios (EX_NOINPUT, tmpfil, "unable to open");
+ 
+     (void) lseek (qd, (off_t)0, 0);
+     while ((i = read (qd, buffer, sizeof buffer)) > 0)
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/scan.c mh-6.8.4-JP-3.05/uip/scan.c
+--- mh-6.8.4-JP-3.05.orig/uip/scan.c	1999-02-09 20:30:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/scan.c	2018-12-31 09:05:50.000000000 +0900
+@@ -50,7 +50,6 @@
+ 
+ /*  */
+ 
+-extern int errno;
+ #ifdef	LBL	/* global for sbr/formatsbr.c - yech! */
+ extern struct msgs *fmt_current_folder;	
+ #endif
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/scansbr.c mh-6.8.4-JP-3.05/uip/scansbr.c
+--- mh-6.8.4-JP-3.05.orig/uip/scansbr.c	2001-06-13 23:18:07.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/scansbr.c	2018-12-31 09:05:50.000000000 +0900
+@@ -253,6 +253,8 @@
+ 		while (state == BODY) {
+ #ifdef _STDIO_USES_IOSTREAM
+ 		    if (scnout->_IO_write_ptr == scnout->_IO_write_end) {
++#elif defined(__DragonFly__)
++		    if (((struct __FILE_public *)scnout)->_r <= 0) {
+ #else
+ 		    if (scnout->_cnt <= 0) {
+ #endif
+@@ -264,6 +266,11 @@
+ 				     (long)scnout->_IO_write_ptr-(long)scnout->_IO_write_end,
+ 				     inb);
+ 		    scnout->_IO_write_ptr += msg_count;
++#elif defined(__DragonFly__)
++		    state = m_getfld( state, name, ((struct __FILE_public *)scnout)->_p,
++				      -(((struct __FILE_public *)scnout)->_r), inb );
++		    ((struct __FILE_public *)scnout)->_r -= msg_count;
++		    ((struct __FILE_public *)scnout)->_p += msg_count;
+ #else
+ 		    state = m_getfld( state, name, scnout->_ptr,
+ 				      -(scnout->_cnt), inb );
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/send.c mh-6.8.4-JP-3.05/uip/send.c
+--- mh-6.8.4-JP-3.05.orig/uip/send.c	1998-04-24 06:02:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/send.c	2018-12-31 09:05:50.000000000 +0900
+@@ -162,10 +162,6 @@
+ extern char *altmsg;		/*  .. */
+ extern char *annotext;
+ extern char *distfile;
+-
+-
+-extern int   errno;
+-
+ /*  */
+ 
+ /* ARGSUSED */
+@@ -464,6 +460,7 @@
+ 	vec[vecp++] = "-dist";
+ 	distfile = getcpy (m_scratch (altmsg, invo_name));
+ 	if (link (altmsg, distfile) == NOTOK) {
++	    int out;
+ 	    if (errno != EXDEV
+ #ifdef	EISREMOTE
+ 		    && errno != EISREMOTE
+@@ -471,15 +468,20 @@
+ 		)
+ 		adios (distfile, "unable to link %s to", altmsg);
+ 	    free (distfile);
+-	    distfile = getcpy (m_tmpfil (invo_name));
++	    distfile = getcpy (m_tmpfil (invo_name, &out));
++	    if (out == -1)
++		adios (distfile, "unable to write");
+ 	    {
+-		int	in, out;
++		int	in;
+ 		struct stat st;
+ 
+-		if ((in = open (altmsg, 0)) == NOTOK)
++		if ((in = open (altmsg, 0)) == NOTOK) {
++		    (void) close(out);
++		    (void) unlink(distfile);
+ 		    adios (altmsg, "unable to open");
++		}
+ 		(void) fstat(in, &st);
+-		if ((out = creat (distfile, (int) st.st_mode & 0777)) == NOTOK)
++		if (fchmod(out, (int)st.st_mode & 0777) == NOTOK)
+ 		    adios (distfile, "unable to write");
+ 		cpydata (in, out, altmsg, distfile);
+ 		(void) close (in);
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/sendsbr.c mh-6.8.4-JP-3.05/uip/sendsbr.c
+--- mh-6.8.4-JP-3.05.orig/uip/sendsbr.c	2001-04-05 01:05:17.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/sendsbr.c	2018-12-31 09:05:50.000000000 +0900
+@@ -13,12 +13,15 @@
+ #include <unistd.h>
+ #endif
+ 
+-static		alert(), anno(), annoaux();
++static		alert();
++static void annoaux(int);
++static void anno (int fd, struct stat *st);
+ static int	tmp_fd();
+ static int	sendaux();
+ #ifdef	MIME
+ static int	sendaux2();
+ #endif
++char *		LocalName();
+ 
+ /*  */
+ 
+@@ -476,12 +479,8 @@
+     int     fd;
+     char    tmpfil[BUFSIZ];
+ 
+-    (void) strcpy (tmpfil, m_tmpfil (invo_name));
+-    if ((fd = creat (tmpfil, 0600)) == NOTOK)
+-	return NOTOK;
+-    (void) close (fd);
+-
+-    if ((fd = open (tmpfil, 2)) == NOTOK)
++    (void) strcpy (tmpfil, m_tmpfil (invo_name, &fd));
++    if (fd == -1)
+ 	return NOTOK;
+     if (debugsw)
+ 	advise (NULLCP, "temporary file %s selected", tmpfil);
+@@ -494,9 +493,7 @@
+ 
+ /*  */
+ 
+-static anno (fd, st)
+-int	fd;
+-register struct stat *st;
++static void anno (int fd, struct stat *st)
+ {
+     int     child_id;
+     TYPESIG (*hstat) (), (*istat) (), (*qstat) (), (*tstat) ();
+@@ -548,8 +545,7 @@
+ 
+ /*  */
+ 
+-static	annoaux (fd)
+-int	fd;
++static void annoaux (int fd)
+ {
+     int	    fd2,
+ 	    fd3,
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/slocal.c mh-6.8.4-JP-3.05/uip/slocal.c
+--- mh-6.8.4-JP-3.05.orig/uip/slocal.c	2000-12-04 21:09:38.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/slocal.c	2018-12-31 09:05:50.000000000 +0900
+@@ -211,7 +211,9 @@
+ #endif
+ static int	localmail(), usr_delivery(), split(), parse(), logged_in();
+ static int	timely(), usr_file(), usr_pipe(), copyfile();
+-static expand(), glob(), copyinfo();
++static expand();
++static void glob (int fd);
++static void copyinfo (FILE *fp, char *from);
+ 
+ /*  */
+ 
+@@ -830,13 +832,13 @@
+ 	p -> p_flags &= ~P_CHK;
+ 	if (debug)
+ 	    fprintf (stderr, "vars[%d]: name=\"%s\" value=\"%s\"\n",
+-		    p - vars, p -> p_name, p -> p_value);
++		    (int)(p - vars), p -> p_name, p -> p_value);
+     }
+ #define	empty(s)	((s) ? (s) : "")
+     if (debug)
+ 	for (p = hdrs; p -> p_name; p++)
+ 	    fprintf (stderr, "hdrs[%d]: name=\"%s\" value=\"%s\"\n",
+-		p - hdrs, p -> p_name, empty(p -> p_value));
++		(int)(p - hdrs), p -> p_name, empty(p -> p_value));
+ #undef	empty
+ 
+ #ifdef MIME_HEADERS
+@@ -844,7 +846,11 @@
+ 	char *tmpbuf;
+ 	if (! p -> p_value)
+ 	    continue;
+-	tmpbuf = getcpy(p -> p_value);
++	tmpbuf = p -> p_value;
++	if ((p->p_value = malloc(strlen(tmpbuf)*10+1)) == NULL) {
++	    p->p_value = tmpbuf;
++	    continue;
++	}
+ 	exthdr_decode(tmpbuf, p -> p_value);
+ 	free(tmpbuf);
+     }
+@@ -893,8 +899,7 @@
+ 
+ /*  */
+ 
+-static	glob (fd)
+-register int  fd;
++static void glob (int fd)
+ {
+     char buffer[BUFSIZ];
+     struct stat st;
+@@ -918,7 +923,7 @@
+     if (debug)
+ 	for (p = vars; p -> p_name; p++)
+ 	    fprintf (stderr, "vars[%d]: name=\"%s\" value=\"%s\"\n",
+-		    p - vars, p -> p_name, p -> p_value);
++		    (int)(p - vars), p -> p_name, p -> p_value);
+ }
+ 
+ /*  */
+@@ -1238,9 +1243,7 @@
+ 
+ /*  */
+ 
+-static	copyinfo (fp, from)
+-register FILE   *fp;
+-char	*from;
++static void copyinfo (FILE *fp, char *from)
+ {
+     int     i;
+     register char  *cp;
+@@ -1291,12 +1294,11 @@
+     char    buffer[BUFSIZ];
+     register FILE  *qfp,
+ 		   *ffp;
++    int             tmpfd;
+ 
+-    (void) strcpy (tmpfil, m_tmpfil (invo_name));
+-    if ((fd1 = creat (tmpfil, 0600)) == NOTOK)
+-	return NOTOK;
+-    (void) close (fd1);
+-    if ((fd1 = open (tmpfil, 2)) == NOTOK)
++    (void) strcpy (tmpfil, m_tmpfil (invo_name, &tmpfd));
++    fd1 = tmpfd;
++    if (fd1 == -1)
+ 	return NOTOK;
+ 
+     if (!fold) {
+@@ -1355,8 +1357,8 @@
+ 		if (hp) {
+ 		    ep = rindex (++hp, '\n');
+ 		    sprintf (buffer, "Return-Path: %.*s!%.*s\n",
+-			    ep - hp, hp,
+-			    cp - fp, fp);
++			    (int)(ep - hp), hp,
++			    (int)(cp - fp), fp);
+ 		}
+ 		else
+ 		    sprintf (buffer, "Return-Path: %.*s\n",
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/spop.c mh-6.8.4-JP-3.05/uip/spop.c
+--- mh-6.8.4-JP-3.05.orig/uip/spop.c	1998-12-02 02:05:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/spop.c	2018-12-31 09:05:50.000000000 +0900
+@@ -608,12 +608,9 @@
+             fd;
+     char    buffer[BUFSIZ];
+ 
+-    (void) strcpy (tmpfil, m_tmpfil (invo_name));
+-    if ((fd = creat (tmpfil, 0600)) == NOTOK)
+-	adios (EX_CANTCREAT, tmpfil, "unable to create");
+-    (void) close (fd);
+-    if ((fd = open (tmpfil, 2)) == NOTOK)
+-	adios (EX_NOINPUT, tmpfil, "unable to re-open");
++    (void) strcpy (tmpfil, m_tmpfil (invo_name, &fd));
++    if (fd == -1)
++	adios (EX_NOINPUT, tmpfil, "unable to open");
+ 
+     (void) lseek (qd, (off_t)0, 0);
+     while ((i = read (qd, buffer, sizeof buffer)) > 0)
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/spost.c mh-6.8.4-JP-3.05/uip/spost.c
+--- mh-6.8.4-JP-3.05.orig/uip/spost.c	2001-04-05 01:05:17.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/spost.c	2018-12-31 09:05:50.000000000 +0900
+@@ -212,9 +212,11 @@
+ static struct headers  *hdrtab;	/* table for the message we're doing */
+ static FILE *out;		/* output (temp) file */
+ 
+-static	putfmt(), start_headers(), finish_headers(), putadr(),
+-	insert_fcc();
+-static	file(), fcc();
++static void putfmt (char *name, char *str, FILE *out);
++static	start_headers(), finish_headers(), putadr();
++static void insert_fcc (struct headers *hdr, char *pp);
++static	fcc();
++static void file (char *path);
+ static int	get_header(), putone();
+ /*    MAIN */
+ 
+@@ -529,10 +531,7 @@
+ 
+ /*    DRAFT GENERATION */
+ 
+-static putfmt (name, str, out)
+-char   *name,
+-       *str;
+-FILE * out;
++static void putfmt (char *name, char *str, FILE *out)
+ {
+     int     count,
+             grp,
+@@ -835,9 +834,7 @@
+ 
+ /*  */
+ 
+-static  insert_fcc (hdr, pp)
+-struct	headers *hdr;
+-char   *pp;
++static void insert_fcc (struct headers *hdr, char *pp)
+ {
+     char   *cp;
+ 
+@@ -921,8 +918,7 @@
+ 
+ /*    FCC INTERACTION */
+ 
+-static  file (path)
+-char   *path;
++static void file (char *path)
+ {
+     int     i;
+ 
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/trmsbr.c mh-6.8.4-JP-3.05/uip/trmsbr.c
+--- mh-6.8.4-JP-3.05.orig/uip/trmsbr.c	1993-12-01 13:01:39.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/trmsbr.c	2018-12-31 09:05:50.000000000 +0900
+@@ -26,6 +26,9 @@
+ #define	TXTSIZ	BUFSIZ
+ #endif
+ 
++#if defined(linux)
++#include	<termcap.h>
++#else
+ #ifndef	SYS5
+ extern char PC;
+ extern short    ospeed;
+@@ -33,6 +36,7 @@
+ char	PC;
+ short	ospeed;
+ #endif	/* SYS5 */
++#endif
+ 
+ int     tgetent (), tgetnum ();
+ char   *tgetstr ();
+@@ -53,7 +57,7 @@
+ 
+ /*  */
+ 
+-static  read_termcap () {
++static void read_termcap (void) {
+     register char  *bp,
+                    *term;
+     char   *cp,
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/umhook.c mh-6.8.4-JP-3.05/uip/umhook.c
+--- mh-6.8.4-JP-3.05.orig/uip/umhook.c	1998-04-24 06:02:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/umhook.c	2018-12-31 09:05:50.000000000 +0900
+@@ -232,12 +232,8 @@
+     if (lseek (uucp, (off_t) offset, 0) == (off_t) NOTOK)
+ 	adios (mymail, "unable to position to %ld offset on", (long) offset);
+ 
+-    (void) strcpy (tmpfil, m_tmpfil (invo_name));
+-    if ((td1 = creat (tmpfil, TMPMODE)) == NOTOK)
+-	adios (tmpfil, "unable to create");
+-    (void) close (td1);
+-
+-    if ((td1 = open (tmpfil, 2)) == NOTOK)
++    (void) strcpy (tmpfil, m_tmpfil (invo_name, &td1));
++    if (td1 == -1)
+ 	adios (tmpfil, "unable to open");
+     (void) unlink (tmpfil);
+     if ((td2 = dup (td1)) == NOTOK)
+@@ -298,12 +294,8 @@
+ 
+ /* should insist on isdlm1 (buffer) here... */
+ 
+-    (void) strcpy (myfile, m_tmpfil (invo_name));
+-    if ((fd1 = creat (myfile, TMPMODE)) == NOTOK)
+-	adios (myfile, "unable to create");
+-    (void) close (fd1);
+-
+-    if ((fd1 = open (myfile, 2)) == NOTOK)
++    (void) strcpy (myfile, m_tmpfil (invo_name, &fd1));
++    if (fd1 == -1)
+ 	adios (myfile, "unable to open");
+     (void) unlink (myfile);
+     if ((fd2 = dup (fd1)) == NOTOK)
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/vmh.c mh-6.8.4-JP-3.05/uip/vmh.c
+--- mh-6.8.4-JP-3.05.orig/uip/vmh.c	2001-04-21 20:16:49.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/vmh.c	2018-12-31 09:05:50.000000000 +0900
+@@ -113,9 +113,26 @@
+ #define	SMALLMOVE	1
+ #define	LARGEMOVE	10
+ 
++#ifndef A_CHARTEXT
++#define	A_CHARTEXT	0xff
++#endif
+ 
+ #define	XYZ			/* XXX */
+ 
++#if (defined(__FreeBSD__) && __FreeBSD__ >= 5) || (defined(linux)) || defined(__DragonFly__) || defined(__APPLE__)
++struct ldat
++{
++#if defined(__DragonFly__) || NCURSES_WIDECHAR == 0
++	char		*text;
++#else
++	NCURSES_CH_T	*text;
++#endif
++	NCURSES_SIZE_T	firstchar;
++	NCURSES_SIZE_T	lastchar;
++	NCURSES_SIZE_T	oldindex;
++};
++#endif
++
+ /*  */
+ 
+ static struct swit switches[] = {
+@@ -212,6 +229,15 @@
+ #endif
+ #endif	/* TIOCGLTC */
+ 
++#ifdef __NetBSD__
++static char *tc_CE, *tc_CM, *tc_SO, *tc_SE, *tc_US, *tc_UE;
++#define	CE	tc_CE
++#define	CM	tc_CM
++#define	SO	tc_SO
++#define	SE	tc_SE
++#define	US	tc_US
++#define	UE	tc_UE
++#endif
+ 
+ #if !defined(SYS5) && !defined(BSD44) && !defined(TERMINFO)
+ int	_putchar ();
+@@ -229,7 +255,6 @@
+ 
+ 
+ 					/* MISCELLANY */
+-extern int  errno;
+ #if !defined(BSD44) && !defined(__GNU_LIBRARY__)
+ extern int  sys_nerr;
+ extern char *sys_errlist[];
+@@ -238,7 +263,9 @@
+ static void	adorn ();
+ 
+ static	vmh(), lreset(), linsert(), ladvance(), lretreat(), lgo();
+-static	TTYon(), TTYoff(), foreground();
++static	foreground();
++static void TTYon (void);
++static void TTYoff (void);
+ static int	PEERinit(), pINI(), pLOOP(), pTTY(), pWIN(), WINinit();
+ static int	WINgetstr(), WINless(), WINputc(), TTYinit(), pWINaux();
+ /*  */
+@@ -338,7 +365,11 @@
+ 	wclrtoeol (Command);
+ 	wrefresh (Command);
+ 
+-	switch (WINgetstr (Command, buffer)) {
++#ifndef JAPAN
++	switch (WINgetstr (Command, buffer, sizeof(buffer))) {
++#else
++	switch (WINgetstr (Command, (unsigned char *)buffer, sizeof(buffer))) {
++#endif
+ 	    case NOTOK: 
+ 		break;
+ 
+@@ -798,6 +829,9 @@
+     sideground ();
+ 
+ #ifndef	TERMINFO
++#ifdef __NetBSD__
++    CM = getcap("cm");
++#endif
+     if (CM == NULL)
+ #else	/* TERMINFO */
+     if (cursor_address == NULL)	/* assume mtr wanted "cm", not "CM" */
+@@ -812,6 +846,15 @@
+ #ifndef	TERMINFO
+     if (tgetflag ("xt") || tgetnum ("sg") > 0)
+ 	SO = SE = US = UE = NULL;
++#ifdef __NetBSD__
++    else {
++	SO = getcap("so");
++	SE = getcap("se");
++	US = getcap("us");
++	UE = getcap("ue");
++    }
++    CE = getcap("ce");
++#endif
+ #else	/* TERMINFO */
+ /*
+  * If termcap mapped directly to terminfo, we'd use the following:
+@@ -852,21 +895,36 @@
+ 
+ /*  */
+ 
+-static int WINgetstr (w, buffer)
++static int WINgetstr (w, buffer, size)
+ register WINDOW *w;
++#ifndef JAPAN
+ char   *buffer;
++#else	/* JAPAN */
++unsigned char   *buffer;
++#endif	/* JAPAN */
++size_t    size;
+ {
+     register int    c;
++#ifndef JAPAN
+     register char  *bp;
++#else	/* JAPAN */
++    register unsigned char  *bp;
++#endif	/* JAPAN */
+ 
+     bp = buffer;
+     *bp = 0;
++    --size;
+ 
+     for (;;) {
+-	switch (c = wgetch (w) & 0xff) {
+-	    case ERR: 
+-		adios (NULLCP, "wgetch lost");
++	c = wgetch(w);
++	if (c == ERR)
++	    adios (NULLCP, "wgetch lost");
++	if (bp - buffer >= size &&
++	    !(c == intrc || c == EOFC || c == ERASE || c == KILL ||
++	      c == WERASC || c == '\r' || c == '\n'))
++	    continue;
+ 
++	switch (c &= A_CHARTEXT) {
+ 	    case '\f':
+ 		wrefresh (curscr);
+ 		break;
+@@ -1372,7 +1430,7 @@
+ 	    lp -> l_buf[i] = w -> lines[getcury(w)] -> line[i].ch;
+ #else
+ 	    wmove(w, getcury(w), i);
+-	    lp -> l_buf[i] = winch(w); /* 8bit ?? */
++	    lp -> l_buf[i] = winch(w) & A_CHARTEXT;
+ #endif
+ 	}
+ 	lp -> l_buf[getmaxx(w)] = '\0';
+@@ -1403,8 +1461,12 @@
+     }
+ #endif /* __NCURSES_H */
+     for (cp = lp -> l_buf + strlen (lp -> l_buf) - 1; cp >= lp -> l_buf; cp--)
++#ifndef JAPAN
+ 	if (isspace (*cp))
+-	    *cp = 0;
++#else	/* JAPAN */
++	if (isspace ((unsigned char)(*cp)))
++#endif	/* JAPAN */
++	    *cp = '\0';
+ 	else
+ 	    break;
+ 
+@@ -1529,7 +1591,7 @@
+ 
+ /*  */
+ 
+-static	TTYon () {
++static void TTYon (void) {
+     if (tty_ready == DONE)
+ 	return;
+ 
+@@ -1563,13 +1625,15 @@
+ 
+ /*  */
+ 
+-static	TTYoff () {
++static void TTYoff (void) {
+     if (tty_ready == NOTOK)
+ 	return;
+ 
+     INTR = intrc;
+ #ifndef	SYS5
++#ifndef __NetBSD__
+     (void) ioctl (fileno (stdin), TIOCSETC, (char *) &tc);
++#endif
+ #else	/* SYS5 */
+ #if defined(TCGETATTR) && !defined(TCSETA) && defined(TCSANOW)
+     (void) tcsetattr (fileno (stdin), TCSANOW, &sg);
+@@ -1581,6 +1645,9 @@
+     leaveok (curscr, TRUE);
+     mvcur (0, COLS - 1, LINES - 1, 0);
+     endwin ();
++#ifdef __NetBSD__
++    (void) ioctl (fileno (stdin), TIOCSETC, (char *) &tc);
++#endif
+     if (tty_ready == DONE) {
+ #ifndef	TERMINFO
+ 	if (CE)
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/vmhsbr.c mh-6.8.4-JP-3.05/uip/vmhsbr.c
+--- mh-6.8.4-JP-3.05.orig/uip/vmhsbr.c	2001-04-02 19:50:46.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/vmhsbr.c	2018-12-31 09:05:50.000000000 +0900
+@@ -24,10 +24,7 @@
+ static	int PEERrfd = NOTOK;
+ static	int PEERwfd = NOTOK;
+ 
+-#ifdef __CYGWIN32__
+ #include <errno.h>
+-#endif
+-extern int  errno;
+ #if !defined(BSD44) && !defined(__GNU_LIBRARY__)
+ extern int  sys_nerr;
+ extern char *sys_errlist[];
+diff -ruN mh-6.8.4-JP-3.05.orig/uip/whatnowsbr.c mh-6.8.4-JP-3.05/uip/whatnowsbr.c
+--- mh-6.8.4-JP-3.05.orig/uip/whatnowsbr.c	2001-04-05 01:05:18.000000000 +0900
++++ mh-6.8.4-JP-3.05/uip/whatnowsbr.c	2018-12-31 09:05:50.000000000 +0900
+@@ -18,7 +18,8 @@
+ #define	MIMEminc(a)	0
+ #endif
+ 
+-static int	editfile(), copyf(), sendfile(), sendit(), whomfile();
++static int	editfile(), copyf(), sendfile(), whomfile();
++static void sendit (char *sp, char **arg, char *file, int pushed);
+ #ifdef	MIME
+ static int	mhnfile();
+ #endif
+@@ -690,11 +691,7 @@
+ 
+ /*  */
+ 
+-static  sendit (sp, arg, file, pushed)
+-register char  *sp,
+-	      **arg,
+-               *file;
+-int     pushed;
++static void sendit (char *sp, char **arg, char *file, int pushed)
+ {
+ #ifndef	lint
+     int	    distsw = 0;
+diff -ruN mh-6.8.4-JP-3.05.orig/zotnet/bboards/getbbent.c mh-6.8.4-JP-3.05/zotnet/bboards/getbbent.c
+--- mh-6.8.4-JP-3.05.orig/zotnet/bboards/getbbent.c	1999-02-09 20:30:00.000000000 +0900
++++ mh-6.8.4-JP-3.05/zotnet/bboards/getbbent.c	2018-12-31 09:05:50.000000000 +0900
+@@ -458,15 +458,15 @@
+     if ((cp = rindex (bb -> bb_file, '/')) == NULL || *++cp == 0)
+ 	(void) strcpy (prf, ""), cp = bb -> bb_file;
+     else
+-	(void) sprintf (prf, "%.*s", cp - bb -> bb_file, bb -> bb_file);
++	(void) sprintf (prf, "%.*s", (int)(cp - bb -> bb_file), bb -> bb_file);
+     if ((dp = index (cp, '.')) == NULL)
+ 	dp = cp + strlen (cp);
+ 
+     (void) sprintf (BBArchive, "%s%s/%s", prf, ARCHIVE, cp);
+     bb -> bb_archive = BBArchive;
+-    (void) sprintf (BBInfo, "%s.%.*s%s", prf, dp - cp, cp, CNTFILE);
++    (void) sprintf (BBInfo, "%s.%.*s%s", prf, (int)(dp - cp), cp, CNTFILE);
+     bb -> bb_info = BBInfo;
+-    (void) sprintf (BBMap, "%s.%.*s%s", prf, dp - cp, cp, MAPFILE);
++    (void) sprintf (BBMap, "%s.%.*s%s", prf, (int)(dp - cp), cp, MAPFILE);
+     bb -> bb_map = BBMap;
+ 
+     if ((info = fopen (bb -> bb_info, "r")) == NULL)
+@@ -671,10 +671,10 @@
+ 		    if ((cp = rindex (bb -> bb_file, '/')) == NULL || *++cp == 0)
+ 			(void) strcpy (prf, ""), cp = bb -> bb_file;
+ 		    else
+-			(void) sprintf (prf, "%.*s", cp - bb -> bb_file, bb -> bb_file);
++			(void) sprintf (prf, "%.*s", (int)(cp - bb -> bb_file), bb -> bb_file);
+ 		    if ((dp = index (cp, '.')) == NULL)
+ 			dp = cp + strlen (cp);
+-		    (void) sprintf (file, "%s.%.*s%s", prf, dp - cp, cp, DSTFILE);
++		    (void) sprintf (file, "%s.%.*s%s", prf, (int)(dp - cp), cp, DSTFILE);
+ 		    hp = file;
+ 		    break;
+ 
+diff -ruN mh-6.8.4-JP-3.05.orig/zotnet/mf/mf.c mh-6.8.4-JP-3.05/zotnet/mf/mf.c
+--- mh-6.8.4-JP-3.05.orig/zotnet/mf/mf.c	2001-04-03 01:03:22.000000000 +0900
++++ mh-6.8.4-JP-3.05/zotnet/mf/mf.c	2018-12-31 09:05:50.000000000 +0900
+@@ -432,7 +432,7 @@
+     while (isspace (*ap & 0xff))
+ 	ap++;
+     if (cp)
+-	(void) sprintf (adr, "%.*s", cp - ap, ap);
++	(void) sprintf (adr, "%.*s", (int)(cp - ap), ap);
+     else
+ 	(void) strcpy (adr, ap);
+     bp = adr + strlen (adr) - 1;
+diff -ruN mh-6.8.4-JP-3.05.orig/zotnet/mts/client.c mh-6.8.4-JP-3.05/zotnet/mts/client.c
+--- mh-6.8.4-JP-3.05.orig/zotnet/mts/client.c	2001-04-05 01:05:19.000000000 +0900
++++ mh-6.8.4-JP-3.05/zotnet/mts/client.c	2018-12-31 09:05:50.000000000 +0900
+@@ -52,7 +52,6 @@
+ 
+ /*  */
+ 
+-extern int errno;
+ #if !defined(BSD44) && !defined(__GNU_LIBRARY__)
+ extern int  sys_nerr;
+ extern char *sys_errlist[];
+@@ -361,7 +360,8 @@
+ 
+ #if !defined(SOLARIS) && !defined(linux) && !defined(__bsdi__) && \
+ 	!defined(OSF1) && !defined(__osf__) && !defined(__FreeBSD__) && \
+-	!defined(__NetBSD__)
++ 	!defined(__NetBSD__) && !defined(__OpenBSD__) && \
++	!defined(__DragonFly__) && !defined(__APPLE__)
+ #ifndef	DG
+ #ifndef __alpha
+ u_long	inet_addr ();
+diff -ruN mh-6.8.4-JP-3.05.orig/zotnet/mts/lock.c mh-6.8.4-JP-3.05/zotnet/mts/lock.c
+--- mh-6.8.4-JP-3.05.orig/zotnet/mts/lock.c	2001-04-03 16:22:46.000000000 +0900
++++ mh-6.8.4-JP-3.05/zotnet/mts/lock.c	2018-12-31 09:05:50.000000000 +0900
+@@ -77,10 +77,7 @@
+ #define	FLOCK		/* LOCKF will override this, if defined */
+ #endif
+ 
+-#ifdef __CYGWIN32__
+ #include <errno.h>
+-#endif
+-extern int  errno;
+ 
+ #ifdef	LOCKONLY
+ #ifndef	MMDFONLY
+@@ -103,7 +100,13 @@
+ #endif /* MAILLOCK */
+ 
+ static int	b_lkopen(), lockit(), f_lkopen();
+-static		lockname(), timerON(), timerOFF();
++static		lockname(), timerOFF();
++
++#ifdef LIBLOCKFILE
++static void timerON (char  *lock, int fd, int ltype);
++#else
++static void timerON (char *lock, int fd);
++#endif
+ 
+ time_t	time ();
+ char   *mktemp ();
+@@ -219,7 +222,7 @@
+ 	cp = file;
+     if (lockldir == NULL || *lockldir == 0) {
+ 	if (cp != file) {
+-	    (void) sprintf (bp, "%.*s", cp - file, file);
++	    (void) sprintf (bp, "%.*s", (int)(cp - file), file);
+ 	    bp += strlen (bp);
+ 	}
+     }
+@@ -244,7 +247,7 @@
+ 	    (void) strcpy (tmplock, ",LCK.XXXXXX");
+ 	else
+ 	    (void) sprintf (tmplock, "%.*s,LCK.XXXXXX",
+-		cp - curlock, curlock);
++		(int)(cp - curlock), curlock);
+ 	(void) unlink (mktemp (tmplock));
+     }
+ }
+@@ -620,13 +623,10 @@
+ /*  */
+ 
+ #ifdef LIBLOCKFILE
+-static timerON (lock, fd, ltype)
+-int 	ltype;
++static void timerON (char  *lock, int fd, int ltype)
+ #else
+-static timerON (lock, fd)
++static void timerON (char *lock, int fd)
+ #endif
+-char   *lock;
+-int	fd;
+ {
+     register struct lock   *lp;
+ 
+diff -ruN mh-6.8.4-JP-3.05.orig/zotnet/mts/mts.h mh-6.8.4-JP-3.05/zotnet/mts/mts.h
+--- mh-6.8.4-JP-3.05.orig/zotnet/mts/mts.h	1993-12-01 13:01:42.000000000 +0900
++++ mh-6.8.4-JP-3.05/zotnet/mts/mts.h	2018-12-31 09:05:50.000000000 +0900
+@@ -109,3 +109,5 @@
+ 
+ extern int Everyone;
+ extern char *NoShell;
++
++void mts_init (char *name);
+diff -ruN mh-6.8.4-JP-3.05.orig/zotnet/tws/date.c mh-6.8.4-JP-3.05/zotnet/tws/date.c
+--- mh-6.8.4-JP-3.05.orig/zotnet/tws/date.c	1993-12-01 13:01:43.000000000 +0900
++++ mh-6.8.4-JP-3.05/zotnet/tws/date.c	2018-12-31 09:05:50.000000000 +0900
+@@ -1,6 +1,7 @@
+ /* date.c */
+ 
+ #include "tws.h"
++#include <stdlib.h>
+ #include <stdio.h>
+ 
+ 
+diff -ruN mh-6.8.4-JP-3.05.orig/zotnet/tws/dtimep.c-lexed mh-6.8.4-JP-3.05/zotnet/tws/dtimep.c-lexed
+--- mh-6.8.4-JP-3.05.orig/zotnet/tws/dtimep.c-lexed	2000-01-04 11:03:29.000000000 +0900
++++ mh-6.8.4-JP-3.05/zotnet/tws/dtimep.c-lexed	2018-12-31 09:05:50.000000000 +0900
+@@ -115,8 +115,7 @@
+ #endif	/* BSD42 */
+ #endif
+ 
+-static	zonehack (tw)
+-register struct tws *tw;
++static void zonehack (struct tws *tw)
+ {
+     register struct tm *tm;
+ 

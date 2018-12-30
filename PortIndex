@@ -1,0 +1,2 @@
+mh-jp 477
+variants universal depends_build port:libtool portdir mail/mh-jp description {Message Handler with Japanese support} homepage http://www.chem.eng.himeji-tech.ac.jp/~hayashi/internet/mh-plus.html epoch 0 platforms darwin name mh-jp depends_lib {port:libiconv port:readline port:ncurses} license BSD maintainers amura@tomato.sakura.ne.jp long_description {Message Handler with Japanese support and Extentions by mh-plus project.} categories mail version 6.8.4-JP-3.05 revision 1
