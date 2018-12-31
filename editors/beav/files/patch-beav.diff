@@ -1,0 +1,123 @@
+diff -ruN beav-140.orig/Makefile beav-140/Makefile
+--- beav-140.orig/Makefile	2018-12-31 20:16:47.000000000 +0900
++++ beav-140/Makefile	2018-12-31 20:17:28.000000000 +0900
+@@ -1,6 +1,6 @@
+ # This is the makefile for BSD UNIX
+ #CFLAGS=     -g -DUNIX
+-CFLAGS=     -g -DUNIX -Wall
++CFLAGS=     -g -DUNIX -DBSD -Wall
+ CC=gcc
+ 
+ OFILES=		basic.o ebcdic.o fileio.o region.o text.o wangpc.o \
+@@ -17,9 +17,9 @@
+ HFILES=     def.h prototyp.h
+ 
+ beav:     $(OFILES)
+-	$(CC) $(CFLAGS) $(OFILES) -lncurses -o beav
++	$(CC) $(CFLAGS) $(OFILES) -ltermcap -o beav
+ 
+ clean:
+ 	rm -f *.o beav
+ 
+-(OFILES):  $(HFILES)
++$(OFILES):  $(HFILES)
+diff -ruN beav-140.orig/basic.c beav-140/basic.c
+--- beav-140.orig/basic.c	1994-12-01 02:43:34.000000000 +0900
++++ beav-140/basic.c	2018-12-31 20:17:28.000000000 +0900
+@@ -9,7 +9,6 @@
+ 
+ #include    "def.h"
+ 
+-bool move_ptr ();
+ bool forwchar ();
+ bool wind_on_dot ();
+ bool backline ();
+diff -ruN beav-140.orig/def.h beav-140/def.h
+--- beav-140.orig/def.h	2018-12-31 20:16:47.000000000 +0900
++++ beav-140/def.h	2018-12-31 20:17:28.000000000 +0900
+@@ -13,6 +13,8 @@
+ #define DEF_DEF
+ #define LINT_ARGS   1		/* enable lint type checking */
+ #include        <stdio.h>
++#include        <stdlib.h>
++#include        <string.h>
+ 
+ #ifdef UNIX
+ #include        <sys/types.h>
+diff -ruN beav-140.orig/file.c beav-140/file.c
+--- beav-140.orig/file.c	2018-12-31 20:16:47.000000000 +0900
++++ beav-140/file.c	2018-12-31 20:17:28.000000000 +0900
+@@ -10,7 +10,6 @@
+ char load_file ();
+ char readin ();
+ void makename ();
+-bool writeout ();
+ bool parse_f_name ();
+ A32 ffseek ();
+ A32 file_len ();
+diff -ruN beav-140.orig/random.c beav-140/random.c
+--- beav-140.orig/random.c	2018-12-31 20:16:47.000000000 +0900
++++ beav-140/random.c	2018-12-31 20:17:28.000000000 +0900
+@@ -73,7 +73,6 @@
+ extern bool dont_repeat;
+ extern BUFFER sav_buf;
+ 
+-char dec_chr_ok ();
+ ulong get_long ();
+ void wind_on_dot_all ();
+ 
+diff -ruN beav-140.orig/symbol.c beav-140/symbol.c
+--- beav-140.orig/symbol.c	2018-12-31 20:16:47.000000000 +0900
++++ beav-140/symbol.c	2018-12-31 20:17:28.000000000 +0900
+@@ -8,10 +8,6 @@
+ #include		<string.h>
+ #include		"def.h"
+ 
+-void keyadd ();
+-void keydup ();
+-
+-
+ extern char MSG_byte_shift[];
+ extern char MSG_back_char[];
+ extern char MSG_quit[];
+@@ -221,7 +217,6 @@
+ * Defined by "spawn.c".
+ */
+ extern char spawncli ();	/* Run CLI in a subjob.	 */
+-extern char clock ();		/* display time in modeline */
+ 
+ /*
+ * Defined by "window.c".
+diff -ruN beav-140.orig/tcap.c beav-140/tcap.c
+--- beav-140.orig/tcap.c	2018-12-31 20:16:47.000000000 +0900
++++ beav-140/tcap.c	2018-12-31 20:17:28.000000000 +0900
+@@ -2,7 +2,6 @@
+ 		for beav
+ */
+ 
+-#include <term.h>
+ #include <stdlib.h>
+ #include "def.h"
+ #include "prototyp.h"
+@@ -41,7 +40,7 @@
+ 
+ #ifdef BSD
+ #include <sys/ioctl.h>
+-struct winsize ttysize;
++struct ttysize ttysize;
+ #endif /* BSD */
+ #ifdef ULTRIX
+ struct winsize ttysize;
+diff -ruN beav-140.orig/termio.c beav-140/termio.c
+--- beav-140.orig/termio.c	2018-12-31 20:16:47.000000000 +0900
++++ beav-140/termio.c	2018-12-31 20:17:28.000000000 +0900
+@@ -14,6 +14,9 @@
+ #include    <signal.h>
+ #ifdef BSD
+ #include    <sys/ioctl.h>
++#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__DragonFly__) || defined(__APPLE__)
++#include <sys/ioctl_compat.h>
++#endif
+ #else
+ #ifdef OS2
+ #ifndef __EMX__
