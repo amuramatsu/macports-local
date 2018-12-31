@@ -1,0 +1,26 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem          1.0
+
+name                iat
+version             0.1.7
+categories          sysutils
+platforms           darwin
+license             GPL-3
+maintainers         {@amuramatsu tomato.sakura.ne.jp:amura}
+
+description         Iso9660 Analyzer Tool.
+long_description    iat is Iso9660 Analyzer Tool, this tool have engine for detect many structure of image file.
+
+homepage            https://sourceforge.net/projects/iat.berlios/
+
+master_sites        sourceforge:project/iat.berlios/
+
+checksums           rmd160  0cc9f4af12887da5a6320d06ccc67be13d986850 \
+                    sha256  fb72c42f4be18107ec1bff8448bd6fac2a3926a574d4950a4d5120f0012d62ca
+
+use_bzip2           yes
+destroot.destdir    prefix=${destroot}${prefix}
+post-destroot {
+    delete ${destroot}${prefix}/include
+}
