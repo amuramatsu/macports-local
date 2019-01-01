@@ -2,7 +2,7 @@ PortSystem	1.0
 
 name		bogofilter-jp
 version		1.2.4-jp0.1
-revision	1
+revision	2
 license		GPL
 platforms	darwin
 categories	mail
@@ -30,5 +30,5 @@ patch.pre_args	-p1
 
 use_autoconf	yes
 configure.args	--with-kakasi
-configure.cppflags "-I${prefix}/include -I${prefix}/include/db53"
-configure.ldflags  "-L${prefix}/lib -L${prefix}/lib/db53"
+configure.cppflags-append "-I${prefix}/include/db53"
+configure.ldflags-append  "-L${prefix}/lib/db53"
