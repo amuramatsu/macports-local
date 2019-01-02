@@ -1,0 +1,112 @@
+
+TEXMFHOME = @TEXMFHOME@
+TEXMFVAR = @TEXMFVAR@
+TEXMFCONFIG = @TEXMFCONFIG@
+
+TEXMFROOT = $SELFAUTOPARENT:@PREFIX@/share/pxdvi:@PREFIX@/share/pxdvi/texmf-dist:@TEXMFROOT@
+TEXMFDIST = $TEXMFROOT/texmf-dist
+TEXMFMAIN = $TEXMFDIST
+TEXMFLOCAL = @TEXMFLOCAL@
+TEXMFSYSVAR = @TEXMFSYSVAR@
+TEXMFSYSCONFIG = @TEXMFSYSCONFIG@
+
+TEXMF = {$TEXMFCONFIG,$TEXMFVAR,$TEXMFHOME,!!$TEXMFSYSCONFIG,!!$TEXMFSYSVAR,!!$TEXMFLOCAL,!!$TEXMFDIST}
+TEXMFDBS = {!!$TEXMFSYSCONFIG,!!$TEXMFSYSVAR,!!$TEXMFLOCAL,!!$TEXMFDIST}
+SYSTEXMF = $TEXMFSYSVAR;$TEXMFLOCAL;$TEXMFDIST
+TEXMFCACHE = $TEXMFSYSVAR;$TEXMFVAR
+VARTEXFONTS = $TEXMFVAR/fonts
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Usually you will not need to edit any of the following variables.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+WEB2C = $TEXMF/web2c
+TEXINPUTS.tex           = .;$TEXMF/tex/{plain,generic,}//
+TEXINPUTS.fontinst      = .;$TEXMF/{tex,fonts/afm}//
+TTF2TFMINPUTS =                 .;$TEXMF/ttf2pk//
+MFINPUTS = .;$TEXMF/metafont//;{$TEXMF/fonts,$VARTEXFONTS}/source//
+MPINPUTS = .;$TEXMF/metapost//
+
+TEXPOOL = .;$TEXMF/web2c
+MFPOOL = ${TEXPOOL}
+MPPOOL = ${TEXPOOL}
+
+% support the original xdvi.  Must come before the generic settings.
+PKFONTS.XDvi   = .;$TEXMF/%s;$VARTEXFONTS/pk/{%m,modeless}//
+VFFONTS.XDvi   = .;$TEXMF/%s
+PSHEADERS.XDvi = .;$TEXMF/%q{dvips,fonts/type1}//
+TEXPICTS.XDvi  = .;$TEXMF/%q{dvips,tex}//
+PKFONTS.pXDvi   = .;$TEXMF/%s;$VARTEXFONTS/pk/{%m,modeless}//
+VFFONTS.pXDvi   = .;$TEXMF/%s
+PSHEADERS.pXDvi = .;$TEXMF/%q{dvips,fonts/type1}//
+TEXPICTS.pXDvi  = .;$TEXMF/%q{dvips,tex}//
+VFFONTS = .;$TEXMF/fonts/vf//
+TFMFONTS = .;{$TEXMF/fonts,$VARTEXFONTS}/tfm//
+
+PKFONTS = .;{$TEXMF/fonts,$VARTEXFONTS}/pk/{$MAKETEX_MODE,modeless}//
+GFFONTS = .;$TEXMF/fonts/gf/$MAKETEX_MODE//
+GLYPHFONTS = .;$TEXMF/fonts
+MISCFONTS = .;$TEXMF/fonts/misc//
+
+TEXFONTMAPS = .;$TEXMF/fonts/map/{$progname,pdftex,dvips,xdvi,pxdvi}//
+
+TEXPSHEADERS = .;$TEXMF/{dvips,fonts/{enc,type1,type42,type3}}//
+TEXPSHEADERS.gsftopk = .;$TEXMF/{dvips,fonts/{enc,type1,type42,type3,truetype}}//
+
+OSFONTDIR = /please/set/osfontdir/in/the/environment
+T1FONTS = .;$TEXMF/fonts/type1//;$OSFONTDIR//
+AFMFONTS = .;$TEXMF/fonts/afm//;$OSFONTDIR//
+TTFONTS = .;$TEXMF/fonts/{truetype,opentype}//;$OSFONTDIR//
+OPENTYPEFONTS = .;$TEXMF/fonts/{opentype,truetype}//;$OSFONTDIR//
+T42FONTS = .;$TEXMF/fonts/type42//
+LIGFONTS =  .;$TEXMF/fonts/lig//
+
+TEXCONFIG = $TEXMF/dvips//
+
+ENCFONTS = .;$TEXMF/fonts/enc//
+CMAPFONTS = .;$TEXMF/fonts/cmap//
+SFDFONTS = .;$TEXMF/fonts/sfd//
+FONTFEATURES=.;$TEXMF/fonts/fea//
+FONTCIDMAPS=.;$TEXMF/fonts/cid//
+
+MIMELIBDIR = $TEXMFROOT/etc
+MAILCAPLIBDIR = $TEXMFROOT/etc
+
+% Omega-related fonts and other files.
+OFMFONTS = .;{$TEXMF/fonts,$VARTEXFONTS}/{ofm,tfm}//
+OPLFONTS = .;{$TEXMF/fonts,$VARTEXFONTS}/opl//
+OVFFONTS = .;{$TEXMF/fonts,$VARTEXFONTS}/{ovf,vf}//
+OVPFONTS = .;{$TEXMF/fonts,$VARTEXFONTS}/ovp//
+OTPINPUTS = .;$TEXMF/omega/otp//
+OCPINPUTS = .;$TEXMF/omega/ocp//
+
+TEXMFCNF = {\
+$SELFAUTOLOC,\
+$SELFAUTOLOC/share/texmf-local/web2c,\
+$SELFAUTOLOC/share/texmf-dist/web2c,\
+$SELFAUTOLOC/share/texmf/web2c,\
+$SELFAUTOLOC/texmf-local/web2c,\
+$SELFAUTOLOC/texmf-dist/web2c,\
+$SELFAUTOLOC/texmf/web2c,\
+\
+$SELFAUTODIR,\
+$SELFAUTODIR/share/texmf-local/web2c,\
+$SELFAUTODIR/share/texmf-dist/web2c,\
+$SELFAUTODIR/share/texmf/web2c,\
+$SELFAUTODIR/texmf-local/web2c,\
+$SELFAUTODIR/texmf-dist/web2c,\
+$SELFAUTODIR/texmf/web2c,\
+\
+$SELFAUTOGRANDPARENT/texmf-local/web2c,\
+$SELFAUTOPARENT,\
+\
+$SELFAUTOPARENT/share/texmf-local/web2c,\
+$SELFAUTOPARENT/share/texmf-dist/web2c,\
+$SELFAUTOPARENT/share/texmf/web2c,\
+$SELFAUTOPARENT/texmf-local/web2c,\
+$SELFAUTOPARENT/texmf-dist/web2c,\
+$SELFAUTOPARENT/texmf/web2c\
+}
+
+progname = unsetprogname
+engine = unsetengine
