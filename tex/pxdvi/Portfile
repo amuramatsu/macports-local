@@ -1,0 +1,91 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem          1.0
+
+name                pxdvi
+version             22.87-j1.42-freebsd
+categories          tex
+platforms           darwin
+license             GPL-2
+maintainers         {@amuramatsu tomato.sakura.ne.jp:amura}
+
+description         Displaying DVI files on the X. (w/ Japanese-support)
+long_description    \
+    Xdvik is a program for displaying DVI files \
+    on the X window system. It is based on the regular (non-k) xdvi of the same\
+    version number. \
+    This package includes pTeX support.  A fontmap file for xdvi is installed \
+    as TEXMFDIST/fonts/map/xdvi/xdvi-ptex.map.
+
+homepage            http://xdvi.sourceforge.net/
+
+master_sites        sourceforge:project/xdvi/xdvik/22.87
+
+distname            xdvik-22.87
+checksums           rmd160  007f63e6ba74f7a98aa0e668dffe8bdc6341e166 \
+                    sha256  920a20928b4360a1ab83843cffb98c129a54c6462ee014d0e5c4b209b8840ea7
+
+depends_lib         port:libpaper port:libiconv \
+                    port:xorg-libXp port:xorg-libXaw port:xorg-libXi
+
+configure.pre_args  --prefix=${prefix}/share/${name}
+configure.args      --with-iconv \
+                    --with-iconv-include=${prefix}/include \
+                    --with-iconv-libdir=${prefix}/lib \
+
+patchfiles          patch-pxdvi.diff
+
+set builddir "${workpath}/build"
+configure {
+    set environ "CFLAGS='${configure.cflags} [get_canonical_archflags cc]'"
+    append environ \
+        " CXXFLAGS='${configure.cxxflags} [get_canonical_archflags cxx]'"
+    append environ \
+        " LDFLAGS='${configure.ldflags} [get_canonical_archflags ld]'"
+    
+    file mkdir ${builddir}
+    system -W ${builddir} \
+        "env $environ ${worksrcpath}/configure ${configure.pre_args} ${configure.args}"
+}
+
+build {
+    set KPSEWHICH /Library/TeX/texbin/kpsewhich
+    if {! [file exists $KPSEWHICH]} {
+        set KPSEWHICH ${prefix}/bin/kpsewhich
+    }
+    
+    system -W ${builddir} "${build.cmd} ${build.target}"
+
+    copy "${filespath}/texmf.cnf" ${builddir}
+    reinplace -W ${builddir} "s|@PREFIX@|${prefix}|g" texmf.cnf
+    foreach v {TEXMFHOME TEXMFVAR TEXMFCONFIG
+        TEXMFROOT TEXMFLOCAL TEXMFSYSVAR TEXMFSYSCONFIG} {
+        set value [exec env "HOME=~" $KPSEWHICH "--var-value=${v}"]
+        reinplace -W ${builddir} "s|@${v}@|${value}|g" texmf.cnf
+    }
+}
+    
+destroot {
+    system -W ${builddir} "${build.cmd} install DESTDIR=${destroot}"
+    xinstall -W ${builddir} -m 644 texmf.cnf "${destroot}${prefix}/share/${name}/texmf-dist/web2c"
+    xinstall -W ${filespath} -m 644 config.xdvi "${destroot}${prefix}/share/${name}/texmf-dist/dvips/xdvi"
+
+    # RENAME xdvi-* -> pxdvi-*
+    set bindir [glob -tails -directory "${destroot}${prefix}" "share/${name}/bin/*/xdvi" ]
+    set bindir [strsed ${bindir} {s/xdvi$//}]
+    set bindirpath "${destroot}${prefix}/${bindir}"
+    move "${bindirpath}xdvi" "${bindirpath}pxdvi"
+    move "${bindirpath}xdvi-xaw" "${bindirpath}pxdvi-xaw"
+    reinplace -W ${bindirpath} "s|xdvi-xaw|pxdvi-xaw|g" pxdvi
+
+    # link
+    system -W "${destroot}${prefix}/bin" \
+        "ln -s '../${bindir}pxdvi' pxdvi"
+    system -W "${destroot}${prefix}/bin" \
+        "ln -s '../${bindir}pxdvi-xaw' pxdvi-xaw"
+}
+
+post-activate {
+    set mktexlsr [glob "${prefix}/share/${name}/bin/*/mktexlsr"]
+    system $mktexlsr
+}
