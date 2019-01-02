@@ -1,0 +1,79 @@
+% original config.xdvi -- Configuration file for Type 1 rendering in xdvi.
+% (If you change or delete `original' in the first line of this file,
+% new xdvik installations won't overwrite the file.)
+%
+% This file is part of xdvik (notwithstanding its location).
+%
+% Lines starting with `%' are comments.
+%
+% This file indicates which map files are to be used when running xdvi.
+% (It is not used by dvips, unless you type "dvips -Pxdvi ...", which is not
+% likely.  Doing so, however, would allow you to use the same map files
+% in dvips as are used in xdvi.)
+%
+% The format is the same as for dvips configuration files, except that only
+% the `p' and `p+' directives are used.  A line
+%
+%	p file.map
+%
+% clears the existing list of map files and sets the list to the given file.
+% A line
+%
+%	p+ file2.map
+%
+% adds the given map file to the end of the list.  If you use "p file.map"
+% anywhere other than as the first (non-comment, non-blank) line of the file,
+% then you are probably making a mistake.
+%
+% If a font entry is found in several files, the earlier entry will be used
+% (as is done in dvips).  Therefore, to override font entries in the standard
+% file psfonts.map, you should use entries such as:
+%
+%	p myfile.map
+%	p+ anotherfile.map
+%	p+ psfonts.map
+%
+% However, normally it isn't necessary to add any other map file here
+% because psfonts.map is (normally) a generated file (by the updmap
+% script).  Instead, map files should be added to the updmap.cfg file.
+%
+% pTeX Extensions:
+%
+% "x" and "x+" reads pTeX map file.
+%
+%	x kanjix.map
+%
+% "r" adds an entry into font replacement dictionary.
+%
+%	r FONT1 FONT2
+%
+p psfonts.map
+r H               JIS-H
+r V               JIS-V
+r UniJIS-UTF16-H  Unicode-H
+r UniJIS-UTF16-V  Unicode-V
+r UniJIS-UCS2-H   Unicode-H
+r UniJIS-UCS2-V   Unicode-V
+r UniJIS2004-UTF16-H      Unicode-H
+r UniJIS2004-UTF16-V      Unicode-V
+r UniKS-UTF16-H   Unicode-H
+r UniKS-UTF16-V   Unicode-V
+r UniKS-UCS2-H    Unicode-H
+r UniKS-UCS2-V    Unicode-V
+r UniGB-UTF16-H   Unicode-H
+r UniGB-UTF16-V   Unicode-V
+r UniGB-UCS2-H    Unicode-H
+r UniGB-UCS2-V    Unicode-V
+r UniCNS-UTF16-H  Unicode-H
+r UniCNS-UTF16-V  Unicode-V
+r UniCNS-UCS2-H   Unicode-H
+r UniCNS-UCS2-V   Unicode-V
+%r Ryumin-Light		ipam.ttf/AJ16
+%r GothicBBB-Medium	ipag.ttf/AJ16
+%r MSung-Light		bsmi00lp.ttf
+%r MHei-Medium		bkai00mp.ttf
+%r STSong-Light		gbsn00lp.ttf
+%r STHeitiStd-Regular	gkai00mp.ttf
+%r HYSMyeongJo-Medium	UnBatang.ttf
+%r HYGoThic-Medium		UnDotum.ttf
+x+ xdvi-ptex.map
