@@ -7,7 +7,7 @@ PortGroup compiler_blacklist_versions 1.0
 if [file isdirectory "/Developer/Xcode9.app" ] {
   set XCODE9_DIR    /Developer/Xcode9.app
 } elseif [file isdirectory "/Applications/Xcode9.app" ] {
-  set XCODE9_DIR    /Developer/Xcode9.app
+  set XCODE9_DIR    /Applications/Xcode9.app
 } else {
   error "Cannot found Xcode 9"
 }
