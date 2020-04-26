@@ -1,8 +1,9 @@
-beav 0
-gauche 611
-gcc5-32bit 1657
-bogofilter-jp 2266
-mh-jp 2963
-iat 3478
-pngpaste 3877
-pxdvi 4385
+avr-gcc 0
+beav 599
+gauche 1210
+gcc5-32bit 2256
+bogofilter-jp 2865
+mh-jp 3562
+iat 4077
+pngpaste 4476
+pxdvi 4984
