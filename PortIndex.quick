@@ -1,9 +1,9 @@
 avr-gcc 0
 beav 599
 gauche 1210
-gcc5-32bit 2256
-bogofilter-jp 2865
-mh-jp 3562
-iat 4077
-pngpaste 4476
-pxdvi 4984
+gcc5-32bit 2276
+bogofilter-jp 2885
+mh-jp 3582
+iat 4097
+pngpaste 4496
+pxdvi 5004

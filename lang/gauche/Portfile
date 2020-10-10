@@ -4,7 +4,7 @@ PortSystem 1.0
 PortGroup  compiler_blacklist_versions 1.0
 
 name                gauche
-version             0.9.7
+version             0.9.9
 categories          lang
 license             BSD
 maintainers         {@amuramatsu tomato.sakura.ne.jp:amura}
@@ -29,19 +29,21 @@ master_sites        sourceforge:project/gauche/Gauche/
 distname            Gauche-${version}
 extract.suffix      .tgz
 
-checksums           rmd160  ce62c9ad839b452fba94b10e281f51ae5033fc07 \
-                    sha256  2d33bd942e3fc2f2dcc8e5217c9130c885a0fd1cb11a1856e619a83a23f336a0
+checksums           rmd160  f37c3dff53f0e6efd4ad53f4c2952fbecc9f4d2e \
+                    sha256  4ca9325322a7efadb9680d156eb7b53521321c9ca4955c4cbe738bc2e1d7f7fb
 
 depends_lib         port:gdbm \
                     port:libiconv \
-                    port:slib
+                    port:slib \
+		    port:curl-ca-bundle
 
 # `gosh` crashes when built with clang
 compiler.blacklist  {clang < 300}
 
 configure.args      --with-local=${prefix} --enable-multibyte=utf-8 \
                     --with-iconv=${prefix} --with-slib=${prefix}/lib/slib \
-                    --enable-threads=pthreads --enable-ipv6
+                    --enable-threads=pthreads --enable-ipv6 \
+		    --with-ca-bundle=${prefix}/share/curl/curl-ca-bundle.crt
 
 test.run            yes
 
