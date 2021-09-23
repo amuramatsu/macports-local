@@ -1,0 +1,50 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem          1.0
+PortGroup           github 1.0
+
+name                lima
+version             0.6.4
+categories          sysutils
+platforms           darwin
+license             Apache-2.0
+maintainers         nomaintainer
+
+description         Linux virtual machines
+long_description    \
+    Lima launches Linux virtual machines with automatic file sharing, \
+    port forwarding, and containerd. \
+    \
+    Lima can be considered as a some sort of unofficial \
+    \"macOS subsystem for Linux\", or \"containerd for Mac\".
+
+homepage            https://github.com/lima-vm/lima
+
+github.setup        lima-vm lima $version v
+checksums           sha256  6e95b50264351920bbbbc6a01733399f0775fc5ed04bfdcab0ad0ee310484f44 \
+                    rmd160  33cccc7804f63b98005b4fe6bfd1813ac84573f6 \
+                    size    127144
+
+depends_build       port:go
+depends_run         port:qemu
+use_configure       no
+
+build {
+    system -W $worksrcpath "make VERSION=${version} clean binaries"
+}
+
+destroot {
+    set bindir   "${destroot}${prefix}/bin"
+    set sharedir "${destroot}${prefix}/share"
+
+    xinstall -m 755 {*}[glob "$worksrcpath/_output/bin/*"]   $bindir
+    delete -force $sharedir
+    copy   "$worksrcpath/_output/share" $sharedir
+
+    # Install bash completion
+    # but limactl cannot execute on root...
+    #set bash_comp_path "${destroot}${prefix}/share/bash-completion/completions"
+    #xinstall -d -m 755 $bash_comp_path/../
+    #xinstall -d -m 755 $bash_comp_path
+    #system "${bindir}/limactl completion bash > ${bash_comp_path}/limactl"
+}
