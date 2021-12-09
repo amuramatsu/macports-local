@@ -1,0 +1,44 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; truncate-lines: t; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:filetype=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem          1.0
+
+name                bibutils
+version             7.2
+categories          tex
+maintainers         openmaintainer {jochen @jokuha}
+license             GPL
+description         bibliography conversion utilities
+long_description    The bibutils program set interconverts between various \
+                    bibliography formats using a common MODS-format XML \
+                    intermediate. For example, one can convert RIS-format files \
+                    to Bibtex by doing two transformations: RIS->MODS->Bibtex. \
+                    By using a common intermediate for N formats, only 2N \
+                    programs are required and not N²-N. These programs operate \
+                    on the command line and are styled after standard UNIX-like \
+                    filters.
+
+platforms           darwin
+master_sites        sourceforge:project/bibutils
+homepage            http://sourceforge.net/projects/bibutils/
+distname            bibutils_${version}
+extract.suffix      _src.tgz
+checksums           md5     9383e6d54d77bff9d7d2f3313647fe3e \
+                    sha1    bda5cc5456a08957a1bc7e8523206111e0cfeb07 \
+                    rmd160  a6afc0ce54bebbc1dd9d8578fd407e1fa04682ad
+
+configure {
+    file delete ${worksrcpath}/Makefile ${worksrcpath}/lib/Makefile ${worksrcpath}/bin/Makefile
+    file copy ${worksrcpath}/bin/Makefile.static ${worksrcpath}/bin/Makefile
+    file copy ${worksrcpath}/lib/Makefile.static ${worksrcpath}/lib/Makefile
+    file copy ${worksrcpath}/Makefile_start ${worksrcpath}/Makefile
+    set CFLAGS "${configure.cflags} [get_canonical_archflags cc]"
+    reinplace "s|REPLACE_CC|\"${configure.cc}\"|" ${worksrcpath}/Makefile
+    reinplace "s|REPLACE_EXEEXT||" ${worksrcpath}/Makefile
+    reinplace "s|REPLACE_LIBEXT|.a|" ${worksrcpath}/Makefile
+    reinplace "s|REPLACE_CFLAGS|${CFLAGS}|" ${worksrcpath}/Makefile
+    reinplace "s|REPLACE_CLIBFLAGS|${CFLAGS}|" ${worksrcpath}/Makefile
+    reinplace "s|REPLACE_RANLIB|\"ranlib -s\"|" ${worksrcpath}/Makefile
+    reinplace "s|REPLACE_INSTALLDIR|${destroot}${prefix}/bin|" ${worksrcpath}/Makefile
+    reinplace "s|REPLACE_LIBINSTALLDIR|${destroot}${prefix}/lib|" ${worksrcpath}/Makefile
+    reinplace "s|REPLACE_POSTFIX|_osx|" ${worksrcpath}/Makefile
+}
