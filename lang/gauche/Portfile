@@ -1,10 +1,10 @@
 # -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
 
-PortSystem 1.0
-PortGroup  compiler_blacklist_versions 1.0
+PortSystem          1.0
+PortGroup           compiler_blacklist_versions 1.0
 
 name                gauche
-version             0.9.10
+version             0.9.11-p1
 categories          lang
 license             BSD
 maintainers         {@amuramatsu tomato.sakura.ne.jp:amura}
@@ -25,12 +25,13 @@ long_description    Gauche is a script interpreter based on Scheme.  \
                     interface and Enhanced I/O.
 platforms           darwin
 homepage            http://practical-scheme.net/gauche/
-master_sites        sourceforge:project/gauche/Gauche/
+master_sites        https://github.com/shirok/Gauche/release/donwloads/release[string map {- _ . _} $version]/
 distname            Gauche-${version}
+
 extract.suffix      .tgz
 
-checksums           rmd160  0b21bea6aead08b4274605f7fa0ac6ae9efd2f87 \
-                    sha256  0f39df1daec56680b542211b085179cb22e8220405dae15d9d745c56a63a2532
+checksums           rmd160  3a48b135bc26ffb5c9cae9e4b879a5638d157876 \
+                    sha256  9069c347e12e7fd14072680100e63dedec92de8fd7f48a200224b4d478733795
 
 depends_lib         port:gdbm \
                     port:libiconv \
