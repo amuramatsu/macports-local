@@ -1,6 +1,6 @@
 diff -ruN mh-6.8.4-JP-3.05.orig/conf/MH.in mh-6.8.4-JP-3.05/conf/MH.in
---- mh-6.8.4-JP-3.05.orig/conf/MH.in	2001-06-13 23:28:26.000000000 +0900
-+++ mh-6.8.4-JP-3.05/conf/MH.in	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/conf/MH.in	2001-06-13 23:28:26
++++ mh-6.8.4-JP-3.05/conf/MH.in	2022-12-15 13:40:59
 @@ -14,10 +14,10 @@
  
  # some options
@@ -26,8 +26,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/conf/MH.in mh-6.8.4-JP-3.05/conf/MH.in
  # POP support
  pop	@pop@
 diff -ruN mh-6.8.4-JP-3.05.orig/conf/config/mts.c mh-6.8.4-JP-3.05/conf/config/mts.c
---- mh-6.8.4-JP-3.05.orig/conf/config/mts.c	2001-04-02 22:36:26.000000000 +0900
-+++ mh-6.8.4-JP-3.05/conf/config/mts.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/conf/config/mts.c	2001-04-02 22:36:26
++++ mh-6.8.4-JP-3.05/conf/config/mts.c	2022-12-15 13:40:59
 @@ -33,10 +33,7 @@
  
  #define	NULLCP	((char *) 0)
@@ -50,8 +50,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/conf/config/mts.c mh-6.8.4-JP-3.05/conf/config/m
      register char  *bp,
                     *cp;
 diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/MH-Makefile mh-6.8.4-JP-3.05/conf/makefiles/MH-Makefile
---- mh-6.8.4-JP-3.05.orig/conf/makefiles/MH-Makefile	1999-02-09 20:30:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/conf/makefiles/MH-Makefile	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/conf/makefiles/MH-Makefile	1999-02-09 20:30:00
++++ mh-6.8.4-JP-3.05/conf/makefiles/MH-Makefile	2022-12-15 13:40:59
 @@ -5,7 +5,7 @@
  # @(#)$Id: MH-Makefile,v 2.16 1993/08/27 22:15:49 jromine Exp $
  ##############################################################################
@@ -77,8 +77,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/MH-Makefile mh-6.8.4-JP-3.05/conf
  compat-v7:	all
  		miscellany/tools/7limit */x* */*/x*
 diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/MH-Makefile.orig mh-6.8.4-JP-3.05/conf/makefiles/MH-Makefile.orig
---- mh-6.8.4-JP-3.05.orig/conf/makefiles/MH-Makefile.orig	1970-01-01 09:00:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/conf/makefiles/MH-Makefile.orig	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/conf/makefiles/MH-Makefile.orig	1970-01-01 09:00:00
++++ mh-6.8.4-JP-3.05/conf/makefiles/MH-Makefile.orig	2022-12-15 13:40:59
 @@ -0,0 +1,136 @@
 +##############################################################################
 +#	Instructions to Make, for compilation of MH modules
@@ -217,8 +217,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/MH-Makefile.orig mh-6.8.4-JP-3.05
 +unclean:;	rm -f _* :* core *.core
 +		for d in $(DISTRIBUTION); do (cd $$d; $(MAKE) unclean); done
 diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/doc mh-6.8.4-JP-3.05/conf/makefiles/doc
---- mh-6.8.4-JP-3.05.orig/conf/makefiles/doc	1999-02-09 20:30:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/conf/makefiles/doc	2018-12-31 09:07:57.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/conf/makefiles/doc	1999-02-09 20:30:00
++++ mh-6.8.4-JP-3.05/conf/makefiles/doc	2022-12-15 13:40:59
 @@ -36,6 +36,7 @@
  Toptions2=	cipher.man decipher.man tma.man
  @END: TMA
@@ -1367,8 +1367,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/doc mh-6.8.4-JP-3.05/conf/makefil
  #			-@ls -l $@
  #			-@echo ""
 diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/support/bboards mh-6.8.4-JP-3.05/conf/makefiles/support/bboards
---- mh-6.8.4-JP-3.05.orig/conf/makefiles/support/bboards	2001-06-11 10:25:43.000000000 +0900
-+++ mh-6.8.4-JP-3.05/conf/makefiles/support/bboards	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/conf/makefiles/support/bboards	2001-06-11 10:25:43
++++ mh-6.8.4-JP-3.05/conf/makefiles/support/bboards	2022-12-15 13:40:59
 @@ -15,6 +15,7 @@
  BBETC	=	$(BBDIR)/etc
  CHOWN	=	@(MHCHOWNPATH)
@@ -1477,8 +1477,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/support/bboards mh-6.8.4-JP-3.05/
  		rm eddep makedep
  		echo '# DEPENDENCIES MUST END AT END OF FILE' >> Makefile
 diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/support/general mh-6.8.4-JP-3.05/conf/makefiles/support/general
---- mh-6.8.4-JP-3.05.orig/conf/makefiles/support/general	1998-04-24 06:02:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/conf/makefiles/support/general	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/conf/makefiles/support/general	1998-04-24 06:02:00
++++ mh-6.8.4-JP-3.05/conf/makefiles/support/general	2022-12-15 13:40:59
 @@ -74,7 +74,6 @@
  
  $(ETCDIR)/MailAliases:	MailAliases
@@ -1679,8 +1679,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/support/general mh-6.8.4-JP-3.05/
  		-@ls -l $@
  		-@echo ""
 diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/support/pop mh-6.8.4-JP-3.05/conf/makefiles/support/pop
---- mh-6.8.4-JP-3.05.orig/conf/makefiles/support/pop	2001-06-11 10:25:56.000000000 +0900
-+++ mh-6.8.4-JP-3.05/conf/makefiles/support/pop	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/conf/makefiles/support/pop	2001-06-11 10:25:56
++++ mh-6.8.4-JP-3.05/conf/makefiles/support/pop	2022-12-15 13:40:59
 @@ -122,7 +122,6 @@
  inst-popd:	$(ETCDIR)/popd
  
@@ -1724,8 +1724,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/support/pop mh-6.8.4-JP-3.05/conf
  		-chmod 700 $@
  		-@ls -l $@
 diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/uip mh-6.8.4-JP-3.05/conf/makefiles/uip
---- mh-6.8.4-JP-3.05.orig/conf/makefiles/uip	2001-05-30 23:57:47.000000000 +0900
-+++ mh-6.8.4-JP-3.05/conf/makefiles/uip	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/conf/makefiles/uip	2001-05-30 23:57:47
++++ mh-6.8.4-JP-3.05/conf/makefiles/uip	2022-12-15 13:40:59
 @@ -140,7 +140,7 @@
  LD	=	LD_LIBRARY_PATH=../sbr @(MHCOMPILER)
  @END: FBSDSHLIB
@@ -2227,8 +2227,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/uip mh-6.8.4-JP-3.05/conf/makefil
  #			-@chmod $(PGMPROT) $@
  #			-@ls -l $@
 diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/zotnet/mf mh-6.8.4-JP-3.05/conf/makefiles/zotnet/mf
---- mh-6.8.4-JP-3.05.orig/conf/makefiles/zotnet/mf	2001-06-11 10:26:24.000000000 +0900
-+++ mh-6.8.4-JP-3.05/conf/makefiles/zotnet/mf	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/conf/makefiles/zotnet/mf	2001-06-11 10:26:24
++++ mh-6.8.4-JP-3.05/conf/makefiles/zotnet/mf	2022-12-15 13:40:59
 @@ -20,6 +20,8 @@
  @END: MHMTS
  REMOVE	=	@(MHREMOVE)
@@ -2279,8 +2279,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/zotnet/mf mh-6.8.4-JP-3.05/conf/m
  		-@echo ""
  
 diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/zotnet/mts mh-6.8.4-JP-3.05/conf/makefiles/zotnet/mts
---- mh-6.8.4-JP-3.05.orig/conf/makefiles/zotnet/mts	2001-06-11 10:26:35.000000000 +0900
-+++ mh-6.8.4-JP-3.05/conf/makefiles/zotnet/mts	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/conf/makefiles/zotnet/mts	2001-06-11 10:26:35
++++ mh-6.8.4-JP-3.05/conf/makefiles/zotnet/mts	2022-12-15 13:40:59
 @@ -14,6 +14,8 @@
  CHOWN	=	@(MHCHOWNPATH)
  REMOVE	=	@(MHREMOVE)
@@ -2301,8 +2301,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/conf/makefiles/zotnet/mts mh-6.8.4-JP-3.05/conf/
  		    echo "Will not overwrite existing $@"; \
  		fi
 diff -ruN mh-6.8.4-JP-3.05.orig/conf/mhconfig.c mh-6.8.4-JP-3.05/conf/mhconfig.c
---- mh-6.8.4-JP-3.05.orig/conf/mhconfig.c	2001-05-30 00:04:36.000000000 +0900
-+++ mh-6.8.4-JP-3.05/conf/mhconfig.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/conf/mhconfig.c	2001-05-30 00:04:36
++++ mh-6.8.4-JP-3.05/conf/mhconfig.c	2022-12-15 13:40:59
 @@ -6,6 +6,8 @@
  
  #include <ctype.h>
@@ -2361,8 +2361,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/conf/mhconfig.c mh-6.8.4-JP-3.05/conf/mhconfig.c
  /*  */
  
 diff -ruN mh-6.8.4-JP-3.05.orig/configure mh-6.8.4-JP-3.05/configure
---- mh-6.8.4-JP-3.05.orig/configure	2001-06-15 01:41:51.000000000 +0900
-+++ mh-6.8.4-JP-3.05/configure	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/configure	2001-06-15 01:41:51
++++ mh-6.8.4-JP-3.05/configure	2022-12-15 13:43:54
 @@ -1393,18 +1393,10 @@
      SOLARIS=`echo "$host_os" | $AWK -F. '{printf "SOLARIS=2%02d%02d",$2,$3}'`
      SETEUID=`echo "$host_os" | $AWK -F. '$2>=3{printf "SETEUID"}'`
@@ -2413,9 +2413,30 @@ diff -ruN mh-6.8.4-JP-3.05.orig/configure mh-6.8.4-JP-3.05/configure
  s%@JAPAN@%$JAPAN%g
  
  CEOF
+@@ -4538,7 +4537,7 @@
+ fi
+ 
+ cd $ac_aux_dir/conf
+-make_mhconfig="make CC=\"$CC\" $make_mhconfig"
++make_mhconfig="make CC=\"$CC\" CFLAGS=\"$CFLAGS\" $make_mhconfig"
+ if test x"$SYS5" = xSYS5
+ then
+   make_mhconfig="$make_mhconfig MFLAGS='CC=\"$CC\"' sys5"
+diff -ruN mh-6.8.4-JP-3.05.orig/configure.in mh-6.8.4-JP-3.05/configure.in
+--- mh-6.8.4-JP-3.05.orig/configure.in	2001-06-15 01:40:58
++++ mh-6.8.4-JP-3.05/configure.in	2022-12-15 13:43:41
+@@ -1172,7 +1172,7 @@
+ fi]
+ 
+ cd $ac_aux_dir/conf
+-make_mhconfig="make CC=\"$CC\" $make_mhconfig"
++make_mhconfig="make CC=\"$CC\" CFLAGS=\"$CFLAGS\" $make_mhconfig"
+ if test x"$SYS5" = xSYS5
+ then
+   make_mhconfig="$make_mhconfig MFLAGS='CC=\"$CC\"' sys5"
 diff -ruN mh-6.8.4-JP-3.05.orig/h/md5.h mh-6.8.4-JP-3.05/h/md5.h
---- mh-6.8.4-JP-3.05.orig/h/md5.h	1999-02-09 20:30:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/h/md5.h	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/h/md5.h	1999-02-09 20:30:00
++++ mh-6.8.4-JP-3.05/h/md5.h	2022-12-15 13:40:59
 @@ -13,6 +13,8 @@
  #define PROTOTYPES 0
  #endif
@@ -2439,8 +2460,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/h/md5.h mh-6.8.4-JP-3.05/h/md5.h
  /* PROTO_LIST is defined depending on how PROTOTYPES is defined above.
  If using PROTOTYPES, then PROTO_LIST returns the list, otherwise it
 diff -ruN mh-6.8.4-JP-3.05.orig/h/mh.h mh-6.8.4-JP-3.05/h/mh.h
---- mh-6.8.4-JP-3.05.orig/h/mh.h	1998-12-02 02:05:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/h/mh.h	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/h/mh.h	1998-12-02 02:05:00
++++ mh-6.8.4-JP-3.05/h/mh.h	2022-12-15 13:40:59
 @@ -253,7 +253,7 @@
  int     atooi ();
  char  **brkstring ();
@@ -2451,8 +2472,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/h/mh.h mh-6.8.4-JP-3.05/h/mh.h
  char  **copyip ();
  void	cpydata ();
 diff -ruN mh-6.8.4-JP-3.05.orig/h/strings.h mh-6.8.4-JP-3.05/h/strings.h
---- mh-6.8.4-JP-3.05.orig/h/strings.h	2001-04-02 19:35:24.000000000 +0900
-+++ mh-6.8.4-JP-3.05/h/strings.h	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/h/strings.h	2001-04-02 19:35:24
++++ mh-6.8.4-JP-3.05/h/strings.h	2022-12-15 13:40:59
 @@ -35,7 +35,7 @@
  char   *index ();
  char   *mktemp ();
@@ -2481,8 +2502,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/h/strings.h mh-6.8.4-JP-3.05/h/strings.h
  char   *calloc (), *malloc (), *realloc ();
  #endif	/* SVR4 */
 diff -ruN mh-6.8.4-JP-3.05.orig/miscellany/less-177/os.c mh-6.8.4-JP-3.05/miscellany/less-177/os.c
---- mh-6.8.4-JP-3.05.orig/miscellany/less-177/os.c	1993-12-01 13:00:32.000000000 +0900
-+++ mh-6.8.4-JP-3.05/miscellany/less-177/os.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/miscellany/less-177/os.c	1993-12-01 13:00:32
++++ mh-6.8.4-JP-3.05/miscellany/less-177/os.c	2022-12-15 13:40:59
 @@ -13,6 +13,7 @@
  #include <stdio.h>
  #include <signal.h>
@@ -2500,8 +2521,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/miscellany/less-177/os.c mh-6.8.4-JP-3.05/miscel
  	public char *
  errno_message(filename)
 diff -ruN mh-6.8.4-JP-3.05.orig/sbr/addrsbr.c mh-6.8.4-JP-3.05/sbr/addrsbr.c
---- mh-6.8.4-JP-3.05.orig/sbr/addrsbr.c	2001-04-03 01:04:38.000000000 +0900
-+++ mh-6.8.4-JP-3.05/sbr/addrsbr.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/sbr/addrsbr.c	2001-04-03 01:04:38
++++ mh-6.8.4-JP-3.05/sbr/addrsbr.c	2022-12-15 13:40:59
 @@ -336,7 +336,7 @@
  #endif /* not BERK */
      register struct mailname *mp;
@@ -2512,8 +2533,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/sbr/addrsbr.c mh-6.8.4-JP-3.05/sbr/addrsbr.c
  	    (void) strcpy (eresult, err);
  	else
 diff -ruN mh-6.8.4-JP-3.05.orig/sbr/advertise.c mh-6.8.4-JP-3.05/sbr/advertise.c
---- mh-6.8.4-JP-3.05.orig/sbr/advertise.c	2001-04-03 04:27:52.000000000 +0900
-+++ mh-6.8.4-JP-3.05/sbr/advertise.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/sbr/advertise.c	2001-04-03 04:27:52
++++ mh-6.8.4-JP-3.05/sbr/advertise.c	2022-12-15 13:40:59
 @@ -15,10 +15,7 @@
     output...  More importantly though, it's a sexy syscall()...
   */
@@ -2526,8 +2547,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/sbr/advertise.c mh-6.8.4-JP-3.05/sbr/advertise.c
  extern int  sys_nerr;
  extern char *sys_errlist[];
 diff -ruN mh-6.8.4-JP-3.05.orig/sbr/concat.c mh-6.8.4-JP-3.05/sbr/concat.c
---- mh-6.8.4-JP-3.05.orig/sbr/concat.c	1993-12-01 13:01:21.000000000 +0900
-+++ mh-6.8.4-JP-3.05/sbr/concat.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/sbr/concat.c	1993-12-01 13:01:21
++++ mh-6.8.4-JP-3.05/sbr/concat.c	2022-12-15 13:40:59
 @@ -2,34 +2,40 @@
  
  #include "../h/mh.h"
@@ -2582,8 +2603,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/sbr/concat.c mh-6.8.4-JP-3.05/sbr/concat.c
      return dp;
  }
 diff -ruN mh-6.8.4-JP-3.05.orig/sbr/discard.c mh-6.8.4-JP-3.05/sbr/discard.c
---- mh-6.8.4-JP-3.05.orig/sbr/discard.c	2001-06-13 23:16:24.000000000 +0900
-+++ mh-6.8.4-JP-3.05/sbr/discard.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/sbr/discard.c	2001-06-13 23:16:24
++++ mh-6.8.4-JP-3.05/sbr/discard.c	2022-12-15 13:40:59
 @@ -61,7 +61,7 @@
  #endif	/* SYS5 */
  #endif	/* POSIX */
@@ -2594,8 +2615,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/sbr/discard.c mh-6.8.4-JP-3.05/sbr/discard.c
  #else
  #ifdef _STDIO_USES_IOSTREAM
 diff -ruN mh-6.8.4-JP-3.05.orig/sbr/formatsbr.c mh-6.8.4-JP-3.05/sbr/formatsbr.c
---- mh-6.8.4-JP-3.05.orig/sbr/formatsbr.c	2001-04-03 01:12:40.000000000 +0900
-+++ mh-6.8.4-JP-3.05/sbr/formatsbr.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/sbr/formatsbr.c	2001-04-03 01:12:40
++++ mh-6.8.4-JP-3.05/sbr/formatsbr.c	2022-12-15 13:40:59
 @@ -470,7 +470,7 @@
  	    || !(cp = index (mbox += idx + strlen (key), '/')))
  	return 0;
@@ -2615,8 +2636,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/sbr/formatsbr.c mh-6.8.4-JP-3.05/sbr/formatsbr.c
  		(void) exthdr_decode(str, ep);
  		(void) strncpy(buffer, ep, BUFSIZ);
 diff -ruN mh-6.8.4-JP-3.05.orig/sbr/llib-lmh mh-6.8.4-JP-3.05/sbr/llib-lmh
---- mh-6.8.4-JP-3.05.orig/sbr/llib-lmh	1993-12-01 13:01:23.000000000 +0900
-+++ mh-6.8.4-JP-3.05/sbr/llib-lmh	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/sbr/llib-lmh	1993-12-01 13:01:23
++++ mh-6.8.4-JP-3.05/sbr/llib-lmh	2022-12-15 13:40:59
 @@ -93,7 +93,7 @@
  void	m_setseq(m) struct msgs *m; { m_setseq(m); }
  void	m_setvis(m,s) struct msgs *m; { m_setvis(m,s); }
@@ -2627,8 +2648,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/sbr/llib-lmh mh-6.8.4-JP-3.05/sbr/llib-lmh
  void	m_update() { m_update(); }
  int     m_whatnow(e,n,u,f,a,d,m,t,i,c) struct msgs *m; char *e,*f,*a,*t,*c;
 diff -ruN mh-6.8.4-JP-3.05.orig/sbr/m_backup.c mh-6.8.4-JP-3.05/sbr/m_backup.c
---- mh-6.8.4-JP-3.05.orig/sbr/m_backup.c	1993-12-01 13:01:23.000000000 +0900
-+++ mh-6.8.4-JP-3.05/sbr/m_backup.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/sbr/m_backup.c	1993-12-01 13:01:23
++++ mh-6.8.4-JP-3.05/sbr/m_backup.c	2022-12-15 13:40:59
 @@ -13,7 +13,7 @@
      if ((cp = r1bindex (file, '/')) == file)
  	(void) sprintf (buffer, "%s%s", SBACKUP, cp);
@@ -2639,8 +2660,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/sbr/m_backup.c mh-6.8.4-JP-3.05/sbr/m_backup.c
  
      return buffer;
 diff -ruN mh-6.8.4-JP-3.05.orig/sbr/m_draft.c mh-6.8.4-JP-3.05/sbr/m_draft.c
---- mh-6.8.4-JP-3.05.orig/sbr/m_draft.c	1993-12-01 13:01:23.000000000 +0900
-+++ mh-6.8.4-JP-3.05/sbr/m_draft.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/sbr/m_draft.c	1993-12-01 13:01:23
++++ mh-6.8.4-JP-3.05/sbr/m_draft.c	2022-12-15 13:40:59
 @@ -10,9 +10,6 @@
  #include <sys/stat.h>
  
@@ -2652,8 +2673,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/sbr/m_draft.c mh-6.8.4-JP-3.05/sbr/m_draft.c
  register char  *folder,
                 *msg;
 diff -ruN mh-6.8.4-JP-3.05.orig/sbr/m_getdefs.c mh-6.8.4-JP-3.05/sbr/m_getdefs.c
---- mh-6.8.4-JP-3.05.orig/sbr/m_getdefs.c	2001-04-05 01:05:15.000000000 +0900
-+++ mh-6.8.4-JP-3.05/sbr/m_getdefs.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/sbr/m_getdefs.c	2001-04-05 01:05:15
++++ mh-6.8.4-JP-3.05/sbr/m_getdefs.c	2022-12-15 13:40:59
 @@ -13,9 +13,6 @@
  #include <sys/stat.h>
  #include <pwd.h>
@@ -2665,8 +2686,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/sbr/m_getdefs.c mh-6.8.4-JP-3.05/sbr/m_getdefs.c
  #ifdef	SYS5
  struct	passwd	*getpwuid ();
 diff -ruN mh-6.8.4-JP-3.05.orig/sbr/m_getfld.c mh-6.8.4-JP-3.05/sbr/m_getfld.c
---- mh-6.8.4-JP-3.05.orig/sbr/m_getfld.c	2001-06-13 23:21:02.000000000 +0900
-+++ mh-6.8.4-JP-3.05/sbr/m_getfld.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/sbr/m_getfld.c	2001-06-13 23:21:02
++++ mh-6.8.4-JP-3.05/sbr/m_getfld.c	2022-12-15 13:40:59
 @@ -186,6 +186,9 @@
  #define	_cnt	_r		/* Retch */
  #define	_filbuf	__srget		/* Puke */
@@ -2774,8 +2795,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/sbr/m_getfld.c mh-6.8.4-JP-3.05/sbr/m_getfld.c
  	    iob->_cnt -= c;
  	    iob->_ptr += c;
 diff -ruN mh-6.8.4-JP-3.05.orig/sbr/m_scratch.c mh-6.8.4-JP-3.05/sbr/m_scratch.c
---- mh-6.8.4-JP-3.05.orig/sbr/m_scratch.c	1993-12-01 13:01:24.000000000 +0900
-+++ mh-6.8.4-JP-3.05/sbr/m_scratch.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/sbr/m_scratch.c	1993-12-01 13:01:24
++++ mh-6.8.4-JP-3.05/sbr/m_scratch.c	2022-12-15 13:40:59
 @@ -17,7 +17,7 @@
      if ((cp = r1bindex (file, '/')) == file)
  	(void) strcpy (buffer, tmpfil);
@@ -2786,8 +2807,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/sbr/m_scratch.c mh-6.8.4-JP-3.05/sbr/m_scratch.c
  
      return buffer;
 diff -ruN mh-6.8.4-JP-3.05.orig/sbr/m_tmpfil.c mh-6.8.4-JP-3.05/sbr/m_tmpfil.c
---- mh-6.8.4-JP-3.05.orig/sbr/m_tmpfil.c	1993-12-01 13:01:25.000000000 +0900
-+++ mh-6.8.4-JP-3.05/sbr/m_tmpfil.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/sbr/m_tmpfil.c	1993-12-01 13:01:25
++++ mh-6.8.4-JP-3.05/sbr/m_tmpfil.c	2022-12-15 13:40:59
 @@ -2,15 +2,17 @@
  
  #include "../h/mh.h"
@@ -2809,8 +2830,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/sbr/m_tmpfil.c mh-6.8.4-JP-3.05/sbr/m_tmpfil.c
      return tmpfil;
  }
 diff -ruN mh-6.8.4-JP-3.05.orig/sbr/m_update.c mh-6.8.4-JP-3.05/sbr/m_update.c
---- mh-6.8.4-JP-3.05.orig/sbr/m_update.c	1998-04-24 06:02:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/sbr/m_update.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/sbr/m_update.c	1998-04-24 06:02:00
++++ mh-6.8.4-JP-3.05/sbr/m_update.c	2022-12-15 13:40:59
 @@ -5,6 +5,7 @@
  
  #include "../h/mh.h"
@@ -2820,8 +2841,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/sbr/m_update.c mh-6.8.4-JP-3.05/sbr/m_update.c
  #ifndef	sigmask
  #define	sigmask(s)	(1 << ((s) - 1))
 diff -ruN mh-6.8.4-JP-3.05.orig/sbr/makedir.c mh-6.8.4-JP-3.05/sbr/makedir.c
---- mh-6.8.4-JP-3.05.orig/sbr/makedir.c	2001-04-02 19:42:20.000000000 +0900
-+++ mh-6.8.4-JP-3.05/sbr/makedir.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/sbr/makedir.c	2001-04-02 19:42:20
++++ mh-6.8.4-JP-3.05/sbr/makedir.c	2022-12-15 13:40:59
 @@ -14,10 +14,11 @@
  #include "../h/mh.h"
  #include <stdio.h>
@@ -2845,8 +2866,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/sbr/makedir.c mh-6.8.4-JP-3.05/sbr/makedir.c
  register char *dir;
  {
 diff -ruN mh-6.8.4-JP-3.05.orig/sbr/ml_exthdr.c mh-6.8.4-JP-3.05/sbr/ml_exthdr.c
---- mh-6.8.4-JP-3.05.orig/sbr/ml_exthdr.c	1999-02-09 20:30:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/sbr/ml_exthdr.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/sbr/ml_exthdr.c	1999-02-09 20:30:00
++++ mh-6.8.4-JP-3.05/sbr/ml_exthdr.c	2022-12-15 13:40:59
 @@ -7,6 +7,10 @@
  #include "../h/mh.h"
  #include <stdio.h>
@@ -2961,8 +2982,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/sbr/ml_exthdr.c mh-6.8.4-JP-3.05/sbr/ml_exthdr.c
  }
  
 diff -ruN mh-6.8.4-JP-3.05.orig/sbr/path.c mh-6.8.4-JP-3.05/sbr/path.c
---- mh-6.8.4-JP-3.05.orig/sbr/path.c	1993-12-01 13:01:25.000000000 +0900
-+++ mh-6.8.4-JP-3.05/sbr/path.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/sbr/path.c	1993-12-01 13:01:25
++++ mh-6.8.4-JP-3.05/sbr/path.c	2022-12-15 13:40:59
 @@ -17,7 +17,7 @@
  static char *pwds;
  
@@ -2999,8 +3020,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/sbr/path.c mh-6.8.4-JP-3.05/sbr/path.c
      register char  *cp,
                     *dp;
 diff -ruN mh-6.8.4-JP-3.05.orig/sbr/printsw.c mh-6.8.4-JP-3.05/sbr/printsw.c
---- mh-6.8.4-JP-3.05.orig/sbr/printsw.c	1993-12-01 13:01:26.000000000 +0900
-+++ mh-6.8.4-JP-3.05/sbr/printsw.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/sbr/printsw.c	1993-12-01 13:01:26
++++ mh-6.8.4-JP-3.05/sbr/printsw.c	2022-12-15 13:40:59
 @@ -1,5 +1,6 @@
  /* printsw.c - print switches */
  
@@ -3009,8 +3030,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/sbr/printsw.c mh-6.8.4-JP-3.05/sbr/printsw.c
  
  
 diff -ruN mh-6.8.4-JP-3.05.orig/sbr/pwd.c mh-6.8.4-JP-3.05/sbr/pwd.c
---- mh-6.8.4-JP-3.05.orig/sbr/pwd.c	2001-04-02 19:46:53.000000000 +0900
-+++ mh-6.8.4-JP-3.05/sbr/pwd.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/sbr/pwd.c	2001-04-02 19:46:53
++++ mh-6.8.4-JP-3.05/sbr/pwd.c	2022-12-15 13:40:59
 @@ -36,8 +36,13 @@
  	admonish (NULL, "unable to determine working directory");
  #endif	/* SYS5DIR */
@@ -3026,8 +3047,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/sbr/pwd.c mh-6.8.4-JP-3.05/sbr/pwd.c
  	if (mypath == NULL
  		|| *mypath == 0
 diff -ruN mh-6.8.4-JP-3.05.orig/sbr/ruserpass.c mh-6.8.4-JP-3.05/sbr/ruserpass.c
---- mh-6.8.4-JP-3.05.orig/sbr/ruserpass.c	1998-12-02 02:05:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/sbr/ruserpass.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/sbr/ruserpass.c	1998-12-02 02:05:00
++++ mh-6.8.4-JP-3.05/sbr/ruserpass.c	2022-12-15 13:40:59
 @@ -25,9 +25,10 @@
  #include <ctype.h>
  #include <pwd.h>
@@ -3050,8 +3071,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/sbr/ruserpass.c mh-6.8.4-JP-3.05/sbr/ruserpass.c
  	hdir = getenv("HOME");
  	if (hdir == NULL)
 diff -ruN mh-6.8.4-JP-3.05.orig/support/pop/popser.c mh-6.8.4-JP-3.05/support/pop/popser.c
---- mh-6.8.4-JP-3.05.orig/support/pop/popser.c	1999-02-09 20:30:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/support/pop/popser.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/support/pop/popser.c	1999-02-09 20:30:00
++++ mh-6.8.4-JP-3.05/support/pop/popser.c	2022-12-15 13:40:59
 @@ -259,7 +259,7 @@
  extern	int	mbx_read ();
  
@@ -3080,8 +3101,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/support/pop/popser.c mh-6.8.4-JP-3.05/support/po
  register int	n;
  register FILE  *iop;
 diff -ruN mh-6.8.4-JP-3.05.orig/support/pop/popwrd.c mh-6.8.4-JP-3.05/support/pop/popwrd.c
---- mh-6.8.4-JP-3.05.orig/support/pop/popwrd.c	1999-02-09 20:30:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/support/pop/popwrd.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/support/pop/popwrd.c	1999-02-09 20:30:00
++++ mh-6.8.4-JP-3.05/support/pop/popwrd.c	2022-12-15 13:40:59
 @@ -24,8 +24,6 @@
  static char  temp[] = "ptmp";
  static char  home[BUFSIZ];
@@ -3092,8 +3113,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/support/pop/popwrd.c mh-6.8.4-JP-3.05/support/po
  time_t	time ();
  
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/ali.c mh-6.8.4-JP-3.05/uip/ali.c
---- mh-6.8.4-JP-3.05.orig/uip/ali.c	1998-04-24 06:02:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/ali.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/ali.c	1998-04-24 06:02:00
++++ mh-6.8.4-JP-3.05/uip/ali.c	2022-12-15 13:40:59
 @@ -47,6 +47,8 @@
  
  static	int     pos = 1;
@@ -3116,8 +3137,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/ali.c mh-6.8.4-JP-3.05/uip/ali.c
      register char   c;
  #ifdef JAPAN
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/aliasbr.c mh-6.8.4-JP-3.05/uip/aliasbr.c
---- mh-6.8.4-JP-3.05.orig/uip/aliasbr.c	1998-12-02 02:05:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/aliasbr.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/aliasbr.c	1998-12-02 02:05:00
++++ mh-6.8.4-JP-3.05/uip/aliasbr.c	2022-12-15 13:40:59
 @@ -26,7 +26,7 @@
  static struct aka *akalloc ();
  static struct home *hmalloc ();
@@ -3139,8 +3160,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/aliasbr.c mh-6.8.4-JP-3.05/uip/aliasbr.c
      register struct adr *ad,
  			*ld;
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/annosbr.c mh-6.8.4-JP-3.05/uip/annosbr.c
---- mh-6.8.4-JP-3.05.orig/uip/annosbr.c	2001-04-02 21:03:43.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/annosbr.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/annosbr.c	2001-04-02 21:03:43
++++ mh-6.8.4-JP-3.05/uip/annosbr.c	2022-12-15 13:40:59
 @@ -11,7 +11,6 @@
  #include <sys/stat.h>
  
@@ -3159,24 +3180,25 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/annosbr.c mh-6.8.4-JP-3.05/uip/annosbr.c
  	if (cp[-1] != '\n' && cp != text)
  	    (void) putc ('\n', tmp);
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/bbc.c mh-6.8.4-JP-3.05/uip/bbc.c
---- mh-6.8.4-JP-3.05.orig/uip/bbc.c	1998-12-02 02:05:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/bbc.c	2018-12-31 09:05:50.000000000 +0900
-@@ -112,7 +112,14 @@
+--- mh-6.8.4-JP-3.05.orig/uip/bbc.c	1998-12-02 02:05:00
++++ mh-6.8.4-JP-3.05/uip/bbc.c	2022-12-15 13:40:59
+@@ -112,8 +112,15 @@
  
  /*  */
  
 -extern int  errno;
 +void rcinit (char *rc);
-+
+ 
 +static void rcput (FILE *bbrc, struct bbcount *p);
 +static void pgmread (int pd, int child_id, struct bboard *bb);
 +static void add_bb (char *s, int hush);
 +static void default_bboards (void);
 +static void bbread (struct bboard *bb, int vecp, char *vec[]);
 +static void rcend (void);
- 
++
  static int  changed = 0;
  static int  oops = 0;
+ static int  quitting = 0;
 @@ -142,7 +149,7 @@
  extern char response[];
  
@@ -3261,8 +3283,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/bbc.c mh-6.8.4-JP-3.05/uip/bbc.c
      register struct bboard  *bb;
      static struct bboard   *tail = NULL;
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/burst.c mh-6.8.4-JP-3.05/uip/burst.c
---- mh-6.8.4-JP-3.05.orig/uip/burst.c	1998-04-24 06:02:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/burst.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/burst.c	1998-04-24 06:02:00
++++ mh-6.8.4-JP-3.05/uip/burst.c	2022-12-15 13:40:59
 @@ -11,7 +11,7 @@
  #include	<locale.h>
  #endif
@@ -3296,8 +3318,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/burst.c mh-6.8.4-JP-3.05/uip/burst.c
      int     i,
              j,
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/conflict.c mh-6.8.4-JP-3.05/uip/conflict.c
---- mh-6.8.4-JP-3.05.orig/uip/conflict.c	1998-04-24 06:02:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/conflict.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/conflict.c	1998-04-24 06:02:00
++++ mh-6.8.4-JP-3.05/uip/conflict.c	2022-12-15 13:40:59
 @@ -23,6 +23,10 @@
  #define	NDIRS	100
  #define	NGRPS	100
@@ -3329,8 +3351,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/conflict.c mh-6.8.4-JP-3.05/uip/conflict.c
              pd[2];
  
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/distsbr.c mh-6.8.4-JP-3.05/uip/distsbr.c
---- mh-6.8.4-JP-3.05.orig/uip/distsbr.c	1993-12-01 13:01:35.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/distsbr.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/distsbr.c	1993-12-01 13:01:35
++++ mh-6.8.4-JP-3.05/uip/distsbr.c	2022-12-15 13:40:59
 @@ -150,15 +150,10 @@
  
      if ((ifp = fopen (msgnam, "r")) == NULL)
@@ -3365,8 +3387,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/distsbr.c mh-6.8.4-JP-3.05/uip/distsbr.c
  			|| (ofp = fdopen (out, "w")) == NULL)
  		    adios (NULLCP, "no file descriptors -- you lose big");
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/dropsbr.c mh-6.8.4-JP-3.05/uip/dropsbr.c
---- mh-6.8.4-JP-3.05.orig/uip/dropsbr.c	1998-04-24 06:02:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/dropsbr.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/dropsbr.c	1998-04-24 06:02:00
++++ mh-6.8.4-JP-3.05/uip/dropsbr.c	2022-12-15 13:40:59
 @@ -20,6 +20,9 @@
  #undef NULLVP
  #include <netinet/in.h>
@@ -3396,8 +3418,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/dropsbr.c mh-6.8.4-JP-3.05/uip/dropsbr.c
      return buffer;
  }
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/folder.c mh-6.8.4-JP-3.05/uip/folder.c
---- mh-6.8.4-JP-3.05.orig/uip/folder.c	2001-04-02 19:35:24.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/folder.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/folder.c	2001-04-02 19:35:24
++++ mh-6.8.4-JP-3.05/uip/folder.c	2022-12-15 13:40:59
 @@ -11,7 +11,9 @@
  #include	<locale.h>
  #endif
@@ -3448,8 +3470,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/folder.c mh-6.8.4-JP-3.05/uip/folder.c
      register int    i,
                      j;
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/forw.c mh-6.8.4-JP-3.05/uip/forw.c
---- mh-6.8.4-JP-3.05.orig/uip/forw.c	1999-02-09 20:30:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/forw.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/forw.c	1999-02-09 20:30:00
++++ mh-6.8.4-JP-3.05/uip/forw.c	2022-12-15 13:40:59
 @@ -22,7 +22,8 @@
  #define	IFORMAT	"digest-issue-%s"
  #define	VFORMAT	"digest-volume-%s"
@@ -3487,8 +3509,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/forw.c mh-6.8.4-JP-3.05/uip/forw.c
      (void) unlink (tmpfil);
      if ((in = dup (fileno (tmp))) == NOTOK)
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/ftpsbr.c mh-6.8.4-JP-3.05/uip/ftpsbr.c
---- mh-6.8.4-JP-3.05.orig/uip/ftpsbr.c	2001-04-02 19:49:08.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/ftpsbr.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/ftpsbr.c	2001-04-02 19:49:08
++++ mh-6.8.4-JP-3.05/uip/ftpsbr.c	2022-12-15 13:40:59
 @@ -66,10 +66,7 @@
  
  /*  */
@@ -3501,8 +3523,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/ftpsbr.c mh-6.8.4-JP-3.05/uip/ftpsbr.c
  extern	int	sys_nerr;
  extern	char   *sys_errlist[];
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/inc.c mh-6.8.4-JP-3.05/uip/inc.c
---- mh-6.8.4-JP-3.05.orig/uip/inc.c	2001-04-05 01:05:16.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/inc.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/inc.c	2001-04-05 01:05:16
++++ mh-6.8.4-JP-3.05/uip/inc.c	2022-12-15 13:40:59
 @@ -142,8 +142,6 @@
  
  /*  */
@@ -3522,8 +3544,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/inc.c mh-6.8.4-JP-3.05/uip/inc.c
  /* ARGSUSED */
  
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/mhlsbr.c mh-6.8.4-JP-3.05/uip/mhlsbr.c
---- mh-6.8.4-JP-3.05.orig/uip/mhlsbr.c	2001-04-05 01:05:16.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/mhlsbr.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/mhlsbr.c	2001-04-05 01:05:16
++++ mh-6.8.4-JP-3.05/uip/mhlsbr.c	2022-12-15 13:40:59
 @@ -57,6 +57,8 @@
  
  #define	QUOTE	'\\'
@@ -3648,8 +3670,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/mhlsbr.c mh-6.8.4-JP-3.05/uip/mhlsbr.c
  	return;
  
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/mhmail.c mh-6.8.4-JP-3.05/uip/mhmail.c
---- mh-6.8.4-JP-3.05.orig/uip/mhmail.c	2001-08-30 11:34:19.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/mhmail.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/mhmail.c	2001-08-30 11:34:19
++++ mh-6.8.4-JP-3.05/uip/mhmail.c	2022-12-15 13:40:59
 @@ -72,6 +72,7 @@
  #ifdef UCI
      FILE  *fp;
@@ -3670,8 +3692,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/mhmail.c mh-6.8.4-JP-3.05/uip/mhmail.c
      (void) chmod (tmpfil, 0600);
  
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/mhn.c mh-6.8.4-JP-3.05/uip/mhn.c
---- mh-6.8.4-JP-3.05.orig/uip/mhn.c	2001-08-30 11:57:33.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/mhn.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/mhn.c	2001-08-30 11:57:33
++++ mh-6.8.4-JP-3.05/uip/mhn.c	2022-12-15 13:40:59
 @@ -219,7 +219,6 @@
  static	char   *tmp;
  
@@ -3890,8 +3912,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/mhn.c mh-6.8.4-JP-3.05/uip/mhn.c
  	    (void) chmod (tmpdrf, 0600);
  
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/msh.c mh-6.8.4-JP-3.05/uip/msh.c
---- mh-6.8.4-JP-3.05.orig/uip/msh.c	2001-06-15 01:41:30.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/msh.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/msh.c	2001-06-15 01:41:30
++++ mh-6.8.4-JP-3.05/uip/msh.c	2022-12-15 13:40:59
 @@ -181,6 +181,23 @@
  
  static TYPESIG	intrser (), pipeser (), quitser ();
@@ -4038,8 +4060,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/msh.c mh-6.8.4-JP-3.05/uip/msh.c
      switch (cmdp -> direction) {
  	case STDIO: 
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/mshcmds.c mh-6.8.4-JP-3.05/uip/mshcmds.c
---- mh-6.8.4-JP-3.05.orig/uip/mshcmds.c	2001-04-03 01:40:58.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/mshcmds.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/mshcmds.c	2001-04-03 01:40:58
++++ mh-6.8.4-JP-3.05/uip/mshcmds.c	2022-12-15 13:40:59
 @@ -28,10 +28,9 @@
  #endif	/* MIME */
  
@@ -4303,8 +4325,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/mshcmds.c mh-6.8.4-JP-3.05/uip/mshcmds.c
  	    advise (tmpfil, "unable to create temporary file");
  	    return NOTOK;
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/packf.c mh-6.8.4-JP-3.05/uip/packf.c
---- mh-6.8.4-JP-3.05.orig/uip/packf.c	1998-04-24 06:02:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/packf.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/packf.c	1998-04-24 06:02:00
++++ mh-6.8.4-JP-3.05/uip/packf.c	2022-12-15 13:40:59
 @@ -27,9 +27,6 @@
  
  /*  */
@@ -4316,8 +4338,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/packf.c mh-6.8.4-JP-3.05/uip/packf.c
  
  char   *file = NULL;
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/pgped.c mh-6.8.4-JP-3.05/uip/pgped.c
---- mh-6.8.4-JP-3.05.orig/uip/pgped.c	1998-12-02 02:05:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/pgped.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/pgped.c	1998-12-02 02:05:00
++++ mh-6.8.4-JP-3.05/uip/pgped.c	2022-12-15 13:40:59
 @@ -259,8 +259,9 @@
  
      (void) strcpy(tmpfil1, m_scratch("", m_maildir(invo_name)));
@@ -4355,8 +4377,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/pgped.c mh-6.8.4-JP-3.05/uip/pgped.c
  	    goodbye();
  	}
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/pgpshow.c mh-6.8.4-JP-3.05/uip/pgpshow.c
---- mh-6.8.4-JP-3.05.orig/uip/pgpshow.c	1998-12-02 02:05:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/pgpshow.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/pgpshow.c	1998-12-02 02:05:00
++++ mh-6.8.4-JP-3.05/uip/pgpshow.c	2022-12-15 13:40:59
 @@ -207,8 +207,9 @@
  
      (void) strcpy(tmpfil1, m_scratch("", m_maildir(invo_name)));
@@ -4406,8 +4428,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/pgpshow.c mh-6.8.4-JP-3.05/uip/pgpshow.c
  		goodbye();
  	    }
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/picksbr.c mh-6.8.4-JP-3.05/uip/picksbr.c
---- mh-6.8.4-JP-3.05.orig/uip/picksbr.c	2001-04-03 01:29:11.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/picksbr.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/picksbr.c	2001-04-03 01:29:11
++++ mh-6.8.4-JP-3.05/uip/picksbr.c	2022-12-15 13:40:59
 @@ -542,7 +542,7 @@
  		dasctime (&n -> n_tws, TW_NULL));
  	return;
@@ -4418,8 +4440,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/picksbr.c mh-6.8.4-JP-3.05/uip/picksbr.c
  
  /*  */
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/popsbr.c mh-6.8.4-JP-3.05/uip/popsbr.c
---- mh-6.8.4-JP-3.05.orig/uip/popsbr.c	2001-04-02 19:50:01.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/popsbr.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/popsbr.c	2001-04-02 19:50:01
++++ mh-6.8.4-JP-3.05/uip/popsbr.c	2022-12-15 13:40:59
 @@ -27,10 +27,7 @@
  #define	TRM	"."
  #define	TRMLEN	(sizeof TRM - 1)
@@ -4477,8 +4499,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/popsbr.c mh-6.8.4-JP-3.05/uip/popsbr.c
  int     n;
  FILE * iop;
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/post.c mh-6.8.4-JP-3.05/uip/post.c
---- mh-6.8.4-JP-3.05.orig/uip/post.c	2001-04-03 01:29:52.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/post.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/post.c	2001-04-03 01:29:52
++++ mh-6.8.4-JP-3.05/uip/post.c	2022-12-15 13:40:59
 @@ -365,10 +365,24 @@
  off_t	lseek ();
  time_t	time ();
@@ -4678,7 +4700,7 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/post.c mh-6.8.4-JP-3.05/uip/post.c
  	fprintf (verbose ? stdout : stderr, "unable to create temporary file");
  	if (!verbose)
  	    fprintf (stderr, ", so can't record recipients");
-@@ -2868,12 +2861,10 @@
+@@ -2868,13 +2861,11 @@
      int     i,
              fd;
      char    buffer[BUFSIZ];
@@ -4686,14 +4708,15 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/post.c mh-6.8.4-JP-3.05/uip/post.c
  
 -    (void) strcpy (tmpfil, m_tmpfil ("hook"));
 -    if ((fd = creat (tmpfil, 0600)) == NOTOK)
--	return NOTOK;
--    (void) close (fd);
--    if ((fd = open (tmpfil, 2)) == NOTOK)
 +    (void) strcpy (tmpfil, m_tmpfil ("hook", &fd));
 +    if (fd == -1)
  	return NOTOK;
+-    (void) close (fd);
+-    if ((fd = open (tmpfil, 2)) == NOTOK)
+-	return NOTOK;
  
      (void) lseek (qd, (off_t)0, 0);
+     while ((i = read (qd, buffer, sizeof buffer)) > 0)
 @@ -2981,12 +2972,9 @@
      if ((qd = dup (td)) == NOTOK)
  	adios ("fd", "unable to dup");
@@ -4710,8 +4733,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/post.c mh-6.8.4-JP-3.05/uip/post.c
      switch (i = mmdf2uucp (qd, fd, 1)) {
  	case OK: 
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/prompter.c mh-6.8.4-JP-3.05/uip/prompter.c
---- mh-6.8.4-JP-3.05.orig/uip/prompter.c	1998-04-24 06:02:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/prompter.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/prompter.c	1998-04-24 06:02:00
++++ mh-6.8.4-JP-3.05/uip/prompter.c	2022-12-15 13:40:59
 @@ -68,9 +68,6 @@
  
  /*  */
@@ -4742,8 +4765,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/prompter.c mh-6.8.4-JP-3.05/uip/prompter.c
      (void) chmod (tmpfil, 0600);
  
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/pshsbr.c mh-6.8.4-JP-3.05/uip/pshsbr.c
---- mh-6.8.4-JP-3.05.orig/uip/pshsbr.c	2001-04-02 19:50:24.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/pshsbr.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/pshsbr.c	2001-04-02 19:50:24
++++ mh-6.8.4-JP-3.05/uip/pshsbr.c	2022-12-15 13:40:59
 @@ -27,17 +27,11 @@
  #define	TRM	"."
  #define	TRMLEN	(sizeof TRM - 1)
@@ -4808,8 +4831,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/pshsbr.c mh-6.8.4-JP-3.05/uip/pshsbr.c
  int     n;
  FILE * iop;
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/rcvdist.c mh-6.8.4-JP-3.05/uip/rcvdist.c
---- mh-6.8.4-JP-3.05.orig/uip/rcvdist.c	2001-08-30 11:07:11.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/rcvdist.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/rcvdist.c	2001-08-30 11:07:11
++++ mh-6.8.4-JP-3.05/uip/rcvdist.c	2022-12-15 13:40:59
 @@ -51,6 +51,7 @@
             *arguments[MAXARGS],
             *vec[MAXARGS];
@@ -4839,8 +4862,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/rcvdist.c mh-6.8.4-JP-3.05/uip/rcvdist.c
  	done (1);
  
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/rcvstore.c mh-6.8.4-JP-3.05/uip/rcvstore.c
---- mh-6.8.4-JP-3.05.orig/uip/rcvstore.c	1998-04-24 06:02:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/rcvstore.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/rcvstore.c	1998-04-24 06:02:00
++++ mh-6.8.4-JP-3.05/uip/rcvstore.c	2022-12-15 13:40:59
 @@ -43,10 +43,7 @@
  
  /*  */
@@ -4854,8 +4877,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/rcvstore.c mh-6.8.4-JP-3.05/uip/rcvstore.c
  /* ARGSUSED */
  
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/rcvtty.c mh-6.8.4-JP-3.05/uip/rcvtty.c
---- mh-6.8.4-JP-3.05.orig/uip/rcvtty.c	2001-04-05 01:05:17.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/rcvtty.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/rcvtty.c	2001-04-05 01:05:17
++++ mh-6.8.4-JP-3.05/uip/rcvtty.c	2022-12-15 13:40:59
 @@ -79,7 +79,7 @@
  char   *getusr ();
  
@@ -4877,21 +4900,22 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/rcvtty.c mh-6.8.4-JP-3.05/uip/rcvtty.c
  #endif	/* BSD42 */
  #ifdef SVR4
  	    (void) setsid();
-@@ -305,12 +309,8 @@
+@@ -305,13 +309,9 @@
      int     fd;
      char    tmpfil[BUFSIZ];
  
 -    (void) strcpy (tmpfil, m_tmpfil (invo_name));
 -    if ((fd = creat (tmpfil, 0600)) == NOTOK)
--	return NOTOK;
--    (void) close (fd);
--
--    if ((fd = open (tmpfil, 2)) == NOTOK)
 +    (void) strcpy (tmpfil, m_tmpfil (invo_name, &fd));
 +    if (fd == -1)
  	return NOTOK;
+-    (void) close (fd);
+-
+-    if ((fd = open (tmpfil, 2)) == NOTOK)
+-	return NOTOK;
      (void) unlink (tmpfil);
  
+     rewind (stdin);
 @@ -329,9 +329,7 @@
  /*  */
  
@@ -4915,8 +4939,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/rcvtty.c mh-6.8.4-JP-3.05/uip/rcvtty.c
      int     i,
              td;
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/refile.c mh-6.8.4-JP-3.05/uip/refile.c
---- mh-6.8.4-JP-3.05.orig/uip/refile.c	1998-04-24 06:02:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/refile.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/refile.c	1998-04-24 06:02:00
++++ mh-6.8.4-JP-3.05/uip/refile.c	2022-12-15 13:40:59
 @@ -47,9 +47,6 @@
  
  /*  */
@@ -4928,8 +4952,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/refile.c mh-6.8.4-JP-3.05/uip/refile.c
  
  
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/replsbr.c mh-6.8.4-JP-3.05/uip/replsbr.c
---- mh-6.8.4-JP-3.05.orig/uip/replsbr.c	2001-04-05 01:05:17.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/replsbr.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/replsbr.c	2001-04-05 01:05:17
++++ mh-6.8.4-JP-3.05/uip/replsbr.c	2022-12-15 13:40:59
 @@ -68,7 +68,8 @@
      NULL
  };
@@ -4975,8 +4999,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/replsbr.c mh-6.8.4-JP-3.05/uip/replsbr.c
      int	    pid;
      char   *mhl;
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/sbboards.c mh-6.8.4-JP-3.05/uip/sbboards.c
---- mh-6.8.4-JP-3.05.orig/uip/sbboards.c	1998-12-02 02:05:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/sbboards.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/sbboards.c	1998-12-02 02:05:00
++++ mh-6.8.4-JP-3.05/uip/sbboards.c	2022-12-15 13:40:59
 @@ -617,12 +617,9 @@
              fd;
      char    buffer[BUFSIZ];
@@ -4994,8 +5018,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/sbboards.c mh-6.8.4-JP-3.05/uip/sbboards.c
      (void) lseek (qd, (off_t)0, 0);
      while ((i = read (qd, buffer, sizeof buffer)) > 0)
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/scan.c mh-6.8.4-JP-3.05/uip/scan.c
---- mh-6.8.4-JP-3.05.orig/uip/scan.c	1999-02-09 20:30:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/scan.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/scan.c	1999-02-09 20:30:00
++++ mh-6.8.4-JP-3.05/uip/scan.c	2022-12-15 13:40:59
 @@ -50,7 +50,6 @@
  
  /*  */
@@ -5005,8 +5029,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/scan.c mh-6.8.4-JP-3.05/uip/scan.c
  extern struct msgs *fmt_current_folder;	
  #endif
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/scansbr.c mh-6.8.4-JP-3.05/uip/scansbr.c
---- mh-6.8.4-JP-3.05.orig/uip/scansbr.c	2001-06-13 23:18:07.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/scansbr.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/scansbr.c	2001-06-13 23:18:07
++++ mh-6.8.4-JP-3.05/uip/scansbr.c	2022-12-15 13:40:59
 @@ -253,6 +253,8 @@
  		while (state == BODY) {
  #ifdef _STDIO_USES_IOSTREAM
@@ -5029,8 +5053,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/scansbr.c mh-6.8.4-JP-3.05/uip/scansbr.c
  		    state = m_getfld( state, name, scnout->_ptr,
  				      -(scnout->_cnt), inb );
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/send.c mh-6.8.4-JP-3.05/uip/send.c
---- mh-6.8.4-JP-3.05.orig/uip/send.c	1998-04-24 06:02:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/send.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/send.c	1998-04-24 06:02:00
++++ mh-6.8.4-JP-3.05/uip/send.c	2022-12-15 13:40:59
 @@ -162,10 +162,6 @@
  extern char *altmsg;		/*  .. */
  extern char *annotext;
@@ -5076,8 +5100,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/send.c mh-6.8.4-JP-3.05/uip/send.c
  		cpydata (in, out, altmsg, distfile);
  		(void) close (in);
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/sendsbr.c mh-6.8.4-JP-3.05/uip/sendsbr.c
---- mh-6.8.4-JP-3.05.orig/uip/sendsbr.c	2001-04-05 01:05:17.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/sendsbr.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/sendsbr.c	2001-04-05 01:05:17
++++ mh-6.8.4-JP-3.05/uip/sendsbr.c	2022-12-15 13:40:59
 @@ -13,12 +13,15 @@
  #include <unistd.h>
  #endif
@@ -5095,21 +5119,22 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/sendsbr.c mh-6.8.4-JP-3.05/uip/sendsbr.c
  
  /*  */
  
-@@ -476,12 +479,8 @@
+@@ -476,13 +479,9 @@
      int     fd;
      char    tmpfil[BUFSIZ];
  
 -    (void) strcpy (tmpfil, m_tmpfil (invo_name));
 -    if ((fd = creat (tmpfil, 0600)) == NOTOK)
--	return NOTOK;
--    (void) close (fd);
--
--    if ((fd = open (tmpfil, 2)) == NOTOK)
 +    (void) strcpy (tmpfil, m_tmpfil (invo_name, &fd));
 +    if (fd == -1)
  	return NOTOK;
+-    (void) close (fd);
+-
+-    if ((fd = open (tmpfil, 2)) == NOTOK)
+-	return NOTOK;
      if (debugsw)
  	advise (NULLCP, "temporary file %s selected", tmpfil);
+     else
 @@ -494,9 +493,7 @@
  
  /*  */
@@ -5132,8 +5157,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/sendsbr.c mh-6.8.4-JP-3.05/uip/sendsbr.c
      int	    fd2,
  	    fd3,
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/slocal.c mh-6.8.4-JP-3.05/uip/slocal.c
---- mh-6.8.4-JP-3.05.orig/uip/slocal.c	2000-12-04 21:09:38.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/slocal.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/slocal.c	2000-12-04 21:09:38
++++ mh-6.8.4-JP-3.05/uip/slocal.c	2022-12-15 13:40:59
 @@ -211,7 +211,9 @@
  #endif
  static int	localmail(), usr_delivery(), split(), parse(), logged_in();
@@ -5204,7 +5229,7 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/slocal.c mh-6.8.4-JP-3.05/uip/slocal.c
  {
      int     i;
      register char  *cp;
-@@ -1291,12 +1294,11 @@
+@@ -1291,13 +1294,12 @@
      char    buffer[BUFSIZ];
      register FILE  *qfp,
  		   *ffp;
@@ -5212,15 +5237,16 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/slocal.c mh-6.8.4-JP-3.05/uip/slocal.c
  
 -    (void) strcpy (tmpfil, m_tmpfil (invo_name));
 -    if ((fd1 = creat (tmpfil, 0600)) == NOTOK)
--	return NOTOK;
--    (void) close (fd1);
--    if ((fd1 = open (tmpfil, 2)) == NOTOK)
 +    (void) strcpy (tmpfil, m_tmpfil (invo_name, &tmpfd));
 +    fd1 = tmpfd;
 +    if (fd1 == -1)
  	return NOTOK;
+-    (void) close (fd1);
+-    if ((fd1 = open (tmpfil, 2)) == NOTOK)
+-	return NOTOK;
  
      if (!fold) {
+ 	while ((i = read (qd, buffer, sizeof buffer)) > 0)
 @@ -1355,8 +1357,8 @@
  		if (hp) {
  		    ep = rindex (++hp, '\n');
@@ -5233,8 +5259,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/slocal.c mh-6.8.4-JP-3.05/uip/slocal.c
  		else
  		    sprintf (buffer, "Return-Path: %.*s\n",
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/spop.c mh-6.8.4-JP-3.05/uip/spop.c
---- mh-6.8.4-JP-3.05.orig/uip/spop.c	1998-12-02 02:05:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/spop.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/spop.c	1998-12-02 02:05:00
++++ mh-6.8.4-JP-3.05/uip/spop.c	2022-12-15 13:40:59
 @@ -608,12 +608,9 @@
              fd;
      char    buffer[BUFSIZ];
@@ -5252,8 +5278,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/spop.c mh-6.8.4-JP-3.05/uip/spop.c
      (void) lseek (qd, (off_t)0, 0);
      while ((i = read (qd, buffer, sizeof buffer)) > 0)
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/spost.c mh-6.8.4-JP-3.05/uip/spost.c
---- mh-6.8.4-JP-3.05.orig/uip/spost.c	2001-04-05 01:05:17.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/spost.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/spost.c	2001-04-05 01:05:17
++++ mh-6.8.4-JP-3.05/uip/spost.c	2022-12-15 13:40:59
 @@ -212,9 +212,11 @@
  static struct headers  *hdrtab;	/* table for the message we're doing */
  static FILE *out;		/* output (temp) file */
@@ -5303,8 +5329,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/spost.c mh-6.8.4-JP-3.05/uip/spost.c
      int     i;
  
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/trmsbr.c mh-6.8.4-JP-3.05/uip/trmsbr.c
---- mh-6.8.4-JP-3.05.orig/uip/trmsbr.c	1993-12-01 13:01:39.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/trmsbr.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/trmsbr.c	1993-12-01 13:01:39
++++ mh-6.8.4-JP-3.05/uip/trmsbr.c	2022-12-15 13:40:59
 @@ -26,6 +26,9 @@
  #define	TXTSIZ	BUFSIZ
  #endif
@@ -5333,8 +5359,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/trmsbr.c mh-6.8.4-JP-3.05/uip/trmsbr.c
                     *term;
      char   *cp,
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/umhook.c mh-6.8.4-JP-3.05/uip/umhook.c
---- mh-6.8.4-JP-3.05.orig/uip/umhook.c	1998-04-24 06:02:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/umhook.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/umhook.c	1998-04-24 06:02:00
++++ mh-6.8.4-JP-3.05/uip/umhook.c	2022-12-15 13:40:59
 @@ -232,12 +232,8 @@
      if (lseek (uucp, (off_t) offset, 0) == (off_t) NOTOK)
  	adios (mymail, "unable to position to %ld offset on", (long) offset);
@@ -5366,8 +5392,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/umhook.c mh-6.8.4-JP-3.05/uip/umhook.c
      (void) unlink (myfile);
      if ((fd2 = dup (fd1)) == NOTOK)
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/vmh.c mh-6.8.4-JP-3.05/uip/vmh.c
---- mh-6.8.4-JP-3.05.orig/uip/vmh.c	2001-04-21 20:16:49.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/vmh.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/vmh.c	2001-04-21 20:16:49
++++ mh-6.8.4-JP-3.05/uip/vmh.c	2022-12-15 13:40:59
 @@ -113,9 +113,26 @@
  #define	SMALLMOVE	1
  #define	LARGEMOVE	10
@@ -5570,8 +5596,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/vmh.c mh-6.8.4-JP-3.05/uip/vmh.c
  #ifndef	TERMINFO
  	if (CE)
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/vmhsbr.c mh-6.8.4-JP-3.05/uip/vmhsbr.c
---- mh-6.8.4-JP-3.05.orig/uip/vmhsbr.c	2001-04-02 19:50:46.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/vmhsbr.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/vmhsbr.c	2001-04-02 19:50:46
++++ mh-6.8.4-JP-3.05/uip/vmhsbr.c	2022-12-15 13:40:59
 @@ -24,10 +24,7 @@
  static	int PEERrfd = NOTOK;
  static	int PEERwfd = NOTOK;
@@ -5584,8 +5610,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/vmhsbr.c mh-6.8.4-JP-3.05/uip/vmhsbr.c
  extern int  sys_nerr;
  extern char *sys_errlist[];
 diff -ruN mh-6.8.4-JP-3.05.orig/uip/whatnowsbr.c mh-6.8.4-JP-3.05/uip/whatnowsbr.c
---- mh-6.8.4-JP-3.05.orig/uip/whatnowsbr.c	2001-04-05 01:05:18.000000000 +0900
-+++ mh-6.8.4-JP-3.05/uip/whatnowsbr.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/uip/whatnowsbr.c	2001-04-05 01:05:18
++++ mh-6.8.4-JP-3.05/uip/whatnowsbr.c	2022-12-15 13:40:59
 @@ -18,7 +18,8 @@
  #define	MIMEminc(a)	0
  #endif
@@ -5610,8 +5636,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/uip/whatnowsbr.c mh-6.8.4-JP-3.05/uip/whatnowsbr
  #ifndef	lint
      int	    distsw = 0;
 diff -ruN mh-6.8.4-JP-3.05.orig/zotnet/bboards/getbbent.c mh-6.8.4-JP-3.05/zotnet/bboards/getbbent.c
---- mh-6.8.4-JP-3.05.orig/zotnet/bboards/getbbent.c	1999-02-09 20:30:00.000000000 +0900
-+++ mh-6.8.4-JP-3.05/zotnet/bboards/getbbent.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/zotnet/bboards/getbbent.c	1999-02-09 20:30:00
++++ mh-6.8.4-JP-3.05/zotnet/bboards/getbbent.c	2022-12-15 13:40:59
 @@ -458,15 +458,15 @@
      if ((cp = rindex (bb -> bb_file, '/')) == NULL || *++cp == 0)
  	(void) strcpy (prf, ""), cp = bb -> bb_file;
@@ -5645,8 +5671,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/zotnet/bboards/getbbent.c mh-6.8.4-JP-3.05/zotne
  		    break;
  
 diff -ruN mh-6.8.4-JP-3.05.orig/zotnet/mf/mf.c mh-6.8.4-JP-3.05/zotnet/mf/mf.c
---- mh-6.8.4-JP-3.05.orig/zotnet/mf/mf.c	2001-04-03 01:03:22.000000000 +0900
-+++ mh-6.8.4-JP-3.05/zotnet/mf/mf.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/zotnet/mf/mf.c	2001-04-03 01:03:22
++++ mh-6.8.4-JP-3.05/zotnet/mf/mf.c	2022-12-15 13:40:59
 @@ -432,7 +432,7 @@
      while (isspace (*ap & 0xff))
  	ap++;
@@ -5657,8 +5683,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/zotnet/mf/mf.c mh-6.8.4-JP-3.05/zotnet/mf/mf.c
  	(void) strcpy (adr, ap);
      bp = adr + strlen (adr) - 1;
 diff -ruN mh-6.8.4-JP-3.05.orig/zotnet/mts/client.c mh-6.8.4-JP-3.05/zotnet/mts/client.c
---- mh-6.8.4-JP-3.05.orig/zotnet/mts/client.c	2001-04-05 01:05:19.000000000 +0900
-+++ mh-6.8.4-JP-3.05/zotnet/mts/client.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/zotnet/mts/client.c	2001-04-05 01:05:19
++++ mh-6.8.4-JP-3.05/zotnet/mts/client.c	2022-12-15 13:40:59
 @@ -52,7 +52,6 @@
  
  /*  */
@@ -5678,8 +5704,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/zotnet/mts/client.c mh-6.8.4-JP-3.05/zotnet/mts/
  #ifndef __alpha
  u_long	inet_addr ();
 diff -ruN mh-6.8.4-JP-3.05.orig/zotnet/mts/lock.c mh-6.8.4-JP-3.05/zotnet/mts/lock.c
---- mh-6.8.4-JP-3.05.orig/zotnet/mts/lock.c	2001-04-03 16:22:46.000000000 +0900
-+++ mh-6.8.4-JP-3.05/zotnet/mts/lock.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/zotnet/mts/lock.c	2001-04-03 16:22:46
++++ mh-6.8.4-JP-3.05/zotnet/mts/lock.c	2022-12-15 13:40:59
 @@ -77,10 +77,7 @@
  #define	FLOCK		/* LOCKF will override this, if defined */
  #endif
@@ -5691,21 +5717,22 @@ diff -ruN mh-6.8.4-JP-3.05.orig/zotnet/mts/lock.c mh-6.8.4-JP-3.05/zotnet/mts/lo
  
  #ifdef	LOCKONLY
  #ifndef	MMDFONLY
-@@ -103,7 +100,13 @@
+@@ -103,8 +100,14 @@
  #endif /* MAILLOCK */
  
  static int	b_lkopen(), lockit(), f_lkopen();
 -static		lockname(), timerON(), timerOFF();
 +static		lockname(), timerOFF();
-+
+ 
 +#ifdef LIBLOCKFILE
 +static void timerON (char  *lock, int fd, int ltype);
 +#else
 +static void timerON (char *lock, int fd);
 +#endif
- 
++
  time_t	time ();
  char   *mktemp ();
+ 
 @@ -219,7 +222,7 @@
  	cp = file;
      if (lockldir == NULL || *lockldir == 0) {
@@ -5741,8 +5768,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/zotnet/mts/lock.c mh-6.8.4-JP-3.05/zotnet/mts/lo
      register struct lock   *lp;
  
 diff -ruN mh-6.8.4-JP-3.05.orig/zotnet/mts/mts.h mh-6.8.4-JP-3.05/zotnet/mts/mts.h
---- mh-6.8.4-JP-3.05.orig/zotnet/mts/mts.h	1993-12-01 13:01:42.000000000 +0900
-+++ mh-6.8.4-JP-3.05/zotnet/mts/mts.h	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/zotnet/mts/mts.h	1993-12-01 13:01:42
++++ mh-6.8.4-JP-3.05/zotnet/mts/mts.h	2022-12-15 13:40:59
 @@ -109,3 +109,5 @@
  
  extern int Everyone;
@@ -5750,8 +5777,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/zotnet/mts/mts.h mh-6.8.4-JP-3.05/zotnet/mts/mts
 +
 +void mts_init (char *name);
 diff -ruN mh-6.8.4-JP-3.05.orig/zotnet/tws/date.c mh-6.8.4-JP-3.05/zotnet/tws/date.c
---- mh-6.8.4-JP-3.05.orig/zotnet/tws/date.c	1993-12-01 13:01:43.000000000 +0900
-+++ mh-6.8.4-JP-3.05/zotnet/tws/date.c	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/zotnet/tws/date.c	1993-12-01 13:01:43
++++ mh-6.8.4-JP-3.05/zotnet/tws/date.c	2022-12-15 13:40:59
 @@ -1,6 +1,7 @@
  /* date.c */
  
@@ -5761,8 +5788,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/zotnet/tws/date.c mh-6.8.4-JP-3.05/zotnet/tws/da
  
  
 diff -ruN mh-6.8.4-JP-3.05.orig/zotnet/tws/dtimep.c-lexed mh-6.8.4-JP-3.05/zotnet/tws/dtimep.c-lexed
---- mh-6.8.4-JP-3.05.orig/zotnet/tws/dtimep.c-lexed	2000-01-04 11:03:29.000000000 +0900
-+++ mh-6.8.4-JP-3.05/zotnet/tws/dtimep.c-lexed	2018-12-31 09:05:50.000000000 +0900
+--- mh-6.8.4-JP-3.05.orig/zotnet/tws/dtimep.c-lexed	2000-01-04 11:03:29
++++ mh-6.8.4-JP-3.05/zotnet/tws/dtimep.c-lexed	2022-12-15 13:40:59
 @@ -115,8 +115,7 @@
  #endif	/* BSD42 */
  #endif

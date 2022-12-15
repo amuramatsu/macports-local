@@ -2,7 +2,7 @@ PortSystem	1.0
 
 name		mh-jp
 version		6.8.4-JP-3.05
-revision	2
+revision	3
 license		BSD
 platforms	darwin
 categories	mail
