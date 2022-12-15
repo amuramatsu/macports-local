@@ -1,7 +1,7 @@
-diff -ruN bogofilter-1.2.4.orig/bogofilter.cf.example bogofilter-1.2.4/bogofilter.cf.example
---- bogofilter-1.2.4.orig/bogofilter.cf.example	2013-06-29 23:52:57.000000000 +0900
-+++ bogofilter-1.2.4/bogofilter.cf.example	2018-12-31 12:19:10.000000000 +0900
-@@ -217,7 +217,7 @@
+diff -ruN bogofilter-1.2.5.orig/bogofilter.cf.example bogofilter-1.2.5/bogofilter.cf.example
+--- bogofilter-1.2.5.orig/bogofilter.cf.example	2019-10-11 05:04:33
++++ bogofilter-1.2.5/bogofilter.cf.example	2022-12-15 13:11:14
+@@ -215,7 +215,7 @@
  #	minimum and maximum lengths for single tokens
  #
  #min-token-len=3			# default
@@ -10,10 +10,10 @@ diff -ruN bogofilter-1.2.4.orig/bogofilter.cf.example bogofilter-1.2.4/bogofilte
  #
  #	count and length for multi-word tokens
  #	Note: if length not specified, defaults to
-diff -ruN bogofilter-1.2.4.orig/config.in bogofilter-1.2.4/config.in
---- bogofilter-1.2.4.orig/config.in	2013-06-30 00:01:39.000000000 +0900
-+++ bogofilter-1.2.4/config.in	2018-12-31 12:19:10.000000000 +0900
-@@ -124,9 +124,15 @@
+diff -ruN bogofilter-1.2.5.orig/config.in bogofilter-1.2.5/config.in
+--- bogofilter-1.2.5.orig/config.in	2019-10-12 05:24:52
++++ bogofilter-1.2.5/config.in	2022-12-15 13:11:14
+@@ -130,9 +130,15 @@
  /* Define to 1 if you have the <inttypes.h> header file. */
  #undef HAVE_INTTYPES_H
  
@@ -29,29 +29,29 @@ diff -ruN bogofilter-1.2.4.orig/config.in bogofilter-1.2.4/config.in
  /* Define to 1 if you have the <limits.h> header file. */
  #undef HAVE_LIMITS_H
  
-@@ -349,6 +355,9 @@
+@@ -360,6 +366,9 @@
+ 
  /* Version number of package */
  #undef VERSION
- 
++
 +/* Use specified charset for kakasi/mecab */
 +#undef WAKATI_CHARSET
-+
+ 
  /* Define to 1 if `lex' declares `yytext' as a `char *' by default, not a
     `char[]'. */
- #undef YYTEXT_POINTER
-diff -ruN bogofilter-1.2.4.orig/configure.ac bogofilter-1.2.4/configure.ac
---- bogofilter-1.2.4.orig/configure.ac	2013-06-29 23:58:27.000000000 +0900
-+++ bogofilter-1.2.4/configure.ac	2018-12-31 12:19:10.000000000 +0900
-@@ -18,7 +18,7 @@
+diff -ruN bogofilter-1.2.5.orig/configure.ac bogofilter-1.2.5/configure.ac
+--- bogofilter-1.2.5.orig/configure.ac	2019-10-12 05:09:34
++++ bogofilter-1.2.5/configure.ac	2022-12-15 13:12:37
+@@ -17,7 +17,7 @@
  dnl                 part of the bogofilter source).
  dnl ********************************************************
  dnl
--AC_INIT([bogofilter],[1.2.4])
-+AC_INIT([bogofilter],[1.2.4-jp0.1])
+-AC_INIT([bogofilter],[1.2.5])
++AC_INIT([bogofilter],[1.2.5-jp0.1])
  dnl
  AC_PREREQ([2.68])
  AC_USE_SYSTEM_EXTENSIONS
-@@ -76,6 +76,31 @@
+@@ -81,6 +81,31 @@
  dnl Check for extension
  AC_EXEEXT
  
@@ -83,7 +83,7 @@ diff -ruN bogofilter-1.2.4.orig/configure.ac bogofilter-1.2.4/configure.ac
  dnl check for b0rked Solaris (and other shells) and find one that works
  AC_MSG_CHECKING(for a working shell...)
  for i in /usr/xpg6/bin/sh /usr/xpg4/bin/sh /usr/ccs/bin/sh /bin/sh /usr/bin/sh /bin/ksh /bin/bash /usr/local/bin/bash ; do
-@@ -318,7 +343,8 @@
+@@ -291,7 +316,8 @@
  	[Enable converting character sets to Unicode])
  	[ENCODING="utf-8"]
  fi
@@ -93,7 +93,7 @@ diff -ruN bogofilter-1.2.4.orig/configure.ac bogofilter-1.2.4/configure.ac
  
  dnl Allow the user to enable Russian character set support
  
-@@ -345,10 +371,7 @@
+@@ -318,10 +344,7 @@
  AC_ARG_WITH(charset, 
  	    AS_HELP_STRING([--with-charset=name], 
  	    [use specified charset (overrides --enable-russian) [[iso-8859-1]]]), 
@@ -105,7 +105,7 @@ diff -ruN bogofilter-1.2.4.orig/configure.ac bogofilter-1.2.4/configure.ac
  
  AC_SUBST(ENCODING)
  AC_SUBST(DEFAULT_CHARSET)
-@@ -356,6 +379,16 @@
+@@ -329,6 +352,16 @@
  	["$DEFAULT_CHARSET"],
  	[Use specified charset])
  
@@ -122,7 +122,7 @@ diff -ruN bogofilter-1.2.4.orig/configure.ac bogofilter-1.2.4/configure.ac
  dnl Allow the user to enable memory usage debugging methods
  
  AC_ARG_ENABLE(memdebug,
-@@ -525,11 +558,11 @@
+@@ -538,11 +571,11 @@
  	dnl and try to guess if we need -lpthread or -lthread
  	DB_TYPE=db
  	DB_EXT=.db
@@ -136,16 +136,16 @@ diff -ruN bogofilter-1.2.4.orig/configure.ac bogofilter-1.2.4/configure.ac
  	    for addlibs in "" -lpthread -lthread ; do
  		LIBDB="$dblibs $addlibs"
  		export LIBDB
-@@ -884,3 +917,5 @@
+@@ -899,3 +932,5 @@
  AC_MSG_NOTICE([   LIBDB=$LIBDB])
  AC_MSG_NOTICE([GSL_LIBS=$GSL_LIBS])
  AC_MSG_NOTICE([LIBICONV=$LIBICONV])
 +AC_MSG_NOTICE([DEFAULT_CHARSET: $DEFAULT_CHARSET])
 +AC_MSG_NOTICE([WAKATI_CHARSET: $WAKATI_CHARSET])
-diff -ruN bogofilter-1.2.4.orig/src/charset.c bogofilter-1.2.4/src/charset.c
---- bogofilter-1.2.4.orig/src/charset.c	2013-06-29 23:52:52.000000000 +0900
-+++ bogofilter-1.2.4/src/charset.c	2018-12-31 12:19:10.000000000 +0900
-@@ -34,7 +34,7 @@
+diff -ruN bogofilter-1.2.5.orig/src/charset.c bogofilter-1.2.5/src/charset.c
+--- bogofilter-1.2.5.orig/src/charset.c	2019-10-11 05:04:33
++++ bogofilter-1.2.5/src/charset.c	2022-12-15 13:11:14
+@@ -32,7 +32,7 @@
  #define	SP	' '
  
  #ifndef	DEFAULT_CHARSET
@@ -153,10 +153,10 @@ diff -ruN bogofilter-1.2.4.orig/src/charset.c bogofilter-1.2.4/src/charset.c
 +#define	DEFAULT_CHARSET	"iso2022-jp"
  #endif
  
- const char *charset_default = DEFAULT_CHARSET;
-diff -ruN bogofilter-1.2.4.orig/src/common.h bogofilter-1.2.4/src/common.h
---- bogofilter-1.2.4.orig/src/common.h	2013-06-29 23:52:52.000000000 +0900
-+++ bogofilter-1.2.4/src/common.h	2018-12-31 12:19:10.000000000 +0900
+ byte charset_table[256];
+diff -ruN bogofilter-1.2.5.orig/src/common.h bogofilter-1.2.5/src/common.h
+--- bogofilter-1.2.5.orig/src/common.h	2019-10-11 05:04:33
++++ bogofilter-1.2.5/src/common.h	2022-12-15 13:11:14
 @@ -36,7 +36,7 @@
  
  /* length of token between these values */
@@ -166,10 +166,10 @@ diff -ruN bogofilter-1.2.4.orig/src/common.h bogofilter-1.2.4/src/common.h
  #define MAX_MULTI_TOKEN_LEN	30	/* default value of max-multi-token-len */
  #define	MAX_PREFIX_LEN	 	 5	/* maximum length of prefix		*/
  #define	MUL_TOKEN_CNT		 1	/* default value of multi-token-count   */
-diff -ruN bogofilter-1.2.4.orig/src/convert_unicode.c bogofilter-1.2.4/src/convert_unicode.c
---- bogofilter-1.2.4.orig/src/convert_unicode.c	2013-06-29 23:52:42.000000000 +0900
-+++ bogofilter-1.2.4/src/convert_unicode.c	2018-12-31 12:22:41.000000000 +0900
-@@ -33,7 +33,7 @@
+diff -ruN bogofilter-1.2.5.orig/src/convert_unicode.c bogofilter-1.2.5/src/convert_unicode.c
+--- bogofilter-1.2.5.orig/src/convert_unicode.c	2019-10-11 05:04:33
++++ bogofilter-1.2.5/src/convert_unicode.c	2022-12-15 13:11:14
+@@ -31,7 +31,7 @@
  #define	SP	' '
  
  #include <iconv.h>
@@ -178,7 +178,7 @@ diff -ruN bogofilter-1.2.4.orig/src/convert_unicode.c bogofilter-1.2.4/src/conve
  
  static void map_nonascii_characters(void)
  {
-@@ -106,31 +106,62 @@
+@@ -104,31 +104,62 @@
      { "csgb2312",	T },
  };
  
@@ -249,10 +249,10 @@ diff -ruN bogofilter-1.2.4.orig/src/convert_unicode.c bogofilter-1.2.4/src/conve
      if (DEBUG_ICONV(1))
  	fprintf(dbgout, "converting %s to %s\n", from_charset, to_charset);
  
-diff -ruN bogofilter-1.2.4.orig/src/convert_unicode.h bogofilter-1.2.4/src/convert_unicode.h
---- bogofilter-1.2.4.orig/src/convert_unicode.h	2013-06-29 23:52:42.000000000 +0900
-+++ bogofilter-1.2.4/src/convert_unicode.h	2018-12-31 12:19:10.000000000 +0900
-@@ -14,12 +14,22 @@
+diff -ruN bogofilter-1.2.5.orig/src/convert_unicode.h bogofilter-1.2.5/src/convert_unicode.h
+--- bogofilter-1.2.5.orig/src/convert_unicode.h	2019-10-11 05:04:33
++++ bogofilter-1.2.5/src/convert_unicode.h	2022-12-15 13:11:14
+@@ -12,12 +12,22 @@
  #define	CHARSET_UNICODE_H
  
  #include <iconv.h>
@@ -277,13 +277,13 @@ diff -ruN bogofilter-1.2.4.orig/src/convert_unicode.h bogofilter-1.2.4/src/conve
  
  #if	defined(CP866) && !defined(ENABLE_UNICODE) && !defined(DISABLE_UNICODE)
  extern int  decode_and_htmlUNICODE_to_cp866(byte *buf, int len);
-diff -ruN bogofilter-1.2.4.orig/src/iconvert.c bogofilter-1.2.4/src/iconvert.c
---- bogofilter-1.2.4.orig/src/iconvert.c	2013-06-29 23:52:52.000000000 +0900
-+++ bogofilter-1.2.4/src/iconvert.c	2018-12-31 12:19:10.000000000 +0900
-@@ -32,10 +32,28 @@
+diff -ruN bogofilter-1.2.5.orig/src/iconvert.c bogofilter-1.2.5/src/iconvert.c
+--- bogofilter-1.2.5.orig/src/iconvert.c	2019-10-11 05:04:33
++++ bogofilter-1.2.5/src/iconvert.c	2022-12-15 13:18:23
+@@ -30,10 +30,22 @@
  #include <stdlib.h>
  #include <errno.h>
- 
+ #include <assert.h>
 +#ifdef HAVE_LIBMECAB
 +#include <mecab.h>
 +# ifdef HAVE_LIBKAKASI
@@ -296,21 +296,15 @@ diff -ruN bogofilter-1.2.4.orig/src/iconvert.c bogofilter-1.2.4/src/iconvert.c
 +#  error Cannot found kakasi & mecab both
 +# endif
 +#endif
-+
  #include "buff.h"
  #include "iconvert.h"
-+#include "convert_unicode.h"
-+
-+#ifndef WAKATI_CHARSET
-+#define WAKATI_CHARSET "euc-jp"
-+#endif
  
 -extern	iconv_t cd;
 +extern	bf_iconv_t cd;
  
  static void iconv_print_error(int err, buff_t *src)
  {
-@@ -58,10 +76,119 @@
+@@ -56,10 +68,119 @@
      }
  }
  
@@ -432,7 +426,7 @@ diff -ruN bogofilter-1.2.4.orig/src/iconvert.c bogofilter-1.2.4/src/iconvert.c
      while (!done) {
  	char * inbuf;
  	size_t inbytesleft;
-@@ -181,6 +308,57 @@
+@@ -182,6 +303,57 @@
  		src->t.u.text, src->read, src->t.leng, src->size);
  }
  
@@ -490,22 +484,23 @@ diff -ruN bogofilter-1.2.4.orig/src/iconvert.c bogofilter-1.2.4/src/iconvert.c
  static void copy(buff_t *restrict src, buff_t *restrict dst)
  {
      /* if conversion not available, use memcpy */
-@@ -196,9 +374,9 @@
+@@ -198,10 +370,10 @@
  	convert(cd, src, dst);
  }
  
 -void iconvert_cd(iconv_t xd, buff_t *restrict src, buff_t *restrict dst)
 +void iconvert_cd(bf_iconv_t xd, buff_t *restrict src, buff_t *restrict dst)
  {
+     assert(src->t.u.text != dst->t.u.text);
 -    if (xd == (iconv_t)-1)
 +    if (xd == NULL)
  	copy(src, dst);
      else
  	convert(xd, src, dst);
-diff -ruN bogofilter-1.2.4.orig/src/iconvert.h bogofilter-1.2.4/src/iconvert.h
---- bogofilter-1.2.4.orig/src/iconvert.h	2013-06-29 23:52:52.000000000 +0900
-+++ bogofilter-1.2.4/src/iconvert.h	2018-12-31 12:19:10.000000000 +0900
-@@ -16,8 +16,9 @@
+diff -ruN bogofilter-1.2.5.orig/src/iconvert.h bogofilter-1.2.5/src/iconvert.h
+--- bogofilter-1.2.5.orig/src/iconvert.h	2019-10-11 05:04:33
++++ bogofilter-1.2.5/src/iconvert.h	2022-12-15 13:11:14
+@@ -14,8 +14,9 @@
  #include "config.h"
  
  #include <iconv.h>
@@ -516,9 +511,9 @@ diff -ruN bogofilter-1.2.4.orig/src/iconvert.h bogofilter-1.2.4/src/iconvert.h
 +extern void iconvert_cd(bf_iconv_t cd, buff_t *restrict src, buff_t *restrict dst);
  
  #endif
-diff -ruN bogofilter-1.2.4.orig/src/lexer.c bogofilter-1.2.4/src/lexer.c
---- bogofilter-1.2.4.orig/src/lexer.c	2013-06-29 23:52:52.000000000 +0900
-+++ bogofilter-1.2.4/src/lexer.c	2018-12-31 12:19:10.000000000 +0900
+diff -ruN bogofilter-1.2.5.orig/src/lexer.c bogofilter-1.2.5/src/lexer.c
+--- bogofilter-1.2.5.orig/src/lexer.c	2019-10-11 05:04:33
++++ bogofilter-1.2.5/src/lexer.c	2022-12-15 13:11:14
 @@ -399,7 +399,7 @@
      uint size = (uint) (txt - beg);				/* output offset */
  
@@ -551,9 +546,9 @@ diff -ruN bogofilter-1.2.4.orig/src/lexer.c bogofilter-1.2.4/src/lexer.c
  
  	    if (DEBUG_LEXER(3)) {
  		fputs("**4**  ", dbgout);
-diff -ruN bogofilter-1.2.4.orig/src/maint.c bogofilter-1.2.4/src/maint.c
---- bogofilter-1.2.4.orig/src/maint.c	2013-06-29 23:52:52.000000000 +0900
-+++ bogofilter-1.2.4/src/maint.c	2018-12-31 12:19:10.000000000 +0900
+diff -ruN bogofilter-1.2.5.orig/src/maint.c bogofilter-1.2.5/src/maint.c
+--- bogofilter-1.2.5.orig/src/maint.c	2019-10-11 05:04:33
++++ bogofilter-1.2.5/src/maint.c	2022-12-15 13:11:14
 @@ -208,7 +208,7 @@
  	old_buff.t.leng = token.leng;
  
@@ -563,10 +558,10 @@ diff -ruN bogofilter-1.2.4.orig/src/maint.c bogofilter-1.2.4/src/maint.c
  	new_buff.t.leng = 0;
  	new_buff.t.u.text = (byte *)xmalloc(new_buff.size);
  
-diff -ruN bogofilter-1.2.4.orig/src/mime.c bogofilter-1.2.4/src/mime.c
---- bogofilter-1.2.4.orig/src/mime.c	2013-06-29 23:52:52.000000000 +0900
-+++ bogofilter-1.2.4/src/mime.c	2018-12-31 12:19:10.000000000 +0900
-@@ -161,7 +161,7 @@
+diff -ruN bogofilter-1.2.5.orig/src/mime.c bogofilter-1.2.5/src/mime.c
+--- bogofilter-1.2.5.orig/src/mime.c	2019-10-11 05:04:33
++++ bogofilter-1.2.5/src/mime.c	2022-12-15 13:11:14
+@@ -159,7 +159,7 @@
      msg_state->boundary = NULL;
      msg_state->boundary_len = 0;
      msg_state->parent = parent;

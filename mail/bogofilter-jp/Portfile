@@ -1,8 +1,7 @@
 PortSystem	1.0
 
 name		bogofilter-jp
-version		1.2.4-jp0.1
-revision	3
+version		1.2.5-jp0.1
 license		GPL
 platforms	darwin
 categories	mail
@@ -12,15 +11,15 @@ description	Spam mail filter by Beyesian Filtering with Japanese support
 long_description \
     Bogofilter is a mail filter that classifies mail as spam or ham (non-spam) by a statistical analysis of the message's header and content (body). The program is able to learn from the user's classifications and corrections.
 
-use_bzip2	yes
-distname	bogofilter-1.2.4
+use_xz		yes
+distname	bogofilter-1.2.5
 homepage	http://bogofilter.sourceforge.net
-master_sites	sourceforge:project/bogofilter/bogofilter-stable/${distname}
+master_sites	sourceforge:project/bogofilter/bogofilter-stable
 
-checksums	rmd160  00baa95c71f193081ccbf9562e9b493f852bb08c \
-		sha256  e10287a58d135feaea26880ce7d4b9fa2841fb114a2154bf7da8da98aab0a6b4
+checksums	rmd160  6ae8e8e9b69308e8f9afdd7dd35364eddbed6211 \
+		sha256  3248a1373bff552c500834adbea4b6caee04224516ae581fb25a4c6a6dee89ea
 
-depends_lib     port:db53 \
+depends_lib     port:db62 \
 		port:gsl \
 		port:libiconv \
 		port:kakasi
@@ -30,5 +29,5 @@ patch.pre_args	-p1
 
 use_autoconf	yes
 configure.args	--with-kakasi
-configure.cppflags-append "-I${prefix}/include/db53"
-configure.ldflags-append  "-L${prefix}/lib/db53"
+configure.cppflags-append "-I${prefix}/include/db62"
+configure.ldflags-append  "-L${prefix}/lib/db62"
