@@ -4,6 +4,7 @@ PortSystem          1.0
 
 name                beav
 version             1.40-18
+revision			1
 platforms           darwin
 categories          editors
 license             GPL-2
@@ -45,7 +46,9 @@ post-extract {
 }
 
 use_configure		no
+configure.cflags	"-O2 -Wno-implicit-int -Wno-implicit-function-declaration -Wno-parentheses -Wno-pointer-sign -Wno-empty-body"
 build.target		beav
+build.args			CC="${configure.cc}" CFLAGS="[join ${configure.cflags}]"
 destroot {
     set docdir "${destroot}${prefix}/share/doc/${name}"
     xinstall -m 755 -d $docdir
