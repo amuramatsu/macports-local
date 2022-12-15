@@ -1,0 +1,32 @@
+--- Imake.cf.orig	2021-08-02 10:00:38
++++ Imake.cf	2022-12-15 16:36:38
+@@ -37,6 +37,10 @@
+ #  define x86_64DarwinArchitecture
+ #  undef __x86_64__
+ # endif
++# ifdef __aarch64__
++#  define Arm64DarwinArchitecture
++#  undef __aarch64__
++# endif
+ #endif
+ 
+ #if defined(clipper) || defined(__clipper__)
+--- darwin.cf.origi	2022-12-15 16:34:47
++++ darwin.cf	2022-12-15 16:37:58
+@@ -249,6 +249,16 @@
+ # define ByteOrder              X_LITTLE_ENDIAN
+ #endif /* x86_64DarwinArchitecture */
+ 
++#ifdef Arm64DarwinArchitecture
++# define DarwinMachineDefines   -D__arm64__ -D__aarch64__
++# if HasGcc3
++#  define OptimizedCDebugFlags  -Os
++# else
++#  define OptimizedCDebugFlags  -O2 -fno-strength-reduce
++# endif
++# define ByteOrder              X_LITTLE_ENDIAN
++#endif /* Arm64DarwinArchitecture */
++
+ #if OSMajorVersion < 7
+ # define DarwinLocaleDefines    -DX_LOCALE
+ #else

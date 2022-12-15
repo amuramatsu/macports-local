@@ -1,0 +1,39 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:et:sw=4:ts=4:sts=4
+
+PortSystem          1.0
+
+name                xorg-cf-files
+version             1.0.7
+revision            1
+categories          x11 devel
+license             X11
+platforms           any
+maintainers         {mcalhoun @MarcusCalhoun-Lopez} openmaintainer
+supported_archs     noarch
+installs_libs       no
+
+description         Build files for discontinued imake build system.
+long_description    {*}${description}
+
+homepage            https://xorg.freedesktop.org/wiki/
+master_sites        xorg:individual/util/
+
+use_bzip2           yes
+
+checksums           rmd160  dc9d2fefc5cefcdde97332cd7c6ef6527ec8b17c \
+                    sha256  74a771d5bb2189020399998dfa2329c3e038aa2e14dd3d4056144ed9a5976308 \
+                    size    345575
+
+patchfiles          empty-char-constant.patch \
+                    allow-overriding-darwin-compiler.patch \
+                    apple-silicon.patch
+
+post-configure {
+    #ensure that configuration files are found
+    reinplace "s|#define ConfigDir \$(LIBDIR)/config|#define ConfigDir ${prefix}/lib/X11/config|" ${worksrcpath}/X11.tmpl
+    reinplace "s|#define XAppLoadDir \$(LIBDIR)/app-defaults|#define XAppLoadDir ${prefix}/share/X11/app-defaults|" ${worksrcpath}/X11.tmpl
+}
+
+livecheck.type      regex
+livecheck.url       "https://xorg.freedesktop.org/archive/individual/util/?C=M;O=D"
+livecheck.regex     ${name}-(\\d+(?:\\.\\d+)*)
