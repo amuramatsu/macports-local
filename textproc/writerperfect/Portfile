@@ -5,6 +5,7 @@ PortGroup           boost 1.0
 
 name                writerperfect
 version             0.9.6
+revision            1
 maintainers         {devans @amuramatsu} openmaintainer
 categories          textproc graphics
 license             GPL-2+
@@ -36,12 +37,15 @@ depends_lib-append  port:libabw \
                     port:libepubgen \
                     port:libetonyek \
                     port:libfreehand \
-                    port:libgsf \
                     port:libmspub \
+                    port:libmwaw \
                     port:libodfgen \
                     port:libpagemaker \
+                    port:libqxp \
+                    port:librevenge \
                     port:libvisio-0.1 \
                     port:libwpd-0.10 \
+                    port:libwpg-0.3 \
                     port:libwps
 
 use_autoreconf      yes
