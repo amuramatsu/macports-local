@@ -2,7 +2,7 @@ PortSystem      1.0
 
 name            kinput2
 version         3.1
-revision        6
+revision        7
 categories      x11 japanese
 maintainers     nomaintainer
 description     Input server of Japanese text
@@ -14,7 +14,8 @@ homepage
 master_sites    macports \
                 ftp://ftp.sra.co.jp/pub/x11/kinput2/
 distname        ${name}-v${version}
-patchfiles      patch-cmd_Kinput2.ad.diff \
+patchfiles      kinput2-v3.1-jisx0212.diff \
+                patch-cmd_Kinput2.ad.diff \
                 patch-lib_Canna.c.diff \
                 patch-lib_IMProto.c.diff
 checksums       md5 2de20576f150248d1fdfe66d7cc4e510 \

@@ -1,0 +1,127 @@
+--- cmd/Kinput2.ad.orig	Fri Dec 17 21:46:22 2004
++++ cmd/Kinput2.ad	Fri Dec 17 21:47:02 2004
+@@ -29,6 +29,7 @@
+ *Font: -*-fixed-medium-r-normal--14-*-*-*-c-*-iso8859-1
+ *KanjiFont: -misc-fixed-medium-r-normal--14-*-*-*-c-*-jisx0208.1983-0
+ *KanaFont: -*-fixed-medium-r-normal--14-*-*-*-c-*-jisx0201.1976-0
++*HojoFont: -*-fixed-medium-r-normal--14-*-*-*-c-*-jisx0212.1990-0
+ !!
+ !!	Wnn setup
+ !!
+--- include/WcharDisp.h.orig	Thu Oct  3 18:35:26 2002
++++ include/WcharDisp.h	Fri Dec 17 21:47:02 2004
+@@ -73,6 +73,8 @@
+ #define XtCKanjiFont "KanjiFont"
+ #define XtNkanaFont "kanaFont"
+ #define XtCKanaFont "KanaFont"
++#define XtNhojoFont "hojoFont"
++#define XtCHojoFont "HojoFont"
+ 
+ typedef struct _WcharDisplayClassRec	*WcharDisplayObjectClass;
+ typedef struct _WcharDisplayRec		*WcharDisplayObject;
+--- lib/WcharDisp.c.orig	Thu Oct  3 18:35:28 2002
++++ lib/WcharDisp.c	Fri Dec 17 21:47:02 2004
+@@ -761,6 +761,7 @@
+ #define JPFONT_ASCII	"-Misc-Fixed-Medium-R-*--14-*-*-*-C-*-ISO8859-1"
+ #define JPFONT_KANJI	"-Misc-Fixed-Medium-R-*--14-*-*-*-C-*-JISX0208.1983-0"
+ #define JPFONT_KANA	"-Misc-Fixed-Medium-R-*--14-*-*-*-C-*-JISX0201.1976-0"
++#define JPFONT_HOJO	"-*-Fixed-Medium-R-*--14-*-*-*-C-*-JISX0212.1990-0"
+ 
+ static XtResource jpresources[] = {
+     /* only override superclass's default */
+@@ -771,8 +772,8 @@
+ 	offset(defaultfonts[1]), XtRString, JPFONT_KANJI },
+     { XtNkanaFont, XtCKanaFont, XtRFontStruct, sizeof (XFontStruct *),
+ 	offset(defaultfonts[2]), XtRString, JPFONT_KANA },
+-    { XtNfontG3, "Not.used", XtRFontStruct, sizeof (XFontStruct *),
+-	offset(defaultfonts[3]), XtRImmediate, (XtPointer)NULL },
++    { XtNhojoFont, XtCHojoFont, XtRFontStruct, sizeof (XFontStruct *),
++      offset(defaultfonts[3]), XtRString, JPFONT_HOJO   },
+     { XtNfontMapping, XtCFontMapping, XtRFontMapping, sizeof (FontMapping),
+ 	offset(defaultmapping), XtRFontMapping, (XtPointer)&jpDefaultMapping },
+ #undef offset
+@@ -786,6 +787,7 @@
+     { "JISX0208.1978-0",	G1LCharSet },
+     { "JISX0208.1983-1",	G1RCharSet },
+     { "JISX0208.1978-1",	G1RCharSet },
++    { "JISX0212.1990-0",	G3LCharSet },
+ #ifdef ALLOW_LOWERCASE_CHARSET_NAME
+     { "iso8859-1",		G0LCharSet },		/* my preference */
+     { "jisx0201.1976-0",	G0LCharSet | G2RCharSet },
+@@ -794,6 +796,7 @@
+     { "jisx0208.1978-0",	G1LCharSet },
+     { "jisx0208.1983-1",	G1RCharSet },
+     { "jisx0208.1978-1",	G1RCharSet },
++    { "jisx0212.1990-0",	G3LCharSet },
+ #endif
+ };
+ 
+--- lib/ctext.c.orig	Thu Oct  3 18:35:28 2002
++++ lib/ctext.c	Fri Dec 17 21:50:51 2004
+@@ -31,6 +31,7 @@
+ 		A	GB Hanzi
+ 		B	JIS Kanji 1983
+ 		C	KS Hangul/Hanja
++		D	JIS X0212
+ 
+ -------------------------------------------------------------------------------
+ COMPOUND_TEXT の仕様 (Comopund Text Encoding Version 1 -- MIT X Consortium Standard)
+@@ -66,7 +67,6 @@
+  * Author:  Makoto Ishisone, Software Research Associates, Inc., Japan
+  *		ishisone@sra.co.jp
+  */
+-
+ #ifndef lint
+ static char *rcsid = "$Id: kinput2-v3.1-jisx0212.diff,v 1.2 2004/12/17 13:00:14 dtana Exp $";
+ #endif
+@@ -177,6 +177,29 @@
+ 			if (xstr) {
+ 				*xstr++ = (c >> 8) & 0xff;
+ 				*xstr++ = c & 0xff;
++			}
++			n += 2;
++			break;
++		case 0x8000:
++			if (g1 != (MBCS|'D')) {
++				if (xstr) {
++					*xstr++ = '\033';
++					*xstr++ = '$';
++					*xstr++ = ')';
++					*xstr++ = 'D';
++				}
++				n += 4;
++				g1 = MBCS|'D';
++				/*
++				 * We have to invalidate G0 here,
++				 * which is unnecessary if Xlib
++				 * implementation is sane.
++				 */
++				g0 = MBCS|'D';
++			}
++			if (xstr) {
++				*xstr++ = (c >> 8) & 0xff;
++				*xstr++ = (c & 0xff) | 0x80;
+ 			}
+ 			n += 2;
+ 			break;
+--- lib/fontbank.c.orig	Thu Oct  3 18:35:28 2002
++++ lib/fontbank.c	Fri Dec 17 21:47:02 2004
+@@ -76,10 +76,14 @@
+     { "jisx0208.1976-0", NULL },
+     { "jisx0208.1976-1", NULL },
+ };
+-static KICharSet jpCharSets[3] = {
+-    { asciiCharSets, XtNumber(asciiCharSets) },
+-    { kanaCharSets, XtNumber(kanaCharSets) },
+-    { kanjiCharSets, XtNumber(kanjiCharSets) },
++static KICharSetSpec hojoCharSets[] = {
++	{ "jisx0212.1990-0", NULL },
++};
++static KICharSet jpCharSets[] = {
++	{ asciiCharSets, XtNumber(asciiCharSets) },
++	{ kanaCharSets, XtNumber(kanaCharSets) },
++	{ kanjiCharSets, XtNumber(kanjiCharSets) },
++	{ hojoCharSets,  XtNumber(hojoCharSets) },
+ };
+ 
+ static FBInfo fontBankInfo[] = {
