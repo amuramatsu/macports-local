@@ -12,6 +12,8 @@ mh-jp 505
 variants universal depends_build {port:libtool port:gsed} portdir mail/mh-jp description {Message Handler with Japanese support} homepage http://www.chem.eng.himeji-tech.ac.jp/~hayashi/internet/mh-plus.html epoch 0 platforms darwin name mh-jp depends_lib {port:libiconv port:readline port:ncurses} license BSD maintainers {{@amuramatsu tomato.sakura.ne.jp:amura}} long_description {Message Handler with Japanese support and Extentions by mh-plus project.} categories mail version 6.8.4-JP-3.05 revision 3
 FDclone 400
 variants {universal engmes} portdir sysutils/FDclone description {File & Directory Maintenance Tool} homepage http://hp.vector.co.jp/authors/VA012337/soft/fd/index.html epoch 0 platforms darwin name FDclone depends_lib port:ncurses license Restrictive/Distributable maintainers nomaintainer long_description {{File & Directory Maintenance Tool}} categories {sysutils shells} version 3.01j revision 2
+ccd2iso 372
+variants universal portdir sysutils/ccd2iso description {CloneCD image to ISO image file converter} homepage https://sourceforge.net/projects/ccd2iso/ epoch 0 platforms darwin name ccd2iso license GPL-2 maintainers nomaintainer long_description {Simple command line too to convert windows-only ccd files to burnable ISO images.} version 0.3 categories sysutils revision 1
 iat 391
 variants universal portdir sysutils/iat description {Iso9660 Analyzer Tool.} homepage https://sourceforge.net/projects/iat.berlios/ epoch 0 platforms darwin name iat license GPL-3 maintainers {{@amuramatsu tomato.sakura.ne.jp:amura}} long_description {iat is Iso9660 Analyzer Tool, this tool have engine for detect many structure of image file.} version 0.1.7 categories sysutils revision 0
 openbrowser 606
