@@ -13,7 +13,7 @@ long_description \
     Message Handler with Japanese support and Extentions by mh-plus project.
 
 homepage	http://www.chem.eng.himeji-tech.ac.jp/~hayashi/internet/mh-plus.html
-master_sites	ftp://ftp.laic.u-hyogo.ac.jp/pub/net/mh/
+master_sites	https://motoyuki.bsdclub.org/data/FreeBSD/distfiles/
 distname	mh-${version}
 
 checksums	rmd160  a092a9447370a09f770121baa2ae7eced130ff0f \
