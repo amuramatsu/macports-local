@@ -76,8 +76,10 @@ configure {
     configure.args-append --with-csl
     portconfigure::configure_main
 
-    configure.args-replace --with-csl --with-psl
-    portconfigure::configure_main
+    if {${build_arch} ne "arm64"} {
+        configure.args-replace --with-csl --with-psl
+        portconfigure::configure_main
+    }
 }
 
 destroot {
@@ -88,12 +90,14 @@ destroot {
     set bindir      ${destroot}${prefix}/bin
     set appsdir     ${destroot}${applications_dir}/${name}
 
-    xinstall -d \
-        ${libexecdir} \
-        ${libexecdir}/psl \
-        ${libexecdir}/psl/psl \
-        ${libexecdir}/psl/red \
-        ${appsdir}
+    if {${build_arch} ne "arm64"} {
+        xinstall -d \
+            ${libexecdir} \
+            ${libexecdir}/psl \
+            ${libexecdir}/psl/psl \
+            ${libexecdir}/psl/red \
+            ${appsdir}
+    }
 
     copy ${worksrcpath}/macbuild/README.for.distribution ${libexecdir}/README
     
@@ -101,18 +105,22 @@ destroot {
     xinstall -m a+rx ${worksrcpath}/macbuild/runcsl.sh ${appsdir}/redcsl
     xinstall -m a+rx ${cslbuilddir}/redfront/rfcsl ${appsdir}
     
-    copy {*}[glob ${pslbuilddir}/psl/*] ${libexecdir}/psl/psl
-    copy {*}[glob ${pslbuilddir}/red/*] ${libexecdir}/psl/red
-    xinstall -m a+rx ${worksrcpath}/macbuild/runpsl.sh ${libexecdir}/psl/redpsl
-    xinstall -m a+rx ${cslbuilddir}/redfront/rfpsl ${libexecdir}/psl
+    if {${build_arch} ne "arm64"} {
+        copy {*}[glob ${pslbuilddir}/psl/*] ${libexecdir}/psl/psl
+        copy {*}[glob ${pslbuilddir}/red/*] ${libexecdir}/psl/red
+        xinstall -m a+rx ${worksrcpath}/macbuild/runpsl.sh ${libexecdir}/psl/redpsl
+        xinstall -m a+rx ${cslbuilddir}/redfront/rfpsl ${libexecdir}/psl
+    }
 
     copy ${worksrcpath}/doc/manual/manual.pdf ${libexecdir}/reduce-manual.pdf
 
     # link scripts to ${prefix}/bin
     ln -s ${applications_dir}/${name}/redcsl ${bindir}/redcsl
-    ln -s ${prefix}/libexec/${name}/psl/redpsl ${bindir}/redpsl
     ln -s ${applications_dir}/${name}/rfcsl ${bindir}/rfcsl
-    ln -s ${prefix}/libexec/${name}/psl/rfpsl ${bindir}/rfpsl
+    if {${build_arch} ne "arm64"} {
+        ln -s ${prefix}/libexec/${name}/psl/redpsl ${bindir}/redpsl
+        ln -s ${prefix}/libexec/${name}/psl/rfpsl ${bindir}/rfpsl
+    }
 }
 
 livecheck.version   ${version_dashes}
