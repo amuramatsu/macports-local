@@ -2,9 +2,10 @@
 
 PortSystem          1.0
 PortGroup           compiler_blacklist_versions 1.0
+PortGroup           conflicts_build             1.0
 
 name                gauche
-version             0.9.12
+version             0.9.13
 categories          lang
 license             BSD
 maintainers         {@amuramatsu tomato.sakura.ne.jp:amura}
@@ -30,47 +31,44 @@ distname            Gauche-${version}
 
 extract.suffix      .tgz
 
-checksums           rmd160  daef5eb4c793bb3570b882c4eaeebe567cb76b93 \
-                    sha256  b4ae64921b07a96661695ebd5aac0dec813d1a68e546a61609113d7843f5b617
+checksums           rmd160  bb9b1b063cde03b38af7bb6a26278e4a1f015b3c \
+                    sha256  792fe4e4f800acd7293f9e3095d580a87cea8b221f33707ae37874f8a3f1b76b \
+                    size    9389117
 
 depends_lib         port:gdbm \
                     port:libiconv \
                     port:slib \
+                    port:mbedtls \
                     port:curl-ca-bundle
 
 # `gosh` crashes when built with clang
-compiler.blacklist  {clang < 300}
+compiler.blacklist-append {clang < 300}
 
 configure.args      --with-local=${prefix} --enable-multibyte=utf-8 \
                     --with-iconv=${prefix} --with-slib=${prefix}/lib/slib \
                     --enable-threads=pthreads --enable-ipv6 \
                     --with-ca-bundle=${prefix}/share/curl/curl-ca-bundle.crt \
-                    --with-dbm=gdbm --with-tls=axtls
+                    --with-dbm=gdbm --with-tls=mbedtls
 
 test.run            yes
 
 destroot.target     slibcat-in-place install-pkg install-doc
 
+conflicts_build-append libinotify
+
 universal_variant   no
 
-variant euc_jp conflicts sjis no_multibyte { configure.args-delete --enable-multibyte=utf-8
-                    configure.args-append --enable-multibyte=euc-jp }
-variant sjis conflicts euc_jp no_multibyte { configure.args-delete --enable-multibyte=utf-8
-                    configure.args-append --enable-multibyte=sjis }
-variant no_multibyte conflicts euc_jp sjis { configure.args-delete --enable-multibyte=utf-8
-                    configure.args-append --enable-multibyte=no }
+variant no_multibyte { configure.args-delete --enable-multibyte=utf-8
+                       configure.args-append --enable-multibyte=no }
 variant no_iconv  { depends_lib-delete port:libiconv
                     configure.args-delete --with-iconv=${prefix} }
 variant no_gdbm   { depends_lib-delete port:gdbm
                     configure.args-delete --with-dbm=gdbm }
 variant no_slib   { depends_lib-delete port:slib
                     configure.args-delete --with-slib=${prefix}/lib/slib }
-variant no_threads   {  configure.args-delete --enable-threads=pthreads }
 variant no_ipv6   { configure.args-delete --enable-ipv6 }
-variant no_tls    { configure.args-delete --with-tls=axtls
+variant no_tls    { depends_lib-delete port:mbedtls
+                    configure.args-delete --with-tls=mbedtls
                     configure.args-append --with-tls=no }
-variant mbedtls   { depends_lib-append port:mbedtls
-                    configure.args-delete --with-tls=axtls
-                    configure.args-append --with-tls=mbedtls }
 
 livecheck.regex     /Gauche/Gauche-(\[0-9.\]+)${extract.suffix}
