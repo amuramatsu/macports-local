@@ -4,24 +4,24 @@ PortSystem          1.0
 
 name                beav
 version             1.40-18
-revision			1
+revision            2
 platforms           darwin
 categories          editors
 license             GPL-2
 maintainers         {@amuramatsu tomato.sakura.ne.jp:amura}
 description         Emacs-like binary file (hex) editor
-long_description	\
+long_description    \
     beav (Binary Editor And Viewer) is an editor for binary files \
     containing arbitrary data. Text file editors, on the other hand, \
     expect the files they edit to contain textual data, and/or \
     to be formatted in a certain way (e.g. lines of printable characters \
-	delimited by newline characters).
+    delimited by newline characters).
 
 homepage            https://packages.debian.org/stable/beav
 master_sites        http://deb.debian.org/debian/pool/main/b/beav/
 
 distfiles           beav_1.40.orig.tar.gz \
-					beav_1.40-18.diff.gz
+                    beav_1.40-18.diff.gz
 
 checksums \
     beav_1.40.orig.tar.gz \
@@ -31,28 +31,28 @@ checksums \
     rmd160 0e7b19fdc7ea16e1e24e8302d81dfb247e947603 \
     sha256 7904624e71cad4c3adc9b0200278e84172f136883d6e2fcccad977f90d1763a3
 
-patchfiles			patch-beav.diff
-patch.pre_args		-p1
+patchfiles          patch-beav.diff
+patch.pre_args      -p1
 
-distname			beav-140
-extract.only		beav_1.40.orig.tar.gz
+distname            beav-140
+extract.only        beav_1.40.orig.tar.gz
 extract.suffix      .orig.tar.gz
 
 depends_lib         port:ncurses
 
 post-extract {
-	system -W ${worksrcpath} \
+    system -W ${worksrcpath} \
         "gzcat ${distpath}/beav_1.40-18.diff.gz | patch -p1"
 }
 
-use_configure		no
-configure.cflags	"-O2 -Wno-implicit-int -Wno-implicit-function-declaration -Wno-parentheses -Wno-pointer-sign -Wno-empty-body"
-build.target		beav
-build.args			CC="${configure.cc}" CFLAGS="[join ${configure.cflags}]"
+use_configure       no
+configure.cflags    "-O2 -DUNIX -DBSD -Wall -Wno-implicit-int -Wno-implicit-function-declaration -Wno-parentheses -Wno-pointer-sign -Wno-empty-body"
+build.target        beav
+build.args          CC="${configure.cc}" CFLAGS="[join ${configure.cflags}]"
 destroot {
     set docdir "${destroot}${prefix}/share/doc/${name}"
     xinstall -m 755 -d $docdir
     xinstall -m 755 -W ${worksrcpath} beav        "${destroot}${prefix}/bin"
-	xinstall -m 644 -W ${worksrcpath} beav140.txt $docdir
-	xinstall -m 644 -W ${worksrcpath} beav.1      "${destroot}${prefix}/share/man/man1"
+    xinstall -m 644 -W ${worksrcpath} beav140.txt $docdir
+    xinstall -m 644 -W ${worksrcpath} beav.1      "${destroot}${prefix}/share/man/man1"
 }
