@@ -5,13 +5,12 @@ PortGroup           boost 1.0
 
 name                writerperfect
 version             0.9.6
-revision            1
+revision            2
 maintainers         {devans @amuramatsu} openmaintainer
 categories          textproc graphics
 license             GPL-2+
 installs_libs       no
 platforms           darwin
-supported_archs     noarch
 
 description         A collection of tools for export of various file formats to ODF.
 
