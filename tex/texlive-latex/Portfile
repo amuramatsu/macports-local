@@ -9,7 +9,7 @@ revision            0
 categories          tex
 maintainers         @amuramatsu
 license             Copyleft Permissive
-description         TeX Live: LaTeX fundamental packages
+description         (DUMMY) TeX Live: LaTeX fundamental packages
 long_description    (DUMMY) These packages are either mandated by the core LaTeX team, or very widely used and strongly recommended in practice.
 
 depends_lib         port:texlive-basic

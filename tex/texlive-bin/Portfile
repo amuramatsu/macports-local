@@ -2,23 +2,26 @@
 
 PortSystem          1.0
 
-name                texlive-fonts-recommended
+name                texlive-bin
 version             0
 revision            0
 
 categories          tex
 maintainers         @amuramatsu
 license             Copyleft Permissive
-description         (DUMMY) TeX Live: Recommended fonts
-long_description    (DUMMY) Recommended fonts, including the base 35 PostScript fonts, Latin Modern, TeX Gyre, and T1 and other encoding support for Computer Modern, in outline form.
-
-depends_lib         port:texlive-basic
+description     (DUMMY) TeX Live Binaries.
+long_description    (DUMMY) TeX Live is an easy way to get up and running with TeX. \
+    It provides a comprehensive TeX system with binaries for most flavors \
+    of Unix, including GNU/Linux, and also Windows. It includes all the \
+    major TeX-related programs, macro packages, and fonts that are free \
+    software, including support for many languages around the world.
 
 use_configure no
 fetch {}
 checksum {}
 extract {}
 build {}
+
 destroot {
     file mkdir -p ${destroot}${prefix}/share/doc/${name}
     touch ${destroot}${prefix}/share/doc/${name}/DUMMY

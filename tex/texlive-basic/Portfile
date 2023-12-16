@@ -9,7 +9,7 @@ revision            0
 categories          tex
 maintainers         @amuramatsu
 license             Copyleft Permissive
-description         TeX Live: Essential programs and files
+description         (DUMMY) TeX Live: Essential programs and files
 long_description    (DUMMY) These files are regarded as basic for any TeX system, covering plain TeX macros, Computer Modern fonts, and configuration for common drivers\; no LaTeX.
 
 set binaries {afm2tfm bibtex dviluatex dvipdfm dvipdfmx dvipdft dvips ebb etex extractbb fmtutil fmtutil-sys fmtutil-user gftodvi gftopk gftype inimf initex kpseaccess kpsereadlink kpsestat kpsewhich luahbtex luatex makeindex mf mf-nowin mft mkindex mktexfmt mktexmf mktexpk mktextfm pdfetex pdftex pktogf pktype rungs simpdftex tex texhash texlua texluac updmap updmap-sys updmap-user xdvi xdvipdfmx}

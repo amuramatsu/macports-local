@@ -2,23 +2,24 @@
 
 PortSystem          1.0
 
-name                texlive-fonts-recommended
+name                texlive-common
 version             0
 revision            0
 
 categories          tex
 maintainers         @amuramatsu
-license             Copyleft Permissive
-description         (DUMMY) TeX Live: Recommended fonts
-long_description    (DUMMY) Recommended fonts, including the base 35 PostScript fonts, Latin Modern, TeX Gyre, and T1 and other encoding support for Computer Modern, in outline form.
-
-depends_lib         port:texlive-basic
+license             Permissive
+description         (DUMMY) TeX Live common infrastructure.
+long_description    (DUMMY) This port provides files that support a MacPorts    \
+                    installation of TeX Live, such as configuration     \
+                    files and the scripts that generate them.
 
 use_configure no
 fetch {}
 checksum {}
 extract {}
 build {}
+
 destroot {
     file mkdir -p ${destroot}${prefix}/share/doc/${name}
     touch ${destroot}${prefix}/share/doc/${name}/DUMMY
