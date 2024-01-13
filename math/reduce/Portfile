@@ -3,10 +3,10 @@
 PortSystem              1.0
 
 name                    reduce
-version                 20230308
+version                 20231218
 revision                0
 set version_dashes      [regsub {^(\d{4})(\d{2})(\d{2})$} ${version} {\1-\2-\3}]
-set svnrev              6547
+set svnrev              6658
 categories              math lang
 license                 BSD
 platforms               darwin
@@ -19,9 +19,9 @@ homepage                https://reduce-algebra.sourceforge.io/
 master_sites            sourceforge:project/reduce-algebra/snapshot_${version_dashes}
 distname                Reduce-svn${svnrev}-src
 
-checksums               sha256  2890beac30d8c497c58bd7c73f6c507ecabe318ace28e85d9c5a15e7884ea5a8 \
-                        rmd160  93bb0ce4f6da15dcf61cbb572486db9ac50ea3f2 \
-                        size    242413830
+checksums               sha256  d32a15a5b9290b6ab2bb99ebb294ab40a694ec5e5134c79bfd16cfb44bb85bc5 \
+                        rmd160  71f61e1b0ce9f05484baa718753ac3e414482e2a \
+                        size    243547020
 
 compiler.cxx_standard 2011
 
