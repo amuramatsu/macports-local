@@ -1,0 +1,55 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem          1.0
+PortGroup           github 1.0
+
+name                zasm
+version             4.4.14
+revision            0
+categories          lang
+license             BSD
+maintainers         nomaintainer
+
+description         zasm - Z80, 8080 and Z180 assembler
+
+long_description    zasm accepts source code using 8080 and Z80 syntax and \
+                    can convert 8080 syntax to Z80. \
+                    zasm supports various historically used syntax variants \
+                    and the syntax emitted by sdcc. \
+                    zasm can generate binary files or Intel Hex or Motorola \
+                    S19 files.\
+                    zasm can generate various specialized files for Sinclair \
+                    and Jupiter Ace and .tzx tape files.\
+                    zasm can include the generated code and accumulated cpu \
+                    cycles in the list output file.\
+                    zasm can run automated tests on the generated code.
+
+homepage            https://k1.spdns.de/Develop/Projects/zasm/Distributions/
+
+github.setup        Megatokio zasm ${version}
+fetch.type          git
+
+use_configure       no
+build.type          gnu
+
+post-fetch {
+    system -W ${worksrcpath} "git submodule update --init"
+}
+
+destroot {
+    set bin_path      "${prefix}/bin"
+    set doc_path      "${prefix}/share/doc"
+    set examples_path "${prefix}/share/examples"
+    
+    xinstall -d "${destroot}${bin_path}"
+    xinstall -d "${destroot}${doc_path}"
+    xinstall -d "${destroot}${examples_path}"
+    
+    xinstall -W ${worksrcpath} -m 755 \
+        zasm                "${destroot}${bin_path}"
+    system -W ${worksrcpath} \
+        "cp -r Documentation '${destroot}${doc_path}/${name}'"
+    system -W ${worksrcpath} \
+        "cp -r Examples      '${destroot}${examples_path}/${name}'"
+}
+
