@@ -2,6 +2,7 @@
 
 PortSystem          1.0
 PortGroup           github 1.0
+PortGroup           conflicts_build 1.0
 
 name                zasm
 version             4.4.14
@@ -31,6 +32,7 @@ fetch.type          git
 
 use_configure       no
 build.type          gnu
+conflicts_build     libunwind
 
 post-fetch {
     system -W ${worksrcpath} "git submodule update --init"
