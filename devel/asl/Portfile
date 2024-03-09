@@ -1,0 +1,41 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem          1.0
+
+name                asl
+version             1.42.263
+revision            0
+categories          devel
+license             GPL-2.0
+maintainers         nomaintainer
+
+description         asl - The Macroassembler AS
+
+long_description    AS is a portable macro cross assembler for a variety of \
+                    microprocessors and -controllers. Though it is mainly \
+                    targeted at embedded processors and single-board computers, \
+                    you also find CPU families in the target list that are \
+                    used in workstations and PCs.
+
+homepage            http://john.ccac.rwth-aachen.de:8000/as/
+
+master_sites        http://john.ccac.rwth-aachen.de:8000/ftp/as/source/c_version/
+set vstr         [split $version "\\."]
+set version_str  "[lindex $vstr 0][lindex $vstr 1]"
+set build_no     [lindex $vstr 2]
+distfiles           asl-current-${version_str}-bld${build_no}.tar.bz2
+distname            asl-current
+checksums           sha256 e794b24feffcf3f5579486539c3c53756ea4d53610d6fb8e8100824c7aeed71c \
+                    rmd160 29ae0a4fc1ed37d249ca6087f605bc58d588fb2b \
+                    size   2671914
+
+depends_build       port:texlive-basic \
+                    port:texlive-latex
+destroot.destdir    INSTROOT=${destroot}
+
+configure {
+    file copy ${filespath}/Makefile.def ${worksrcpath}
+    reinplace "s|@PREFIX@|${prefix}|g" ${worksrcpath}/Makefile.def
+}
+
+
