@@ -1,0 +1,32 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem          1.0
+
+name                texlive-latex-extra
+version             0
+revision            0
+
+categories          tex
+maintainers         @amuramatsu
+license             Copyleft Permissive
+description         (DUMMY) TeX Live: LaTeX additional packages
+long_description    (DUMMY) A very large collection of add-on packages for LaTeX.
+
+depends_lib         port:texlive-latex-recommended port:texlive-pictures
+
+set binaries {authorindex dvilualatex-dev exceltex hyperxmp-add-bytecount l3build latex-dev lualatex-dev makedtx makeglossaries makeglossaries-lite pagelayoutapi pdfannotextractor pdflatex-dev perltex pygmentex splitindex svn-multi textestvis vpe webquiz wordcount yplan}
+
+use_configure no
+fetch {}
+checksum {}
+extract {}
+build {}
+
+destroot {
+    file mkdir -p ${destroot}${prefix}/bin
+    foreach f ${binaries} {
+        ln -s "/Library/TeX/texbin/${f}" "${destroot}${prefix}/bin/${f}"
+    }
+    file mkdir -p ${destroot}${prefix}/share/doc/${name}
+    touch ${destroot}${prefix}/share/doc/${name}/DUMMY
+}
