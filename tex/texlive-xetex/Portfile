@@ -25,10 +25,10 @@ extract {}
 build {}
 
 destroot {
-    file mkdir -p ${destroot}${prefix}/bin
+    file mkdir ${destroot}${prefix}/bin
     foreach f ${binaries} {
         ln -s "/Library/TeX/texbin/${f}" "${destroot}${prefix}/bin/${f}"
     }
-    file mkdir -p ${destroot}${prefix}/share/doc/${name}
+    file mkdir ${destroot}${prefix}/share/doc/${name}
     touch ${destroot}${prefix}/share/doc/${name}/DUMMY
 }

@@ -23,6 +23,6 @@ extract {}
 build {}
 
 destroot {
-    file mkdir -p ${destroot}${prefix}/share/doc/${name}
+    file mkdir ${destroot}${prefix}/share/doc/${name}
     touch ${destroot}${prefix}/share/doc/${name}/DUMMY
 }
