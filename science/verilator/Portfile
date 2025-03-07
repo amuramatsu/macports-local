@@ -37,9 +37,10 @@ configure.env-append    LEX=${prefix}/bin/flex
 depends_build-append    port:bison
 configure.env-append    YACC=${prefix}/bin/bison
 
-variant python311 conflicts python312 description {Build using Python 3.11} {}
-variant python312 conflicts python311 description {Build using Python 3.12} {}
-if {![variant_isset python311] && ![variant_isset python312]} {
+variant python311 conflicts python312 python313 description {Build using Python 3.11} {}
+variant python312 conflicts python311 python313 description {Build using Python 3.12} {}
+variant python313 conflicts python311 python312 description {Build using Python 3.13} {}
+if {![variant_isset python311] && ![variant_isset python312] && ![variant_isset python313]} {
     default_variants +python311
 }
 if {[variant_isset python311]} {
@@ -48,6 +49,9 @@ if {[variant_isset python311]} {
 } elseif {[variant_isset python312]} {
     depends_lib-append      port:python312
     configure.python        ${prefix}/bin/python3.12
+} elseif {[variant_isset python313]} {
+    depends_lib-append      port:python313
+    configure.python        ${prefix}/bin/python3.13
 } 
 configure.env-append    PYTHON3=${configure.python}
 
