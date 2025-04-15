@@ -1,0 +1,11 @@
+--- src/__max_nargin_optim__.cc.orig	2022-04-10 23:31:04
++++ src/__max_nargin_optim__.cc	2025-04-15 23:22:53
+@@ -74,7 +74,7 @@
+   else {
+ 
+     retval = octave_value
+-      (fcn.user_function_value ()->parameter_list ()->length ());
++      (fcn.user_function_value ()->parameter_list ()->size ());
+   }
+ 
+   return retval;

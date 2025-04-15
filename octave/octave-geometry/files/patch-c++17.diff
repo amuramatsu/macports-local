@@ -1,0 +1,26 @@
+--- src/martinez.h.orig	2024-03-17 07:56:04
++++ src/martinez.h	2025-04-15 23:44:20
+@@ -17,6 +17,10 @@
+ #include <queue>
+ #include <vector>
+ #include <set>
++#if __cplusplus > 201402
++#include <boost/functional.hpp>
++#define binary_function boost::functional::detail::binary_function
++#endif
+ 
+ using namespace std;
+ 
+--- src/polygon.cpp.orig	2024-03-17 07:56:04
++++ src/polygon.cpp	2025-04-15 23:44:38
+@@ -12,6 +12,10 @@
+ #include <set>
+ #include <cstdlib>
+ #include <algorithm>
++#if __cplusplus > 201402
++#include <boost/functional.hpp>
++#define binary_function boost::functional::detail::binary_function
++#endif
+ 
+ void Contour::boundingbox (Point& min, Point& max)
+ {
