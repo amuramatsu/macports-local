@@ -35,7 +35,12 @@ configure.args	--mandir="${prefix}/share/man" \
 		--disable-smtp \
 		--enable-rpop \
 		--enable-apop="${prefix}/etc/pop.auth"
-configure.cflags	"-O2 -Wno-implicit-int -Wno-implicit-function-declaration -Wno-parentheses -Wno-pointer-sign -Wno-empty-body"
+configure.cflags-append \
+                -Wno-error=implicit-function-declaration \
+                -Wno-error=incompatible-pointer-types \
+                -Wno-error=implicit-int \
+                -Wno-error=int-conversion
+
 pre-configure {
     xinstall -m 644 -W ${prefix}/share/libtool/build-aux config.guess ${configure.dir}
 }

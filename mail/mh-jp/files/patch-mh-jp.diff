@@ -7,8 +7,8 @@ diff -ruN mh-6.8.4-JP-3.05.orig/conf/MH.in mh-6.8.4-JP-3.05/conf/MH.in
  cc		@CC@
 -cpp		@CPP@
 -ccoptions	@CFLAGS@
-+cpp		@CPP@ -I$(PREFIX)/include -DWITH_ICONV
-+ccoptions	@CFLAGS@ -DWITH_ICONV -I$(PREFIX)/include
++cpp		@CPP@ -I$(PREFIX)/include -DWITH_ICONV -DNCURSES_INTERNALS
++ccoptions	@CFLAGS@ -DWITH_ICONV -DNCURSES_INTERNALS -I$(PREFIX)/include
  ldoptions	@LDFLAGS@
 -ldoptlibs	@LIBS@
 +ldoptlibs	@LIBS@ $(PREFIX)/lib/libiconv.dylib
