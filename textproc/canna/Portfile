@@ -53,9 +53,10 @@ depends_build       bin:gccmakedep:gccmakedep
 
 use_xmkmf           yes
 configure.cflags-append \
-               -Wno-unused-variable \
-               -Wno-implicit-int \
-               -Wno-implicit-function-declaration
+                    -Wno-error=implicit-function-declaration \
+                    -Wno-error=incompatible-pointer-types \
+                    -Wno-error=implicit-int \
+                    -Wno-error=int-conversion
 
 pre-build {
     build.target    canna
