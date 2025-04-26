@@ -28,6 +28,7 @@ patchfiles	patch-bogofilter-jp.diff
 patch.pre_args	-p1
 
 use_autoconf	yes
+configure.cmd   ./autogen.sh
 configure.args	--with-kakasi
 configure.cppflags-append "-I${prefix}/include/db62"
 configure.ldflags-append  "-L${prefix}/lib/db62"
