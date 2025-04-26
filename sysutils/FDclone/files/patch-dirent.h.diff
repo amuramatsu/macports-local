@@ -1,0 +1,19 @@
+--- dirent.h.orig	2019-07-27 00:00:00
++++ dirent.h	2025-04-27 05:00:46
+@@ -4,8 +4,8 @@
+  *	definitions for directory entry
+  */
+ 
+-#ifndef	__DIRENT_H_
+-#define	__DIRENT_H_
++#ifndef	XXX__DIRENT_H_
++#define	XXX__DIRENT_H_
+ 
+ #include "unixemu.h"
+ 
+@@ -42,4 +42,4 @@
+ typedef struct dirent		st_dirent;
+ #endif
+ 
+-#endif	/* !__DIRENT_H_ */
++#endif	/* !XXX__DIRENT_H_ */

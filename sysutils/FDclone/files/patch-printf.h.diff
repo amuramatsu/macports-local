@@ -1,0 +1,19 @@
+--- printf.h.orig	2019-07-27 00:00:00
++++ printf.h	2025-04-27 04:52:24
+@@ -4,8 +4,8 @@
+  *	definitions & function prototype declarations for "printf.c"
+  */
+ 
+-#ifndef	__PRINTF_H_
+-#define	__PRINTF_H_
++#ifndef	XX__PRINTF_H_
++#define	XX__PRINTF_H_
+ 
+ #include "stream.h"
+ 
+@@ -65,4 +65,4 @@
+ extern int printf_defkanji;
+ #endif
+ 
+-#endif	/* !__PRINTF_H_ */
++#endif	/* !XX__PRINTF_H_ */

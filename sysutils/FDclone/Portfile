@@ -17,7 +17,9 @@ distname        FD-${version}
 patchfiles      patch-Makefile.in.diff \
                 patch-archive.c.diff \
                 patch-config.hin.diff \
-                patch-fd.h.diff
+                patch-fd.h.diff \
+                patch-dirent.h.diff \
+                patch-printf.h.diff
 checksums       rmd160 89c4bbd2cfbafa39ce6e21e97cdce6d0626e2103
 
 depends_lib     port:ncurses
@@ -25,13 +27,11 @@ depends_lib     port:ncurses
 use_configure   no
 
 configure.cflags-append \
-                -std=gnu99 \
+                -std=gnu99  \
                 -Wno-error=implicit-function-declaration \
                 -Wno-error=incompatible-pointer-types \
                 -Wno-error=implicit-int \
                 -Wno-error=int-conversion
-#configure.cppflags-append   -I${prefix}/include/ncurses
-#configure.ldflags-append    -lncurses
 
 variant universal {}
 
