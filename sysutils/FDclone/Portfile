@@ -10,8 +10,8 @@ long_description \
                 ${description}
 platforms       darwin
 license         Restrictive/Distributable
-homepage        http://hp.vector.co.jp/authors/VA012337/soft/fd/index.html
-master_sites    http://hp.vector.co.jp/authors/VA012337/soft/fd/ \
+homepage        http://www.unixusers.net/authors/VA012337/soft/fd/index.html
+master_sites    http://www.unixusers.net/authors/VA012337/soft/fd/ \
                 ftp://ftp.unixusers.net/src/fdclone/
 distname        FD-${version}
 patchfiles      patch-Makefile.in.diff \
@@ -24,6 +24,12 @@ depends_lib     port:ncurses
 
 use_configure   no
 
+configure.cflags-append \
+                -std=gnu99 \
+                -Wno-error=implicit-function-declaration \
+                -Wno-error=incompatible-pointer-types \
+                -Wno-error=implicit-int \
+                -Wno-error=int-conversion
 #configure.cppflags-append   -I${prefix}/include/ncurses
 #configure.ldflags-append    -lncurses
 
