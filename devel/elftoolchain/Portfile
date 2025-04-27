@@ -41,7 +41,7 @@ patchfiles      patch-byteorder-macros.diff \
 conflicts_build-append libelf
 
 universal_variant no
-
+use_parallel_build  no
 makefile.prefix_name prefix
 
 build.type      bsd
