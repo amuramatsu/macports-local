@@ -4,13 +4,14 @@ PortSystem              1.0
 PortGroup               compiler_blacklist_versions 1.0
 PortGroup               legacysupport               1.1
 PortGroup               github                      1.0
+PortGroup               conflicts_build             1.0
 
 # clock_gettime
 legacysupport.newest_darwin_requires_legacy 16
 
 name                    qemu-screamer
 version                 9.1.0
-revision                0
+revision                1
 categories              emulators
 license                 GPL-2+
 maintainers             {raimue @raimue} \
@@ -42,6 +43,7 @@ depends_build-append    port:texinfo \
 
 # perl5 is only used for build scripts, no linking
 depends_build-append    port:perl5
+conflicts_build         libinotify
 
 license_noconflict      perl5
 
