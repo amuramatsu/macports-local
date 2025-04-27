@@ -6,10 +6,10 @@ elftoolchain 2342
 beav 2911
 qemu-screamer 3522
 graphene 4990
-tgif 5553
-xv 5945
-openjdk11 6975
-openjdk21 7388
+xv 5553
+openjdk11 6583
+openjdk21 6996
+tgif 7429
 gauche 7821
 pforth 8885
 zasm 9497
@@ -42,3 +42,4 @@ eblook 22774
 writerperfect 23345
 kinput2 24356
 xorg-cf-files 24751
+arc 25149
