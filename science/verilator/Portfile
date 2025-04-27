@@ -5,7 +5,8 @@ PortGroup               github 1.0
 PortGroup               conflicts_build 1.0
 PortGroup               perl5 1.0
 
-github.setup            verilator verilator 5.028 v
+github.setup            verilator verilator 5.034 v
+github.tarball_from     archive
 revision                0
 categories              science electronics
 license                 {LGPL-3 Artistic-2}
@@ -13,9 +14,9 @@ maintainers             {mcalhoun @MarcusCalhoun-Lopez} openmaintainer
 description             Verilog compiler and simulator
 long_description        Verilator is a {*}${description}.
 
-checksums               rmd160  5d45fa63999302629f90488b340470fa6a619b73 \
-                        sha256  45d7381a1e3f7bcb3bd7117950490c9d870c1ad7a75dc61abf6245c98b1fc4c1 \
-                        size    32548221
+checksums               rmd160  1ab2bffe83bd0ceca4d302379465957a1c1786eb \
+                        sha256  002da98e316ca6eee40407f5deb7d7c43a0788847d39c90d4d31ddbbc03020e8 \
+                        size    32635789
 
 compiler.cxx_standard   2014
 conflicts_build-append  libunwind
