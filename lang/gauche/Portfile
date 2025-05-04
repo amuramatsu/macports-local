@@ -5,7 +5,7 @@ PortGroup           compiler_blacklist_versions 1.0
 PortGroup           conflicts_build             1.0
 
 name                gauche
-version             0.9.13
+version             0.9.15
 categories          lang
 license             BSD
 maintainers         {@amuramatsu tomato.sakura.ne.jp:amura}
@@ -31,9 +31,9 @@ distname            Gauche-${version}
 
 extract.suffix      .tgz
 
-checksums           rmd160  bb9b1b063cde03b38af7bb6a26278e4a1f015b3c \
-                    sha256  792fe4e4f800acd7293f9e3095d580a87cea8b221f33707ae37874f8a3f1b76b \
-                    size    9389117
+checksums           rmd160  c1c2b51d4ed5f7c430d6edb4b85ae3d65b29880a \
+                    sha256  3643e27bc7c8822cfd6fb2892db185f658e8e364938bc2ccfcedb239e35af783 \
+                    size    9444756
 
 depends_lib         port:gdbm \
                     port:libiconv \
