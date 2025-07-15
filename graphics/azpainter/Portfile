@@ -6,7 +6,7 @@ PortGroup               gitlab 1.0
 
 gitlab.setup            azelpg azpainter 3.0.12 v
 name                    azpainter
-revision                0
+revision                1
 
 categories              graphics
 license                 GPL-3+
@@ -21,7 +21,7 @@ checksums               rmd160  286bbfbe2fadea069016f2e9580a063ee126c413 \
                         sha256  13fe5543f592892e2885ad06bd0394062b2425dd1688cbb09676097302c8cd8c \
                         size    993622
 
-patchfiles              patch-xim_noinline
+patchfiles              patch-xim_noinline patch-iconpath
 
 conflicts_build         ncurses
 

@@ -1,0 +1,11 @@
+--- mlk/src/gui/mlk_gui_style.c.orig	2025-05-05 10:36:38
++++ mlk/src/gui/mlk_gui_style.c	2025-07-16 00:44:10
+@@ -125,6 +125,8 @@
+ 	if(_find_icontheme(p, "/usr/share/icons", FALSE)) return;
+ 
+ 	if(_find_icontheme(p, "/usr/local/share/icons", FALSE)) return;
++
++	if(_find_icontheme(p, "/opt/local/share/icons", FALSE)) return;
+ 
+ 	if(_find_icontheme(p, ".local/share/icons", TRUE)) return;
+ 
