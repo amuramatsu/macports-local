@@ -1,0 +1,51 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem              1.0
+PortGroup               conflicts_build 1.0
+PortGroup               gitlab 1.0
+
+gitlab.setup            azelpg azpainter 3.0.12 v
+name                    azpainter
+revision                0
+
+categories              graphics
+license                 GPL-3+
+maintainers             {@amuramatsu tomato.sakura.ne.jp:amura}
+description             Azel's Painting Software
+long_description        Paint software for editing illustrations and images.
+homepage                https://azelpg.gitlab.io/azsky2/soft/azpainter.html
+platforms               darwin
+use_bzip2               yes
+
+checksums               rmd160  286bbfbe2fadea069016f2e9580a063ee126c413 \
+                        sha256  13fe5543f592892e2885ad06bd0394062b2425dd1688cbb09676097302c8cd8c \
+                        size    993622
+
+patchfiles              patch-xim_noinline
+
+conflicts_build         ncurses
+
+depends_build           port:ninja \
+                        path:bin/pkg-config:pkgconfig
+depends_lib             port:xorg-libX11 \
+                        port:xorg-libXext \
+                        port:xorg-libXcursor \
+                        port:xinput \
+                        port:libpng \
+                        port:zlib \
+                        path:include/turbojpeg.h:libjpeg-turbo \
+                        port:tiff \
+                        port:webp \
+                        port:fontconfig \
+                        port:freetype
+post-extract {
+    reinplace -W ${worksrcpath} "s|-I/usr/local/include|-I${prefix}/include|g" configure.c
+}
+
+build {
+    system -W "${worksrcpath}/build" "${prefix}/bin/ninja"
+}
+
+destroot {
+    system -W "${worksrcpath}/build" "/usr/bin/env 'DESTDIR=${destroot}' '${prefix}/bin/ninja' install"
+}

@@ -1,0 +1,12 @@
+--- mlk/src/gui/x11/mlk_x11_inputmethod.c.orig	2025-05-05 10:36:38
++++ mlk/src/gui/x11/mlk_x11_inputmethod.c	2025-07-16 00:29:00
+@@ -66,7 +66,8 @@
+ 	int i,j,k;
+ 	XIMStyles *styles;
+ 	XIMStyle s,result,
+-		style_pe[] = {XIMPreeditCallbacks, XIMPreeditNothing, XIMPreeditNone, 0},
++		//style_pe[] = {XIMPreeditCallbacks, XIMPreeditNothing, XIMPreeditNone, 0},
++		style_pe[] = {XIMPreeditNothing, XIMPreeditNone, 0},
+ 		style_st[] = {XIMStatusNothing, XIMStatusNone, 0};
+ 
+ 	//サポートされている XIMStyle のリスト取得
