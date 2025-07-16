@@ -22,11 +22,11 @@ verilator 13183
 fdclone 13792
 ccd2iso 14206
 iat 14590
-bibutils 14989
-pxdvi 15704
-texlive-basic 16376
-texlive-bin 16796
-texlive-common 17363
+pxdvi 14989
+texlive-basic 15661
+texlive-bin 16081
+texlive-common 16648
+bibutils 17038
 texlive-fonts-extra 17753
 texlive-fonts-recommended 18073
 texlive-latex 18550
