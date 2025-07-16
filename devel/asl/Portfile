@@ -3,7 +3,7 @@
 PortSystem          1.0
 
 name                asl
-version             1.42.263
+version             1.42.290
 revision            0
 categories          devel
 license             GPL-2.0
@@ -25,9 +25,9 @@ set version_str  "[lindex $vstr 0][lindex $vstr 1]"
 set build_no     [lindex $vstr 2]
 distfiles           asl-current-${version_str}-bld${build_no}.tar.bz2
 distname            asl-current
-checksums           sha256 e794b24feffcf3f5579486539c3c53756ea4d53610d6fb8e8100824c7aeed71c \
-                    rmd160 29ae0a4fc1ed37d249ca6087f605bc58d588fb2b \
-                    size   2671914
+checksums           sha256 e12480204b9c556376fbcb8de0ef3b0804df37f10604cd3d15a001815192782f \
+                    rmd160 1dd7e7e0ed3144f7d62a0e3c31d751f5e6fd367f \
+                    size   2792741
 
 depends_build       port:texlive-basic \
                     port:texlive-latex
