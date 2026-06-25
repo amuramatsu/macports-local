@@ -1,31 +1,31 @@
 # -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
 
 PortSystem          1.0
+PortGroup           github 1.0
 
 name                canna
-version             3.7p3
-set dicversion      0.95c
-revision            6
+version             3.8
+set dicversion      110208
 categories          textproc japanese
 maintainers         nomaintainer
 description         Kana-Kanji conversion system
 long_description    ${description}
 platforms           darwin
 license             Restrictive/Distributable BSD-old GPL-2+ MIT
-homepage            http://canna.sourceforge.jp/
-master_sites        sourceforge_jp:${name}/9565/:canna \
-                    http://cannadic.oucrc.org/:cannadic
+homepage            https://canna-input.github.io
+github.setup        canna-input canna 3.8 release-
+github.tarball_from releases
+
+master_sites        ${master_sites}:canna \
+                    http://ftp.iij.ad.jp/pub/sourceforge.jp/alt-cannadic/50881/:alt_cannadic
 distname            "Canna[string map {"." ""} ${version}]"
 use_bzip2           yes
+use_xz              yes
 distfiles           ${distname}${extract.suffix}:canna \
-                    cannadic-${dicversion}.tar.gz:cannadic
+                    alt-cannadic-${dicversion}.tar.bz2:alt_cannadic
 patchfiles          patch-Canna.conf.diff \
-                    patch-canna_widedef.h.diff \
                     patch-doc_man_guide_tex_Imakefile.diff \
-                    patch-lib_canna_lisp.c.diff \
-                    patch-server_util.c.diff \
                     patch-cmd_catdic_Imakefile.diff \
-                    patch-lib_RK_ncache.c.diff \
                     patch-lib_RK_context.c.diff \
                     patch-server_comm.c.diff \
                     \
@@ -33,16 +33,16 @@ patchfiles          patch-Canna.conf.diff \
                     patch-misc_default.ca.diff
 
 checksums           ${distname}${extract.suffix} \
-                    rmd160  33e5eb9e2dc144835db838612897e652acbc60ed \
-                    sha256  7d98d925043d3af24f99a8a2a09e3b4d6dfe881efc1303ef4a7f495a0f4542a7 \
-                    cannadic-${dicversion}.tar.gz \
-                    rmd160  d0920e718d35d038fff930ac50ebe049a322174d \
-                    sha256  d477889aa54276eeb013f28f4f5a18c26baebbc5de28884421f086e1d38fdb04
+                    rmd160  66a172be1226ceded580e72af108e35eea4c492b \
+                    sha256  a29e71735cb53405d4532b5878404d2e93fdddcbf507469bb8f4f898962cafe8 \
+                    alt-cannadic-${dicversion}.tar.bz2 \
+                    rmd160  2fc05fec6d656c2a84801cbcdff2665d66411788 \
+                    sha256  d352f4f90fac02219043d9fe5829925215d4bb6173782430c78ccddd38094a98
 
 extract.only        ${distname}${extract.suffix}
 
 post-extract {
-    system "cd ${workpath} && gzip -dc ${distpath}/cannadic-${dicversion}.tar.gz | tar --no-same-owner -xf -"
+    system "cd ${workpath} && bzip2 -dc ${distpath}/alt-cannadic-${dicversion}.tar.bz2 | tar --no-same-owner -xf -"
 }
 
 post-patch {
@@ -64,8 +64,8 @@ pre-build {
 }
 use_parallel_build  no
 post-build {
-    system "cd ${workpath}/cannadic-${dicversion} && ${worksrcpath}/cmd/crxdic/crxdic -D ${worksrcpath}/dic/ideo/grammar/cnj.bits -m -o gcanna.cbd gcanna.ctd"
-    system "cd ${workpath}/cannadic-${dicversion} && ${worksrcpath}/cmd/crfreq/crfreq -div 512 gcanna.cbd gcanna.mwd"
+    system "cd ${workpath}/alt-cannadic-${dicversion} && ${worksrcpath}/cmd/crxdic/crxdic -D ${worksrcpath}/dic/ideo/grammar/cnj.bits -m -o gcanna.cbd gcanna.ctd"
+    system "cd ${workpath}/alt-cannadic-${dicversion} && ${worksrcpath}/cmd/crfreq/crfreq -div 512 gcanna.cbd gcanna.mwd"
 }
 
 destroot.target install install.man
@@ -77,7 +77,7 @@ pre-destroot {
 }
 post-destroot {
     foreach f {gcanna.cbd gcanna.cld gcannaf.ctd} {
-        xinstall -m 664 -o canna -g canna ${workpath}/cannadic-${dicversion}/${f} ${destroot}${prefix}/var/db/canna/dic/canna
+        xinstall -m 664 -o canna -g canna ${workpath}/alt-cannadic-${dicversion}/${f} ${destroot}${prefix}/var/db/canna/dic/canna
     }
     xinstall -m 775 -o canna -g canna -d ${destroot}${prefix}/var/db/canna/dic/user
     xinstall -m 775 -o canna -g canna -d ${destroot}${prefix}/var/db/canna/dic/group

@@ -1,10 +1,10 @@
---- dic/ideo/words/dics.dir.orig	2003-09-27 15:18:39.000000000 +0900
-+++ dic/ideo/words/dics.dir	2007-10-12 22:06:44.000000000 +0900
-@@ -39,3 +39,7 @@
- kanasmpl.ctd(.mwd)		-kanasample---
- necgaiji.ctd(.mwd)		-necgaiji---
- software.ctd(.mwd)		-software---
+--- dic/ideo/words/dics.dir.orig	2026-05-09 23:08:45
++++ dic/ideo/words/dics.dir	2026-06-25 10:46:51
+@@ -42,3 +42,7 @@
+ zipcode.cbd(jigyosyo.mwd)	-jigyosyo---
+ zipcode.cld(zipcode.mwd)	-zipcode---
+ jigyosyo.cld(jigyosyo.mwd)	-jigyosyo---
 +
-+gcanna.cld(gcanna.mwd)          -gcanna---
-+gcanna.cbd(gcanna.mwd)          -gcanna---
-+gcannaf.ctd(.swd)               -gcannaf---
++gcanna.cld(gcanna.mwd)		-gcanna---
++gcanna.cbd(gcanna.mwd)		-gcanna---
++gcannaf.ctd(.swd)		-gcannaf---
