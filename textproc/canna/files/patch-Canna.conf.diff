@@ -1,6 +1,6 @@
---- Canna.conf.orig	2004-05-20 00:48:47.000000000 +0900
-+++ Canna.conf	2007-10-12 17:20:00.000000000 +0900
-@@ -109,7 +109,7 @@
+--- Canna.conf.orig	2026-05-09 23:08:44
++++ Canna.conf	2026-06-25 10:52:23
+@@ -108,7 +108,7 @@
  # define DefErrDir $(cannaPrefix)/log
  # define DefLibCannaDir $(cannaExecPrefix)/lib
  #else 
@@ -9,7 +9,7 @@
  # ifdef ObsoleteInstallDir
  #  define DefErrDir /usr/spool/canna
  #  define DefLibCannaDir /usr/lib
-@@ -147,12 +147,12 @@
+@@ -146,12 +146,12 @@
  XCOMM cannaLibDir = /var/lib/canna
  XCOMM cannaLibDir = /var/db/canna
  cannaLibDir = DefCannaLibDir
@@ -25,8 +25,8 @@
  
  /* 旧バージョンとの互換APIを無効にする場合は0と定義してください */
  #define SupportOldWchar 1
-@@ -169,8 +169,8 @@
- #define ModernElfLink NO /* experimental */
+@@ -175,8 +175,8 @@
+ #endif
  
  
 -cannaOwner = bin
@@ -36,7 +36,7 @@
  
  #ifdef InstallAsUser
  cannaOwnerGroup =
-@@ -205,7 +205,7 @@
+@@ -211,7 +211,7 @@
  #endif
  
  /* 日本語マニュアルを使わないのであればコメントアウト */
@@ -45,7 +45,7 @@
  
  /* #define engineSwitch */
  
-@@ -237,7 +237,7 @@
+@@ -243,7 +243,7 @@
  /* #define UseInstalledLibCanna YES */
  #define UseInstalledLibCanna NO
  
@@ -54,7 +54,7 @@
  
  /* ここから下は変更不要です */
  
-@@ -343,7 +343,7 @@
+@@ -354,7 +354,7 @@
  AccessFile = $(cannaPrefix)/etc/hosts.canna
  #else
  UnixSockDir = /tmp/.iroha_unix
