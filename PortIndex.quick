@@ -36,5 +36,7 @@ texlive-plain-generic 20488
 texlive-xetex 20901
 canna 21340
 writerperfect 21787
-kinput2 22798
-xorg-cf-files 23193
+blt 22798
+kinput2 23362
+xcircuit 23757
+xorg-cf-files 24826
