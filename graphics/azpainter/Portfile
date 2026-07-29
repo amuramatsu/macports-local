@@ -4,9 +4,8 @@ PortSystem              1.0
 PortGroup               conflicts_build 1.0
 PortGroup               gitlab 1.0
 
-gitlab.setup            azelpg azpainter 3.0.12 v
+gitlab.setup            azelpg azpainter 3.0.12.3
 name                    azpainter
-revision                1
 
 categories              graphics
 license                 GPL-3+
@@ -17,9 +16,9 @@ homepage                https://azelpg.gitlab.io/azsky2/soft/azpainter.html
 platforms               darwin
 use_bzip2               yes
 
-checksums               rmd160  286bbfbe2fadea069016f2e9580a063ee126c413 \
-                        sha256  13fe5543f592892e2885ad06bd0394062b2425dd1688cbb09676097302c8cd8c \
-                        size    993622
+checksums               rmd160  d4d69e67a760e47985d11a2d5e88eafa5227f3f0 \
+                        sha256  aa27cd0f29ddf9f089f78a55b97e8ed6a0e6be14a80249ca78477549ed87886f \
+                        size    994297
 
 patchfiles              patch-xim_noinline patch-iconpath
 
