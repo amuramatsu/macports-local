@@ -4,8 +4,8 @@ asl 1084
 elftoolchain 1669
 beav 2238
 qemu-screamer 2849
-fontforge 4317
-azpainter 5408
+azpainter 4317
+fontforge 4956
 tgif 6047
 xv 6439
 openjdk11 7469
@@ -35,7 +35,7 @@ texlive-plain-generic 19818
 texlive-xetex 20231
 canna 20670
 writerperfect 21117
-blt 22128
-kinput2 22692
-xcircuit 23087
-xorg-cf-files 24156
+kinput2 22128
+xorg-cf-files 22523
+xcircuit 22947
+blt 24016

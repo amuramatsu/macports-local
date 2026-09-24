@@ -1,5 +1,5 @@
---- Makefile.in.orig	2019-07-27 00:00:00.000000000 +0900
-+++ Makefile.in	2022-10-30 03:13:07.000000000 +0900
+--- Makefile.in.orig	2019-07-27 00:00:00
++++ Makefile.in	2026-09-24 23:13:49
 @@ -13,7 +13,7 @@
  BINDIR	= $(BUILD)$(BINTOP)
  DATATOP	= $(PREFIX)/share
@@ -9,6 +9,15 @@
  MANDIR	= $(BUILD)$(MANTOP)/man$(MANSEC)
  CATDIR	= $(BUILD)$(MANTOP)/cat$(MANSEC)
  JMANDIR	= $(BUILD)$(MANTOP)__LANGDIR__/man$(MANSEC)
+@@ -156,7 +156,7 @@
+ SHAR	= shar
+ EXE	= __EXE__
+ OBJ	= __OBJ__
+-PROGRAM	= fd
++PROGRAM	= fdclone
+ ALIAS	= fdsh
+ DOSOBJS	= unixdisk$(OBJ)
+ IMEOBJS	= ime$(OBJ) dict$(OBJ) roman$(OBJ) __DICTTBLOBJ__
 @@ -228,7 +228,7 @@
  
  $(PROGRAM)$(EXE): $(OBJ1) $(OBJ2) $(OBJ3) $(OBJ4) $(OBJ5) $(OBJ6) $(ARGS)
