@@ -1,0 +1,11 @@
+--- bogofilter-1.2.5.orig/configure.ac	2026-11-11 19:27:13
++++ bogofilter-1.2.5/configure.ac	2026-11-11 19:28:57
+@@ -214,7 +214,7 @@
+ 
+ dnl Check if we're running GCC 4.0.0 or higher, if so, switch
+ dnl to the new -iquote scheme rather than using -I- -I.
+-gcc4=no
++gcc4=yes
+ if test "$GCC" = yes && test "$ICC" = no ; then
+     case `$CC -dumpversion 2>/dev/null` in
+ 	""|2.*|3.*) ;;

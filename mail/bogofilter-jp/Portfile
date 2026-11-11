@@ -2,6 +2,7 @@ PortSystem	1.0
 
 name		bogofilter-jp
 version		1.2.5-jp0.1
+revision	1
 license		GPL
 platforms	darwin
 categories	mail
@@ -24,7 +25,8 @@ depends_lib     port:db62 \
 		port:libiconv \
 		port:kakasi
 
-patchfiles	patch-bogofilter-jp.diff
+patchfiles	patch-bogofilter-jp.diff \
+		patch-configure-ac.diff
 patch.pre_args	-p1
 
 use_autoconf	yes
