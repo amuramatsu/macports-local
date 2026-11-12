@@ -3,7 +3,7 @@
 PortSystem      1.0
 
 name            gtkwave
-version         3.3.124
+version         3.3.128
 
 categories      cad
 license         GPL-2+
@@ -18,9 +18,9 @@ homepage        http://gtkwave.sourceforge.net
 master_sites    https://gtkwave.sourceforge.net/
 distname        ${name}-gtk3-${version}
 
-checksums       rmd160  f8d17d87686e0cee616cfc99b99e00a6cc748f29 \
-                sha256  4b1590e05e3e3ae26e34fa80aff369254397379b2f970cfa99150b8b97e535cf \
-                size    3353773
+checksums       rmd160  a003fac7f50029d2979295bf7160a8e5bcbcd53f \
+                sha256  817e197fc1808f8aac3543c2c2f9683cb01368c91192b8eae5af58070ef1d1f8 \
+                size    3517524
 
 depends_build-append \
                 port:pkgconfig
