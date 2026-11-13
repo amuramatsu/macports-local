@@ -28,7 +28,7 @@ homepage            https://fontforge.org
 if {(${os.major} eq "darwin" && ${os.major} < 9) || \
     ${configure.build_arch} ni [list arm64 ppc64 x86_64]} {
     github.setup    fontforge fontforge 20201107
-    revision        1
+    revision        2
 
     checksums       rmd160  25ef811489661aa66200c3d49a5e6f8951129d9c \
                     sha256  68bcba8f602819eddc29cd356ee13fafbad7a80d19b652d354c6791343476c78 \
